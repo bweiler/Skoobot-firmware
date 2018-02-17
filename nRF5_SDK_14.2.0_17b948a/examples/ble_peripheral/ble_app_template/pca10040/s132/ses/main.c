@@ -48,9 +48,9 @@
 #include "nrf_log_default_backends.h"
 #include "arm_const_structs.h"
 #include "nrf_drv_twi.h"
-#include "nrf_drv_i2s.h"
 #include "nrf_delay.h"
 #include "vl6180.h"
+#include "nrf_drv_i2s.h"
 
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
 
@@ -255,8 +255,6 @@ int main(void)
     #endif
     
     configure_VLX6180();
-
-    configure_microphone();
 
     // Initialize.
     log_init();
@@ -526,24 +524,21 @@ void uart_init(void)
 
 void configure_microphone(void)
 {
-    nrf_drv_i2s_config_t config = NRF_DRV_I2S_DEFAULT_CONFIG;
-    // In Master mode the MCK frequency and the MCK/LRCK ratio should be
-    // set properly in order to achieve desired audio sample rate (which
-    // is equivalent to the LRCK frequency).
-    // For the following settings we'll get the LRCK frequency equal to
-    // 15873 Hz (the closest one to 16 kHz that is possible to achieve).
-      
-    config.sck_pin   = MIC_SCK;      
-    config.lrck_pin  = MIC_WS;     
-    config.mck_pin   = NRF_DRV_I2S_PIN_NOT_USED;      
-    config.sdin_pin  = MIC_DI;
-    config.sdout_pin = NRF_DRV_I2S_PIN_NOT_USED;
-    config.mck_setup = NRF_I2S_MCK_32MDIV10;        //3.2Mhz
-    config.ratio     = NRF_I2S_RATIO_96X;
-    config.channels  = NRF_I2S_CHANNELS_LEFT;
-    config.sample_width = ;
-    config.mck_setup    = ;     
-     err_code = nrf_drv_i2s_init(&config, data_handler);
+  nrf_gpio_cfg_output(MIC_CLK);
+  nrf_gpio_pin_clear(MIC_CLK);
+  nrf_gpio_cfg_input(MIC_DI,GPIO_PIN_CNF_PULL_Disabled);
+
+  NRF_PDM->PSEL.CLK = MIC_CLK;
+  NRF_PDM->PSEL.DIN = MIC_DI;
+  nrf_gpio_cfg_output(MIC_WS);
+  nrf_gpio_pin_set(MIC_WS);   //Left, data on rising edge of clock
+  NRF_PDM->MODE = 3;
+  //NRF_PDM->PDMCLKCTRL = 0x08800000;
+  NRF_PDM->GAINL = 0;  
+  NRF_PDM->GAINR = 0;
+  NRF_PDM->SAMPLE.PTR = sample_buffer;
+  NRF_PDM->SAMPLE.MAXCNT = SAMPLE_BUFFER_CNT;
+  NRF_PDM->ENABLE = 1;
 }
 
 void my_configure(void)

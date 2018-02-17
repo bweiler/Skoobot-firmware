@@ -35,6 +35,7 @@
 "Output/Robot_v1_1 Debug/Obj/nrf_drv_uart.o"
 "Output/Robot_v1_1 Debug/Obj/nrf_drv_timer.o"
 "Output/Robot_v1_1 Debug/Obj/nrf_drv_twi.o"
+"Output/Robot_v1_1 Debug/Obj/nrf_drv_i2s.o"
 "Output/Robot_v1_1 Debug/Obj/bsp.o"
 "Output/Robot_v1_1 Debug/Obj/bsp_btn_ble.o"
 "Output/Robot_v1_1 Debug/Obj/bsp_nfc.o"
