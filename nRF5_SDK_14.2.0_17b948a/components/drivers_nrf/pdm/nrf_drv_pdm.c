@@ -38,7 +38,8 @@
  * 
  */
 #include "sdk_common.h"
-#if NRF_MODULE_ENABLED(PDM)
+#if 1
+//NRF_MODULE_ENABLED(PDM)
 #include "nrf_drv_pdm.h"
 #include "nrf_assert.h"
 #include "nrf_drv_common.h"

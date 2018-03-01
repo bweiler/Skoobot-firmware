@@ -48,9 +48,9 @@
 #include "nrf_log_default_backends.h"
 #include "arm_const_structs.h"
 #include "nrf_drv_twi.h"
-#include "nrf_drv_i2s.h"
 #include "nrf_delay.h"
 #include "vl6180.h"
+#include "nrf_drv_pdm.h"
 
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
 
@@ -135,9 +135,9 @@ static void advertising_start(bool erase_bonds);
 #define I2C0_SDA  20
 
 //microphone
-#define MIC_CLK   8
-#define MIC_DI    11
-#define MIC_WS    5
+#define MIC_CLK   16
+#define MIC_DI    17
+#define MIC_SEL   18
 
 //motors
 #define M1        3
@@ -156,7 +156,6 @@ static void advertising_start(bool erase_bonds);
 //microphone
 #define MIC_CLK   28
 #define MIC_DI    29
-#define MIC_WS    27
 
 //VLX6180
 #define GP0       14
@@ -227,9 +226,10 @@ void twi_init(void);
 void charging(void);
 void stop_buzzer(void);
 void stop_motors(void);
+void audio_handler(nrf_drv_pdm_evt_t const * const evt);
 
-#define SAMPLE_BUFFER_CNT 1024
-int16_t sample_buffer[SAMPLE_BUFFER_CNT*2];
+#define SAMPLE_BUFFER_CNT 8096
+int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
 
 /**
  * Motor might be 15 degrees per step, so 24 steps per revolution.
@@ -242,6 +242,7 @@ int main(void)
     uint32_t cnt, cnt2;
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
     bool erase_bonds;
+    ret_code_t ret;
 
     //nrf_gpio_cfg(GREEN_LED,NRF_GPIO_PIN_DIR_OUTPUT,NRF_GPIO_PIN_INPUT_DISCONNECT,NRF_GPIO_PIN_PULLUP,NRF_GPIO_PIN_S0H1,NRF_GPIO_PIN_NOSENSE);
 
@@ -278,11 +279,18 @@ int main(void)
 
     configure_motors();
     my_configure();
-    pwm_motor_stepping(100);
+    //pwm_motor_stepping(100);
    
     pwm_buzzer_frequency(2000);
-    // Enter main loop.
+    
     cnt = 0;
+    m_xfer_done = false;
+    nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
+    nrf_drv_pdm_start();
+    nrf_delay_ms(200);
+    nrf_drv_pdm_stop();
+
+    // Enter main loop.
     for (;;)
     {
         ++cnt;
@@ -323,26 +331,16 @@ int main(void)
     }   
     configure_motors();
     my_configure();
-    configure_microphone();
 
-    for(i=0;(i<SAMPLE_BUFFER_CNT*2);i++)
-        sample_buffer[i] = 0;
     pwm_buzzer_frequency(2000);
     //pwm_motor_stepping(2000);
     while(1)
     {
-      NRF_PDM->EVENTS_STARTED = 0;
-      NRF_PDM->TASKS_START = 1;
-      nrf_delay_ms(100);
-      NRF_PDM->TASKS_STOP = 1;
-      while( NRF_PDM->EVENTS_STOPPED == 0) ;
-      NRF_PDM->EVENTS_STOPPED = 0;
       sendbytes(0);
       afunc();
       nrf_gpio_pin_set(GREEN_LED);
       nrf_delay_ms(4000);
       sendbytes(1);
-      memset(sample_buffer,0,SAMPLE_BUFFER_CNT*2);
       nrf_gpio_pin_clear(GREEN_LED);
       nrf_delay_ms(500);
 
@@ -363,6 +361,22 @@ int main(void)
         nrf_gpio_pin_set(GREEN_LED);
     }
     
+}
+
+void configure_microphone(void)
+{
+  nrf_gpio_cfg_output(MIC_SEL);
+  nrf_gpio_pin_clear(MIC_SEL);    //Select Left Channel
+
+  nrf_drv_pdm_config_t pdm_config = NRF_DRV_PDM_DEFAULT_CONFIG(MIC_CLK,MIC_DI);
+
+  pdm_config.clock_freq = NRF_PDM_FREQ_1067K;
+  pdm_config.mode = NRF_PDM_MODE_MONO;
+  pdm_config.edge = NRF_PDM_EDGE_LEFTFALLING;
+  pdm_config.gain_l = NRF_PDM_GAIN_DEFAULT;
+  pdm_config.gain_r = NRF_PDM_GAIN_DEFAULT;
+
+  return nrf_drv_pdm_init(&pdm_config, audio_handler);
 }
 
 void motors_forward(void)
@@ -458,13 +472,9 @@ void twi_init(void)
 }
 
 
-void read_sensor_data(void)
+void audio_handler(nrf_drv_pdm_evt_t const * const evt)
 {
-    m_xfer_done = false;
-
-    /* Read 1 byte from the specified address - skip 3 bits dedicated for fractional part of temperature. */
-    //ret_code_t err_code = nrf_drv_twi_rx(&m_twi, LM75B_ADDR, &m_sample, sizeof(m_sample));
-
+    m_xfer_done = true;
 }
 
 void pwm_motor_stepping(uint32_t steps_per_second)
@@ -523,28 +533,6 @@ void uart_init(void)
   NRF_UARTE0->ENABLE = 8;
 }
 #endif
-
-void configure_microphone(void)
-{
-    nrf_drv_i2s_config_t config = NRF_DRV_I2S_DEFAULT_CONFIG;
-    // In Master mode the MCK frequency and the MCK/LRCK ratio should be
-    // set properly in order to achieve desired audio sample rate (which
-    // is equivalent to the LRCK frequency).
-    // For the following settings we'll get the LRCK frequency equal to
-    // 15873 Hz (the closest one to 16 kHz that is possible to achieve).
-      
-    config.sck_pin   = MIC_SCK;      
-    config.lrck_pin  = MIC_WS;     
-    config.mck_pin   = NRF_DRV_I2S_PIN_NOT_USED;      
-    config.sdin_pin  = MIC_DI;
-    config.sdout_pin = NRF_DRV_I2S_PIN_NOT_USED;
-    config.mck_setup = NRF_I2S_MCK_32MDIV10;        //3.2Mhz
-    config.ratio     = NRF_I2S_RATIO_96X;
-    config.channels  = NRF_I2S_CHANNELS_LEFT;
-    config.sample_width = ;
-    config.mck_setup    = ;     
-     err_code = nrf_drv_i2s_init(&config, data_handler);
-}
 
 void my_configure(void)
 {
@@ -636,7 +624,7 @@ void sendbytes(uint8_t which)
 
     for(i=0;(i<64);i++)
     {
-        actual_value = sample_buffer[i+500]; 
+        actual_value = p_rx_buffer[i+500]; 
         sprintf(buf,"%d,",actual_value);
         j=0;
         while(buf[j] != 0)
@@ -747,7 +735,7 @@ void afunc(void)
            //                  sine_freq, noise);
         for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i++)
         {
-              m_fft_input_f32[(uint16_t)i] = sample_buffer[i+50];
+              m_fft_input_f32[(uint16_t)i] = p_rx_buffer[i+50];
               //m_fft_input_f32[(uint16_t)i] += sin((5000.0f * (2.f * PI) * i)/FFT_TEST_COMP_SAMPLES_LEN);
         }
         // Process generated data. 64 pairs of complex data (real, img). It is important to use

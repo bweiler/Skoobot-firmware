@@ -76,7 +76,7 @@
       <file file_name="../../../../../../components/drivers_nrf/uart/nrf_drv_uart.c" />
       <file file_name="../../../../../../components/drivers_nrf/timer/nrf_drv_timer.c" />
       <file file_name="../../../../../../components/drivers_nrf/twi_master/nrf_drv_twi.c" />
-      <file file_name="../../../../../../components/drivers_nrf/i2s/nrf_drv_i2s.c" />
+      <file file_name="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" />
     </folder>
     <folder Name="Board Support">
       <file file_name="../../../../../../components/libraries/bsp/bsp.c" />
@@ -84,12 +84,13 @@
       <file file_name="../../../../../../components/libraries/bsp/bsp_nfc.c" />
     </folder>
     <folder Name="Application">
-      <file file_name="main.c" />
       <file file_name="sdk_config.h" />
-      <file file_name="vl6180.c" />
       <configuration
         Name="Debug"
         c_system_include_directories="$(StudioDir)/include;$(PackagesDir)/include;/." />
+      <file file_name="../../../main.c" />
+      <file file_name="../../../vl6180.c" />
+      <file file_name="../../../vl6180.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="../../../../../../external/segger_rtt/SEGGER_RTT.c" />

@@ -863,7 +863,7 @@
 // <e> PDM_ENABLED - nrf_drv_pdm - PDM peripheral driver
 //==========================================================
 #ifndef PDM_ENABLED
-#define PDM_ENABLED 0
+#define PDM_ENABLED 1
 #endif
 // <o> PDM_CONFIG_MODE  - Mode
  
@@ -890,7 +890,7 @@
 // <142606336=> 1067k 
 
 #ifndef PDM_CONFIG_CLOCK_FREQ
-#define PDM_CONFIG_CLOCK_FREQ 138412032
+#define PDM_CONFIG_CLOCK_FREQ 142606336
 #endif
 
 // <o> PDM_CONFIG_IRQ_PRIORITY  - Interrupt priority
@@ -971,7 +971,7 @@
 // <e> PWM_ENABLED - nrf_drv_pwm - PWM peripheral driver
 //==========================================================
 #ifndef PWM_ENABLED
-#define PWM_ENABLED 0
+#define PWM_ENABLED 1
 #endif
 // <o> PWM_DEFAULT_CONFIG_OUT0_PIN - Out0 pin  <0-31> 
 

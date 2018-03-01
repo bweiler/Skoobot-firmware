@@ -38,7 +38,8 @@
  * 
  */
 #include "sdk_common.h"
-#if NRF_MODULE_ENABLED(I2S)
+#if 1
+//NRF_MODULE_ENABLED(I2S)
 #include "nrf_drv_i2s.h"
 #include "nrf_drv_common.h"
 #include "nrf_gpio.h"
@@ -207,7 +208,7 @@ ret_code_t nrf_drv_i2s_start(uint32_t * p_rx_buffer,
                              uint16_t   buffer_size,
                              uint8_t    flags)
 {
-    ASSERT((p_rx_buffer != NULL) || (p_tx_buffer != NULL));
+    //ASSERT((p_rx_buffer != NULL) || (p_tx_buffer != NULL));
 
     uint16_t buffer_half_size = buffer_size / 2;
     ASSERT(buffer_half_size != 0);
