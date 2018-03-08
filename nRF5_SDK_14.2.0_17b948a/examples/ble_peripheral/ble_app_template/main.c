@@ -119,10 +119,21 @@ static void advertising_start(bool erase_bonds);
 
 //Start of my section
 //This is just a sparkfun reference I am using to develop code, it should always be 0
-#define SPARKFUN 1
-#if SPARKFUN
+#define CB_TEST 0
+#define MB_TEST 0
+#define SPARKFUN 0
+#if CB_TEST
+#define SPARKFUN 0
+#endif
+#if MB_TEST
+#define SPARKFUN 0
+#endif
+
 #define UART_RX_PIN   26
 #define UART_TX_PIN   27
+
+
+#if SPARKFUN
 
 #define BUZZER_10MM   31
 
@@ -156,6 +167,8 @@ static void advertising_start(bool erase_bonds);
 //microphone
 #define MIC_CLK   28
 #define MIC_DI    29
+//this is placeholder, mic is tied low
+#define MIC_SEL   27
 
 //VLX6180
 #define GP0       14
@@ -168,10 +181,14 @@ static void advertising_start(bool erase_bonds);
 #define M0        23
 #define DIR_L     22
 #define STEP      30
+#define SLEEP     27
+#if CB_TEST
+#define DIR_R     24
+#define GREEN_LED 7
+#else
 #define DIR_R     26
-//LED
 #define GREEN_LED 2
-
+#endif
 #endif
 
 // TWI instance ID. 
@@ -197,16 +214,16 @@ static uint8_t m_sample;
 // in FFT calculation with result contains 64 bins (22050Hz/64bins -> ~344,5Hz per bin).
 #define FFT_TEST_SAMPLE_FREQ_HZ          44100.0f                        //!< Frequency of complex input samples.
 #define FFT_TEST_COMP_SAMPLES_LEN        128                             //!< Complex numbers input data array size. Correspond to FFT calculation this number must be power of two starting from 2^5 (2^4 pairs) with maximum value 2^13 (2^12 pairs).
-#define FFT_TEST_OUT_SAMPLES_LEN         (FFT_TEST_COMP_SAMPLES_LEN / 2) //!< Output array size.
+//#define FFT_TEST_OUT_SAMPLES_LEN         (FFT_TEST_COMP_SAMPLES_LEN / 2) //!< Output array size.
 
-#define SIGNALS_RESOLUTION               100.0f                          //!< Sine wave frequency and noise amplitude resolution. To count resolution as decimal places in number use this formula: resolution = 1/SIGNALS_RESOLUTION .
-#define SINE_WAVE_FREQ_MAX               20000                           //!< Maximum frequency of generated sine wave.
-#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
+//#define SIGNALS_RESOLUTION               100.0f                          //!< Sine wave frequency and noise amplitude resolution. To count resolution as decimal places in number use this formula: resolution = 1/SIGNALS_RESOLUTION .
+//#define SINE_WAVE_FREQ_MAX               20000                           //!< Maximum frequency of generated sine wave.
+//#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
 
 static uint32_t  m_ifft_flag             = 0;                            //!< Flag that selects forward (0) or inverse (1) transform.
 static uint32_t  m_do_bit_reverse        = 1;                            //!< Flag that enables (1) or disables (0) bit reversal of output.
 static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
-static float32_t m_fft_output_f32[FFT_TEST_OUT_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
+static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
 void afunc(void);
 void uart_init(void);
 void sendbytes(uint8_t a);
@@ -216,6 +233,8 @@ void my_configure(void);
 void configure_motors(void);
 void motors_forward(void);
 void motors_backward(void);
+void motors_right(void);
+void motors_left(void);
 void configure_microphone(void);
 void pwm_motor_stepping(uint32_t steps_per_second);
 void pwm_buzzer_frequency(float freq);
@@ -225,10 +244,13 @@ void read_sensor_data(void);
 void twi_init(void);
 void charging(void);
 void stop_buzzer(void);
-void stop_motors(void);
+void stop_stepping(void);
 void audio_handler(nrf_drv_pdm_evt_t const * const evt);
+void cb_test(void);
+void mb_test(void);
 
-#define SAMPLE_BUFFER_CNT 8096
+//#define SAMPLE_BUFFER_CNT 8096
+#define SAMPLE_BUFFER_CNT 256
 int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
 
 /**
@@ -254,10 +276,19 @@ int main(void)
     #if SPARKFUN
       uart_init();
     #endif
+    #if CB_TEST
+      uart_init();
+      cb_test();
+    #endif
+    #if MB_TEST
+      mb_test();
+    #endif
     
     configure_VLX6180();
 
+    #if SPARKFUN
     configure_microphone();
+    #endif
 
     // Initialize.
     log_init();
@@ -279,36 +310,66 @@ int main(void)
 
     configure_motors();
     my_configure();
-    //pwm_motor_stepping(100);
    
-    pwm_buzzer_frequency(2000);
-    
-    cnt = 0;
+ 
+    #if SPARKFUN
+    //like 6700 samples in p_rx_buffer
     m_xfer_done = false;
     nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
     nrf_drv_pdm_start();
-    nrf_delay_ms(200);
+    nrf_delay_ms(400);
     nrf_drv_pdm_stop();
+    afunc();            //do fft, then check m_fft_output_f32 64 bytes
+    #endif
 
     // Enter main loop.
+    cnt = 0;
     for (;;)
     {
+        //for now is 1 second
         ++cnt;
-        if( cnt == 8)
+        switch(cnt)
         {
-          stop_buzzer(); 
-          stop_motors();
+          case 1:
+            pwm_motor_stepping(3000);    //go forward
+            pwm_buzzer_frequency(1000);
+            break;
+          case 2:
+            pwm_buzzer_frequency(2000);
+            stop_stepping();
+            motors_right();
+            break;
+          case 3:
+            pwm_motor_stepping(3000); 
+            pwm_buzzer_frequency(3000);
+            break;
+          case 4:
+            stop_stepping();
+            motors_forward();
+            stop_buzzer();
+            pwm_motor_stepping(3000);
+            break;
+          case 5:
+            stop_stepping();
+            break;
+          case 6:
+
+            pwm_motor_stepping(2000);
+            break;
+         case 7:
+            stop_stepping();
+            cnt = 0;
+            break;
         }
         range = getDistance();
+        nrf_delay_ms(500);
         if (range <= 50)
-          nrf_gpio_pin_set(GREEN_LED);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_clear(GREEN_LED);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_set(DIR_R);
-        nrf_delay_ms(300);
-        nrf_gpio_pin_clear(DIR_R);
-
+        {
+          nrf_gpio_pin_clear(GREEN_LED);
+        }
+        nrf_delay_ms(500);
+        nrf_gpio_pin_set(GREEN_LED);
+    
       // if (NRF_LOG_PROCESS() == false)
         {
             //power_manage();
@@ -372,12 +433,14 @@ void configure_microphone(void)
 
   pdm_config.clock_freq = NRF_PDM_FREQ_1067K;
   pdm_config.mode = NRF_PDM_MODE_MONO;
-  pdm_config.edge = NRF_PDM_EDGE_LEFTFALLING;
+  pdm_config.edge = NRF_PDM_EDGE_LEFTRISING;
   pdm_config.gain_l = NRF_PDM_GAIN_DEFAULT;
   pdm_config.gain_r = NRF_PDM_GAIN_DEFAULT;
 
-  return nrf_drv_pdm_init(&pdm_config, audio_handler);
-}
+  nrf_drv_pdm_init(&pdm_config, audio_handler);
+ 
+  return; 
+ }
 
 void motors_forward(void)
 {
@@ -389,6 +452,18 @@ void motors_backward(void)
 {
    nrf_gpio_pin_clear(DIR_L);
    nrf_gpio_pin_set(DIR_R);
+}
+
+void motors_right(void)
+{
+   nrf_gpio_pin_clear(DIR_L);
+   nrf_gpio_pin_clear(DIR_R);
+}
+
+void motors_left(void)
+{
+   nrf_gpio_pin_clear(DIR_L);
+   nrf_gpio_pin_clear(DIR_R);
 }
 
 static void battery_level_update(void)
@@ -508,18 +583,69 @@ void pwm_buzzer_frequency(float freq)
   NRF_PWM0->TASKS_SEQSTART[0] = 1;   
 }
 
+void cb_test(void)
+{
+  configure_motors();
+  my_configure();
+
+  for(;;)
+  {
+    nrf_gpio_pin_clear(GREEN_LED);
+    pwm_motor_stepping(200);
+    nrf_delay_ms(2000);
+    stop_motors();
+    nrf_gpio_pin_set(GREEN_LED);
+    nrf_delay_ms(2000);
+  }
+
+}
+
+void mb_test(void)
+{
+  configure_motors();
+  nrf_gpio_cfg_output(MIC_CLK);
+  nrf_gpio_cfg_output(MIC_DI);
+  nrf_gpio_cfg_output(MIC_SEL);
+  
+  for(;;)
+  {
+    nrf_gpio_pin_clear(GREEN_LED);
+    nrf_gpio_pin_clear(STEP);
+    nrf_gpio_pin_clear(DIR_L);
+    nrf_gpio_pin_clear(DIR_R);
+    nrf_gpio_pin_clear(M1);
+    nrf_gpio_pin_clear(M0);
+    nrf_gpio_pin_clear(MIC_CLK);
+    nrf_gpio_pin_clear(MIC_DI);
+    nrf_gpio_pin_clear(MIC_SEL);
+    nrf_delay_ms(500);
+    nrf_gpio_pin_set(GREEN_LED);
+    nrf_gpio_pin_set(STEP);
+    nrf_gpio_pin_set(DIR_L);
+    nrf_gpio_pin_set(DIR_R);
+    nrf_gpio_pin_set(M1);
+    nrf_gpio_pin_set(M0);
+    nrf_gpio_pin_set(MIC_CLK);
+    nrf_gpio_pin_set(MIC_DI);
+    nrf_gpio_pin_set(MIC_SEL);
+    nrf_delay_ms(500);
+  }
+
+}
+
 void stop_buzzer(void)
 {
   NRF_PWM0->TASKS_STOP = 1;
 }
 
-void stop_motors(void)
+void stop_stepping
+
+(void)
 {
   NRF_PWM1->TASKS_STOP = 1;
 }
 
-
-#if SPARKFUN
+#if SPARKFUN || CB_TEST
 void uart_init(void)
 {
   NRF_UARTE0->BAUDRATE = 0x00275000; //9600bps
@@ -536,6 +662,16 @@ void uart_init(void)
 
 void my_configure(void)
 {
+
+  NRF_PWM1->PSEL.OUT[0] = (STEP << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
+  NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
+  NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
+  NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_128 << PWM_PRESCALER_PRESCALER_Pos);
+  NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+  NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+  NRF_PWM1->SEQ[0].REFRESH = 0;
+  NRF_PWM1->SEQ[0].ENDDELAY = 0;
+#if CB_TEST == 0
   nrf_gpio_cfg_output(BUZZER_10MM);
   nrf_gpio_pin_clear(BUZZER_10MM);
   NRF_PWM0->PSEL.OUT[0] = (BUZZER_10MM << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
@@ -546,31 +682,28 @@ void my_configure(void)
   NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
   NRF_PWM0->SEQ[0].REFRESH = 0;
   NRF_PWM0->SEQ[0].ENDDELAY = 0;
- 
-  NRF_PWM1->PSEL.OUT[0] = (STEP << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
-  NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
-  NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-  NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_128 << PWM_PRESCALER_PRESCALER_Pos);
-  NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
-  NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-  NRF_PWM1->SEQ[0].REFRESH = 0;
-  NRF_PWM1->SEQ[0].ENDDELAY = 0;
+#endif
 }
 
+// 32 microstep M1 high, M0 high-z
+//
+//
+//
+//
 void configure_motors(void)
 {
     nrf_gpio_cfg_output(STEP);
     nrf_gpio_cfg_output(DIR_L);
     nrf_gpio_cfg_output(M1);
-    nrf_gpio_cfg_output(M0);
+    nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
     nrf_gpio_cfg_output(DIR_R);
   
     nrf_gpio_pin_clear(STEP);
     nrf_gpio_pin_set(DIR_L);
     nrf_gpio_pin_clear(DIR_R);
-    nrf_gpio_pin_clear(M1);
-    nrf_gpio_pin_clear(M0);
- }
+    nrf_gpio_pin_set(M1);
+    //nrf_gpio_pin_clear(M0);
+}
 
 
 void charging(void)
@@ -650,103 +783,27 @@ void sendbytes(uint8_t which)
 
 }
 
-
-/**
- * @brief Function for generating sine wave samples for FFT calculations.
- *
- * This function fill up output array with generated sine wave data with proper sampling frequency.
- * Must be executed before fft_process function.
- *
- * @param[in] p_input     Input array to fill with sine wave generated data.
- * @param[in] size        Input array size.
- * @param[in] sample_freq Sine wave sampling frequency.
- * @param[in] sine_freq   Sine wave frequency.
- * @param[in] add_noise   Flag for enable or disble adding noise for generated data.
- */
-static void fft_generate_samples(float32_t * p_input,
-                                 uint16_t    size,
-                                 float32_t   sampling_freq,
-                                 float32_t   sine_freq,
-                                 bool        add_noise)
-{
-    uint32_t i;
-
-    /* Remember that sample is represented as two next values in array. */
-    uint32_t sample_idx = 0;
-
-    if (2 > size)
-    {
-        return;
-    }
-
-    for (i = 0; i < (size - 1UL); i += 2) {
-        sample_idx = i / 2;
-        // Real part.
-        p_input[(uint16_t)i] = sin(sine_freq * (2.f * PI) * sample_idx / sampling_freq);
-        if (add_noise)
-        {
-            // Noise can be positive or negative number. Numbers can be cast to signed values.
-            p_input[(uint16_t)i] *= ((rand()) % ((int)(NOISE_AMPLITUDE * SIGNALS_RESOLUTION)))
-                                    / SIGNALS_RESOLUTION;
-        }
-        // Img part.
-        p_input[(uint16_t)i + 1] = 0;
-    }
-}
-
-/**
- * @brief Function for processing generated sine wave samples.
- * @param[in] p_input        Pointer to input data array with complex number samples in time domain.
- * @param[in] p_input_struct Pointer to cfft instance structure describing input data.
- * @param[out] p_output      Pointer to processed data (bins) array in frequency domain.
- * @param[in] output_size    Processed data array size.
- */
-static void fft_process(float32_t *                   p_input,
-                        const arm_cfft_instance_f32 * p_input_struct,
-                        float32_t *                   p_output,
-                        uint16_t                      output_size)
-{
-    // Use CFFT module to process the data.
-    arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
-    // Calculate the magnitude at each bin using Complex Magnitude Module function.
-    arm_cmplx_mag_f32(p_input, p_output, output_size);
-}
-
-/**
- * @brief Function for application main entry.
- */
 void afunc(void)
 {
-    uint32_t  err_code, i;
-    bool      noise = false;
-    float32_t sine_freq;
+    uint16_t fftLen = FFT_TEST_COMP_SAMPLES_LEN;  //currently 128
+    arm_status ret;
+    arm_rfft_fast_instance_f32 S;
+    uint32_t i;
+    uint8_t ifftFlag  = 0;
 
-        // Generate new samples.
-        noise = 0;
-        // Sine wave frequency must be positive number so cast rand to unsigned number.
-        // stdlib using with Segger Embedded Studio uses rand() configured to return values up to
-        // 32767 instead of 0x7fffffff configured in other compilers. It causes that generated sine
-        // frequency is smaller, but example works in the same way.
-   //     sine_freq = (((uint32_t)rand()) % ((uint32_t)(SINE_WAVE_FREQ_MAX * SIGNALS_RESOLUTION)))
-          //          / SIGNALS_RESOLUTION;
-     //   fft_generate_samples(m_fft_input_f32,
-       //                      FFT_TEST_COMP_SAMPLES_LEN,
-         //                    FFT_TEST_SAMPLE_FREQ_HZ,
-           //                  sine_freq, noise);
-        for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i++)
-        {
-              m_fft_input_f32[(uint16_t)i] = p_rx_buffer[i+50];
-              //m_fft_input_f32[(uint16_t)i] += sin((5000.0f * (2.f * PI) * i)/FFT_TEST_COMP_SAMPLES_LEN);
-        }
-        // Process generated data. 64 pairs of complex data (real, img). It is important to use
-        // proper arm_cfft_sR_f32 structure associated with input/output data length.
-        // For example:
-        //  - 128 numbers in input array (64 complex pairs of samples) -> 64 output bins power data -> &arm_cfft_sR_f32_len64.
-        //  - 256 numbers in input array (128 complex pairs of samples) -> 128 output bins power data -> &arm_cfft_sR_f32_len128.
-        fft_process(m_fft_input_f32,
-                    &arm_cfft_sR_f32_len64,
-                    m_fft_output_f32,
-                    FFT_TEST_OUT_SAMPLES_LEN);
+
+    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i+=2)
+    {
+          m_fft_input_f32[i] = p_rx_buffer[i+400];      //magnitude part        
+    }
+
+    ret = arm_rfft_fast_init_f32(&S,fftLen);
+    
+    arm_rfft_fast_f32(&S,m_fft_input_f32,m_fft_output_f32,ifftFlag);
+
+    //arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
+    // Calculate the magnitude at each bin using Complex Magnitude Module function.
+    //arm_cmplx_mag_f32(p_input, p_output, output_size);
 
 
 #ifndef FPU_INTERRUPT_MODE

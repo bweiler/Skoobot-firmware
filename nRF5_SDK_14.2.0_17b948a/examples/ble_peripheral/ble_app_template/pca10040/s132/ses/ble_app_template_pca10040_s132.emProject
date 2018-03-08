@@ -131,6 +131,9 @@
     <configuration
       Name="Debug"
       c_system_include_directories="$(StudioDir)/include;$(PackagesDir)/include;$(ProjectDir)" />
+    <folder Name="Third Party">
+      <file file_name="../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a" />
+    </folder>
   </project>
   <configuration
     Name="Release"

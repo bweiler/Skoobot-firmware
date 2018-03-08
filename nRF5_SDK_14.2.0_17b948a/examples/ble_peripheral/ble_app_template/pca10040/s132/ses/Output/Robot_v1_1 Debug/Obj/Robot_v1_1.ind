@@ -69,6 +69,7 @@
 "Output/Robot_v1_1 Debug/Obj/nrf_sdh.o"
 "Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o"
 "Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o"
+"../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a"
 "C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libdebugio_mempoll_v7em_fpv4_sp_d16_hard_t_le_eabi.a"
 "C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a"
 "C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a"
