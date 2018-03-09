@@ -248,6 +248,8 @@ void stop_stepping(void);
 void audio_handler(nrf_drv_pdm_evt_t const * const evt);
 void cb_test(void);
 void mb_test(void);
+void stepping_mode(uint8_t mode);
+void step_mode_experiment(void);
 
 //#define SAMPLE_BUFFER_CNT 8096
 #define SAMPLE_BUFFER_CNT 256
@@ -259,7 +261,7 @@ int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
  */
 int main(void)
 {
-    static uint8_t flipper = 0, lowhigh  = 0, range;
+    static uint8_t flipper = 0, lowhigh  = 0, range, stepmode;
     int16_t i;
     uint32_t cnt, cnt2;
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
@@ -309,6 +311,8 @@ int main(void)
     advertising_start(erase_bonds);
 
     configure_motors();
+    stepping_mode(1);
+ 
     my_configure();
    
  
@@ -321,8 +325,10 @@ int main(void)
     nrf_drv_pdm_stop();
     afunc();            //do fft, then check m_fft_output_f32 64 bytes
     #endif
-
-    // Enter main loop.
+   
+    nrf_delay_ms(10000);     //wait 10 seconds, let me connect BLE
+  
+   // Enter main loop.
     cnt = 0;
     for (;;)
     {
@@ -331,43 +337,43 @@ int main(void)
         switch(cnt)
         {
           case 1:
-            pwm_motor_stepping(3000);    //go forward
-            pwm_buzzer_frequency(1000);
+            pwm_motor_stepping(100);    //go forward
+            //pwm_buzzer_frequency(1000);
             break;
           case 2:
-            pwm_buzzer_frequency(2000);
+            //pwm_buzzer_frequency(2000);
             stop_stepping();
             motors_right();
             break;
           case 3:
-            pwm_motor_stepping(3000); 
-            pwm_buzzer_frequency(3000);
+            pwm_motor_stepping(60);    //turn right
+            //pwm_buzzer_frequency(3000);
             break;
           case 4:
             stop_stepping();
             motors_forward();
-            stop_buzzer();
-            pwm_motor_stepping(3000);
+            //stop_buzzer();
+            pwm_motor_stepping(100);    //go forward
             break;
           case 5:
             stop_stepping();
+            motors_right();
             break;
           case 6:
-
-            pwm_motor_stepping(2000);
+            pwm_motor_stepping(60);    //turn right
             break;
          case 7:
             stop_stepping();
+            motors_forward();
             cnt = 0;
             break;
         }
         range = getDistance();
-        nrf_delay_ms(500);
         if (range <= 50)
         {
           nrf_gpio_pin_clear(GREEN_LED);
         }
-        nrf_delay_ms(500);
+        nrf_delay_ms(1000);
         nrf_gpio_pin_set(GREEN_LED);
     
       // if (NRF_LOG_PROCESS() == false)
@@ -440,7 +446,49 @@ void configure_microphone(void)
   nrf_drv_pdm_init(&pdm_config, audio_handler);
  
   return; 
- }
+}
+
+void step_mode_experiment(void)
+{
+    uint8_t stepmode;
+
+    // Enter main loop.
+    stepmode = 0;
+    for (;;)
+    {
+        //for now is 1 second
+        stepping_mode(stepmode);
+        switch(stepmode)
+        {
+          case 0:
+            pwm_motor_stepping(50);    //go forward
+            nrf_gpio_pin_clear(GREEN_LED);
+            break;
+          case 1:
+            pwm_motor_stepping(100);    //go forward
+            nrf_gpio_pin_set(GREEN_LED);
+            break;
+          case 2:
+            pwm_motor_stepping(200);    //go forward
+            break;
+          case 3:
+            pwm_motor_stepping(400);    //go forward
+            break;
+          case 4:
+            pwm_motor_stepping(800);    //go forward
+            break;
+          case 5:
+            pwm_motor_stepping(1600);    //go forward
+            break;
+        }
+        ++stepmode;
+        if (stepmode == 6)
+            stepmode = 0;
+        nrf_delay_ms(2000);
+        stop_stepping();
+        nrf_delay_ms(500);
+    }
+}
 
 void motors_forward(void)
 {
@@ -462,8 +510,55 @@ void motors_right(void)
 
 void motors_left(void)
 {
-   nrf_gpio_pin_clear(DIR_L);
-   nrf_gpio_pin_clear(DIR_R);
+   nrf_gpio_pin_set(DIR_L);
+   nrf_gpio_pin_set(DIR_R);
+}
+
+void stepping_mode(uint8_t mode)
+{
+    switch(mode)
+    {
+        case 0:     //full step
+          nrf_gpio_cfg_output(M0);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_clear(M0);
+          nrf_gpio_pin_clear(M1);
+          break;
+        case 1:     //1/2 step
+          nrf_gpio_cfg_output(M0);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_set(M0);
+          nrf_gpio_pin_clear(M1);
+          break;
+        case 2:     //1/4 step
+          nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_clear(M1);
+          break;
+        case 3:     //8 microsteps
+          nrf_gpio_cfg_output(M0);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_clear(M0);
+          nrf_gpio_pin_set(M1);
+          break;
+       case 4:     //16 microsteps
+          nrf_gpio_cfg_output(M0);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_set(M0);
+          nrf_gpio_pin_set(M1);
+          break;
+       case 5:     //32 microsteps
+          nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_set(M1);
+          break;
+      default:      //full step
+          nrf_gpio_cfg_output(M0);
+          nrf_gpio_cfg_output(M1);
+          nrf_gpio_pin_clear(M0);
+          nrf_gpio_pin_clear(M1);
+          break;
+    }
 }
 
 static void battery_level_update(void)
@@ -694,16 +789,14 @@ void configure_motors(void)
 {
     nrf_gpio_cfg_output(STEP);
     nrf_gpio_cfg_output(DIR_L);
-    nrf_gpio_cfg_output(M1);
-    nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
     nrf_gpio_cfg_output(DIR_R);
-  
+ 
+    stepping_mode(0);
+
     nrf_gpio_pin_clear(STEP);
     nrf_gpio_pin_set(DIR_L);
     nrf_gpio_pin_clear(DIR_R);
-    nrf_gpio_pin_set(M1);
-    //nrf_gpio_pin_clear(M0);
-}
+ }
 
 
 void charging(void)

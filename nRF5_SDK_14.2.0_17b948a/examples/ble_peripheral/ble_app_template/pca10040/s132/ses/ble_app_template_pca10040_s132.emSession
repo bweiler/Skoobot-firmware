@@ -3,7 +3,7 @@
  <Bookmarks/>
  <Breakpoints groups="Breakpoints" active_group="Breakpoints">
   <BreakpointListItem trigger="" line="55" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/ble/common/ble_srv_common.h" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="1155" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="1248" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="60" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="478" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/hal/nrf_i2s.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="66" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
@@ -72,7 +72,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="10" y="355" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="334" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="16" y="328" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="321" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/device/nrf.h" debugPath="../../../../../../components/device/nrf.h" selected="0" top="42" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="265" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" selected="0" top="239" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="112" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" selected="0" top="85" codecName="Default"/>
