@@ -63,6 +63,7 @@
 "Output/Robot_v1_1 Debug/Obj/security_manager.o"
 "Output/Robot_v1_1 Debug/Obj/ble_bas.o"
 "Output/Robot_v1_1 Debug/Obj/ble_dis.o"
+"Output/Robot_v1_1 Debug/Obj/ble_lbs.o"
 "Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o"
 "Output/Robot_v1_1 Debug/Obj/ses_nrf52_Vectors.o"
 "Output/Robot_v1_1 Debug/Obj/system_nrf52.o"

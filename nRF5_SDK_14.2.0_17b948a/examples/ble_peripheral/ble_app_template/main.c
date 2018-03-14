@@ -14,6 +14,9 @@
       6. BLE antenna, robot acts as a peripheral
       There is no LF oscillator, just a single 32Mhz crystaL, makes BLE setup non-standard for SDK
 
+      I am using the nRF SDK characteristics battery_level and button/led "lbs"
+      Button is the write byte, so it is like data, it is sent with sendoutbyteBLE()
+      Led is read byte, so it can be a command, it is in g_jnbyte
 
 
 */
@@ -41,6 +44,7 @@
 #include "bsp_btn_ble.h"
 #include "sensorsim.h"
 #include "ble_conn_state.h"
+#include "ble_lbs.h"
 #include "nrf_ble_gatt.h"
 
 #include "nrf_log.h"
@@ -87,6 +91,7 @@
 #define MAX_BATTERY_LEVEL                   100                                     /**< Maximum simulated 7battery level. */
 #define BATTERY_LEVEL_INCREMENT             1    
 
+BLE_LBS_DEF(m_lbs); 
 BLE_BAS_DEF(m_bas);                                                 /**< Structure used to identify the battery service. */
 APP_TIMER_DEF(m_battery_timer_id);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
@@ -106,12 +111,16 @@ static void peer_manager_init(void);
 static void application_timers_start(void);
 static void sleep_mode_enter(void);
 static void power_manage(void);
+static void setoutbyteBLE(uint8_t sendbyte);
+static void inbyte_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t inbyte);
+uint8_t g_inbyte = 0;
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
     {BLE_UUID_BATTERY_SERVICE,BLE_UUID_TYPE_BLE},    
-    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
+    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE},
+    {LBS_UUID_SERVICE, BLE_UUID_TYPE_BLE}
 };
 
 
@@ -337,7 +346,7 @@ int main(void)
         switch(cnt)
         {
           case 1:
-            pwm_motor_stepping(100);    //go forward
+            pwm_motor_stepping(200);    //go forward
             //pwm_buzzer_frequency(1000);
             break;
           case 2:
@@ -346,21 +355,21 @@ int main(void)
             motors_right();
             break;
           case 3:
-            pwm_motor_stepping(60);    //turn right
+            pwm_motor_stepping(100);    //turn right
             //pwm_buzzer_frequency(3000);
             break;
           case 4:
             stop_stepping();
             motors_forward();
             //stop_buzzer();
-            pwm_motor_stepping(100);    //go forward
+            pwm_motor_stepping(200);    //go forward
             break;
           case 5:
             stop_stepping();
             motors_right();
             break;
           case 6:
-            pwm_motor_stepping(60);    //turn right
+            pwm_motor_stepping(100);    //turn right
             break;
          case 7:
             stop_stepping();
@@ -733,9 +742,7 @@ void stop_buzzer(void)
   NRF_PWM0->TASKS_STOP = 1;
 }
 
-void stop_stepping
-
-(void)
+void stop_stepping(void)
 {
   NRF_PWM1->TASKS_STOP = 1;
 }
@@ -1122,8 +1129,23 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
             // No implementation needed.
             break;
     }
+
+}*/
+
+static void setoutbyteBLE(uint8_t sendbyte)
+{          
+  ret_code_t     err_code;
+  
+  err_code = ble_lbs_on_button_change(m_conn_handle, &m_lbs, sendbyte);
+
 }
-*/
+
+static void inbyte_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t inbyte)
+{
+    g_inbyte = inbyte;
+
+}
+
 
 /**@brief Function for initializing services that will be used by the application.
  */
@@ -1132,6 +1154,7 @@ static void services_init(void)
     ret_code_t     err_code;
     ble_bas_init_t bas_init;
     ble_dis_init_t dis_init;
+    ble_lbs_init_t init;
 
     // Initialize Battery Service.
     memset(&bas_init, 0, sizeof(bas_init));
@@ -1162,6 +1185,10 @@ static void services_init(void)
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
     
+    init.led_write_handler = inbyte_handler;
+
+    err_code = ble_lbs_init(&m_lbs, &init);
+ 
     /* YOUR_JOB: Add code to initialize the services used by the application.
        ret_code_t                         err_code;
        ble_xxs_init_t                     xxs_init;

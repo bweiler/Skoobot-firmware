@@ -117,6 +117,7 @@
       <file file_name="../../../../../../components/ble/peer_manager/security_manager.c" />
       <file file_name="../../../../../../components/ble/ble_services/ble_bas/ble_bas.c" />
       <file file_name="../../../../../../components/ble/ble_services/ble_dis/ble_dis.c" />
+      <file file_name="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" />
     </folder>
     <folder Name="Device">
       <file file_name="../../../../../../components/toolchain/ses/ses_nRF_Startup.s" />

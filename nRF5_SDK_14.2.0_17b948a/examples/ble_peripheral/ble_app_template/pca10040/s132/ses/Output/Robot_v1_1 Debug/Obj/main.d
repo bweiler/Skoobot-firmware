@@ -86,6 +86,7 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/libraries/sensorsim/sensorsim.h \
  ../../../../../../components/ble/common/ble_conn_state.h \
  ../../../../../../components/libraries/util/sdk_mapped_flags.h \
+ ../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.h \
  ../../../../../../components/ble/nrf_ble_gatt/nrf_ble_gatt.h \
  ../../../../../../components/libraries/experimental_log/nrf_log.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \

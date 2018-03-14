@@ -261,7 +261,7 @@
  
 
 #ifndef BLE_LBS_ENABLED
-#define BLE_LBS_ENABLED 0
+#define BLE_LBS_ENABLED 1
 #endif
 
 // <q> BLE_LLS_ENABLED  - ble_lls - Link Loss Service
