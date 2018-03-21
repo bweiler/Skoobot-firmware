@@ -61,7 +61,6 @@
 "Output/Robot_v1_1 Debug/Obj/pm_mutex.o"
 "Output/Robot_v1_1 Debug/Obj/security_dispatcher.o"
 "Output/Robot_v1_1 Debug/Obj/security_manager.o"
-"Output/Robot_v1_1 Debug/Obj/ble_bas.o"
 "Output/Robot_v1_1 Debug/Obj/ble_dis.o"
 "Output/Robot_v1_1 Debug/Obj/ble_lbs.o"
 "Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o"

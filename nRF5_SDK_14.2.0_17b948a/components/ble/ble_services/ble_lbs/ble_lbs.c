@@ -38,8 +38,7 @@
  * 
  */
 #include "sdk_common.h"
-#if 1
-//NRF_MODULE_ENABLED(BLE_LBS)
+#if NRF_MODULE_ENABLED(BLE_LBS)
 #include "ble_lbs.h"
 #include "ble_srv_common.h"
 
