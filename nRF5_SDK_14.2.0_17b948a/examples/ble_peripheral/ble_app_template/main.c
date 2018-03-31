@@ -1,29 +1,34 @@
 /*
+      Tiny Robot Code, v0.1
+      by Bill Weiler
+
       Segger IDE and nRF BLE SDK integrated code. Start of project is example in BLE_Peripheral Template. 
       Segger ARM M version: 3.34
       Nordic Semi SDK nRF5 version: 14.2
-      Softdevice (BLE stack, linked in as a precompiled hex file) is S132, version:
+      Uses CMSIS
+      ARM assembler floating point library 
+      Nordic chip: nRF52832 QFN48 AA
+      Softdevice is S132, version: 5.0.0
 
-      Targets are Sparkfun nRF52832 dongle and Tiny Robot
+      Targets for this code are Tiny Robot and Sparkfun nRF52832 reference design
       Tiny Robot has these features:
-      1. VLX6180 distance sensor
-      2. 2 motors, left and right, driven through 2 TI DRV8834
-      3. Microphone
-      4. Buzzer
-      5. 1 LED
-      6. BLE antenna, robot acts as a peripheral
-      There is no LF oscillator, just a single 32Mhz crystaL, makes BLE setup non-standard for SDK
+      1. VLX6180 distance sensor through i2c
+      2. 2 motors, left and right, driven through 2 TI DRV8834 driven by uC gpio's, plus the PWM1 peripheral for stepping
+      3. Microphone through PDM peripheral
+      4. Buzzer through PWM0 peripheral
+      5. 1 LED through gpio
+      6. BLE antenna, robot acts as a BLE peripheral
 
-      I am using the nRF SDK characteristics battery_level and button/led "lbs"
-      Button is the write byte, so it is like data, it is sent with sendoutbyteBLE()
-      Led is read byte, so it can be a command, it is in g_jnbyte
+      There is no LF oscillator, the softdevice uses the internal RC oscillator, there is a 32Mhz crystal HF oscillator
 
+      nRF52832 runs at 64Mhz, has 512k flash and 64k SRAM, and hardware single precision floating point
 
+      Nordic #define FPU_USE has to be 1 for floating point unit, FPU is enabled in SystemInit()
+      GCC is not always smart enough, use idioms or intrinsics for floating point, or just check disassembly to make sure FPU instructions were generated.
 */
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
 #include "sdk_common.h"
 #include "nrf.h"
 #include "app_error.h"
@@ -39,71 +44,29 @@
 #include "app_timer.h"
 #include "fds.h"
 #include "peer_manager.h"
-#include "bsp_btn_ble.h"
-#include "sensorsim.h"
 #include "ble_conn_state.h"
 #include "nrf_ble_gatt.h"
-#include "ble_lbs.h"
-
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "arm_const_structs.h"
 #include "nrf_drv_twi.h"
 #include "nrf_delay.h"
+#include "nrf_gpio.h"
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
-#define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
-
-#define DEVICE_NAME                     "Tiny Robot"                       /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME               "William Weiler Eng"                   /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
-#define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
-
-#define APP_ADV_INTERVAL                64                                      /**< The advertising interval (in units of 0.625 ms; this value corresponds to 40 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED   /**< The advertising time-out (in units of seconds). When set to 0, we will never time out. */
-
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.5 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(200, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (1 second). */
-#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
-#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory time-out (4 seconds). */
-
-#define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(20000)                  /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (15 seconds). */
-#define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(5000)                   /**< Time between each call to sd_ble_gap_conn_param_update after the first call (5 seconds). */
-#define MAX_CONN_PARAMS_UPDATE_COUNT    3                                       /**< Number of attempts before giving up the connection parameter negotiation. */
-
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50)                     /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-
-#define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
-
-BLE_LBS_DEF(m_lbs); 
-NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
-
-static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
-
-// Initialize.
-static void leds_init(void);
-static void timers_init(void);
-static void log_init(void);
-static void buttons_init(void);
-static void ble_stack_init(void);
-static void gap_params_init(void);
-static void gatt_init(void);
-static void services_init(void);
-static void advertising_init(void);
-static void conn_params_init(void);
-static void advertising_start(void);
-static void setoutbyteBLE(uint8_t sendbyte);
-static void inbyte_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t inbyte);
-uint8_t g_inbyte = 0;
-
-
-//Start of my section
-//This is just a sparkfun reference I am using to develop code, it should always be 0
+/*
+    Conditional compilation
+    ========================================================
+    CB_TEST 1 = companion board tester code
+    MB_TEST 1 = mainboard (or frontboard FB) tester
+    SPARKFUN 1 = sparkfun reference code
+    SPARTFUN 0 = Tiny Robot firmware
+*/
 #define CB_TEST 0
 #define MB_TEST 0
-#define SPARKFUN 1
+#define SPARKFUN 0
 #if CB_TEST
 #define SPARKFUN 0
 #endif
@@ -111,11 +74,10 @@ uint8_t g_inbyte = 0;
 #define SPARKFUN 0
 #endif
 
+#if SPARKFUN
+
 #define UART_RX_PIN   26
 #define UART_TX_PIN   27
-
-
-#if SPARKFUN
 
 #define BUZZER_10MM   31
 
@@ -143,13 +105,17 @@ uint8_t g_inbyte = 0;
 #define GREEN_LED 7
 
 #else
+
+#define UART_RX_PIN   12
+#define UART_TX_PIN   11
+
 //Buzzer
-#define BUZZER_10MM   10
+#define BUZZER_10MM   8
 
 //microphone
 #define MIC_CLK   28
 #define MIC_DI    29
-//this is placeholder, mic is tied low
+//this is placeholder, mic_sel is no longer exists
 #define MIC_SEL   27
 
 //VLX6180
@@ -173,67 +139,128 @@ uint8_t g_inbyte = 0;
 #endif
 #endif
 
-// TWI instance ID. 
-#define TWI_INSTANCE_ID 0
+//BLE defines, refactored from SDK
+#define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
 
-/* Indicates if operation on TWI has ended. */
-volatile bool m_xfer_done = false;
+#define DEVICE_NAME                     "Tiny Robot"                       /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME               "William Weiler Eng"                   /**< Manufacturer. Will be passed to Device Information Service. */
+#define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
+#define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
-/* TWI instance. */
-const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
+#define APP_ADV_INTERVAL                64                                      /**< The advertising interval (in units of 0.625 ms; this value corresponds to 40 ms). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED   /**< The advertising time-out (in units of seconds). When set to 0, we will never time out. */
 
-/* Buffer for samples read from temperature sensor. */
-static uint8_t m_sample;
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.5 seconds). */
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(200, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (1 second). */
+#define SLAVE_LATENCY                   0                                       /**< Slave latency. */
+#define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory time-out (4 seconds). */
 
+#define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(20000)                  /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called (15 seconds). */
+#define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(5000)                   /**< Time between each call to sd_ble_gap_conn_param_update after the first call (5 seconds). */
+#define MAX_CONN_PARAMS_UPDATE_COUNT    3                                       /**< Number of attempts before giving up the connection parameter negotiation. */
+
+#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50)                     /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
+
+#define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
+
+void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+#define BLE_BILL_DEF(_name)                                                 \
+static uint8_t _name;                                                       \
+NRF_SDH_BLE_OBSERVER(_name ## _obs,                                         \
+                     2,                                                     \
+                     ble_bill_on_ble_evt, &_name)
+
+#define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
+                              0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
+#define LBS_UUID_SERVICE     0x1523
+#define LBS_UUID_BUTTON_CHAR 0x1524
+#define LBS_UUID_LED_CHAR    0x1525
+
+BLE_BILL_DEF(m_bill);
+NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
+
+// BLE Data, declare and Initialize
+//using these names, button, led for now to help me with refactored SDK code, but led will becomes command from phone to robot, button will become robot to phone logging
+static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
+uint8_t g_inbyte = 0;
+uint16_t svc_handle;
+ble_gatts_char_handles_t button_handle, led_handle;
+uint8_t uuid_type;
+uint8_t led_value = 0, button_value = 0;  
+//BLE prototype functions
+static void timers_init(void);
+static void log_init(void);
+static void ble_stack_init(void);
+static void gap_params_init(void);
+static void gatt_init(void);
+static void services_init(void);
+static void advertising_init(void);
+static void conn_params_init(void);
+static void advertising_start(void);
+static uint32_t add_second_char(void);
+static uint32_t add_first_char(void);
+uint32_t update_remote_byte(void);    //sends button_value
+void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+
+//FFT defines
 #define GRAPH_WINDOW_HEIGHT              20                              //!< Graph window height used in draw function.
-
 #define FPU_EXCEPTION_MASK               0x0000009F                      //!< FPU exception mask used to clear exceptions in FPSCR register.
 #define FPU_FPSCR_REG_STACK_OFF          0x40                            //!< Offset of FPSCR register stacked during interrupt handling in FPU part stack.
-
 // We want to use 44100 Hz sampling rate to reach 22050Hz band. 128 (64 pairs) samples are used
 // in FFT calculation with result contains 64 bins (22050Hz/64bins -> ~344,5Hz per bin).
 #define FFT_TEST_SAMPLE_FREQ_HZ          44100.0f                        //!< Frequency of complex input samples.
 #define FFT_TEST_COMP_SAMPLES_LEN        128                             //!< Complex numbers input data array size. Correspond to FFT calculation this number must be power of two starting from 2^5 (2^4 pairs) with maximum value 2^13 (2^12 pairs).
 //#define FFT_TEST_OUT_SAMPLES_LEN         (FFT_TEST_COMP_SAMPLES_LEN / 2) //!< Output array size.
-
 //#define SIGNALS_RESOLUTION               100.0f                          //!< Sine wave frequency and noise amplitude resolution. To count resolution as decimal places in number use this formula: resolution = 1/SIGNALS_RESOLUTION .
 //#define SINE_WAVE_FREQ_MAX               20000                           //!< Maximum frequency of generated sine wave.
 //#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
-
 static uint32_t  m_ifft_flag             = 0;                            //!< Flag that selects forward (0) or inverse (1) transform.
 static uint32_t  m_do_bit_reverse        = 1;                            //!< Flag that enables (1) or disables (0) bit reversal of output.
 static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
 static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
 void afunc(void);
-void uart_init(void);
-void sendbytes(uint8_t a);
+
+//Microphone
+//#define SAMPLE_BUFFER_CNT 8096
+#define SAMPLE_BUFFER_CNT 256
+int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
+void configure_microphone(void);
+void audio_handler(nrf_drv_pdm_evt_t const * const evt);
+
+//Distance sensor
+#define TWI_INSTANCE_ID 0
+volatile bool m_xfer_done = false;
+const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
+void configure_VLX6180(void);
+void VLX6180_init(void);
+void twi_init(void);
+
+//UART
 uint8_t sendbuffer[64];
 uint8_t recvbuffer[64];
-void my_configure(void);
+void uart_init(void);
+void sendbytes(uint8_t a);
+void TxUART(uint8_t* buf);
+
+//Motors
 void configure_motors(void);
 void motors_forward(void);
 void motors_backward(void);
 void motors_right(void);
 void motors_left(void);
-void configure_microphone(void);
 void pwm_motor_stepping(uint32_t steps_per_second);
-void pwm_buzzer_frequency(float freq);
-void configure_VLX6180(void);
-void VLX6180_init(void);
-void read_sensor_data(void);
-void twi_init(void);
-void charging(void);
-void stop_buzzer(void);
 void stop_stepping(void);
-void audio_handler(nrf_drv_pdm_evt_t const * const evt);
-void cb_test(void);
-void mb_test(void);
 void stepping_mode(uint8_t mode);
 void step_mode_experiment(void);
 
-//#define SAMPLE_BUFFER_CNT 8096
-#define SAMPLE_BUFFER_CNT 256
-int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
+//Buzzer
+void pwm_buzzer_frequency(float freq);
+void stop_buzzer(void);
+
+//General
+void my_configure(void);
+void cb_test(void);
+void mb_test(void);
 
 /**
  * Motor might be 15 degrees per step, so 24 steps per revolution.
@@ -241,35 +268,29 @@ int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
  */
 int main(void)
 {
-    static uint8_t flipper = 0, lowhigh  = 0, range, stepmode;
+    static uint8_t range, buf[64];
     int16_t i;
     uint32_t cnt, cnt2;
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
-    bool erase_bonds = false;
     ret_code_t ret;
-
-    //nrf_gpio_cfg(GREEN_LED,NRF_GPIO_PIN_DIR_OUTPUT,NRF_GPIO_PIN_INPUT_DISCONNECT,NRF_GPIO_PIN_PULLUP,NRF_GPIO_PIN_S0H1,NRF_GPIO_PIN_NOSENSE);
 
     nrf_gpio_cfg_output(GREEN_LED);
     nrf_gpio_pin_clear(GREEN_LED);
+    nrf_gpio_cfg_output(SLEEP);
+    nrf_gpio_pin_set(SLEEP);
     
-    //charging();    
- 
-    #if SPARKFUN
-      uart_init();
-    #endif
     #if CB_TEST
-      uart_init();
       cb_test();
+    #else
+      configure_VLX6180();
+      uart_init();
     #endif
     #if MB_TEST
       mb_test();
     #endif
-    
-    configure_VLX6180();
 
     #if SPARKFUN
-    configure_microphone();
+      configure_microphone();
     #endif
 
     // Initialize.
@@ -282,6 +303,7 @@ int main(void)
     conn_params_init();
 
     // Start execution.
+ 
     advertising_start();
 
     configure_motors();
@@ -306,17 +328,11 @@ int main(void)
     cnt = 0;
     for (;;)
     {
-        if (g_inbyte == 1)
-          cnt = 100;
-        else
-        {
+          ++cnt;
           if (cnt > 7)
-            cnt = 0;
-          else
-            ++cnt;
-        }
-        switch(cnt)
-        {
+            cnt = 1;
+          switch(cnt)
+          {
           case 1:
             pwm_motor_stepping(150);    //go forward
             //pwm_buzzer_frequency(1000);
@@ -352,12 +368,9 @@ int main(void)
             stop_stepping();
             break;
         }
-        setoutbyteBLE(cnt);
         range = getDistance();
-        if (range <= 50)
-        {
-          nrf_gpio_pin_clear(GREEN_LED);
-        }
+        sprintf(buf,"Distance is %d\r\n",range);
+        TxUART(buf);
         nrf_delay_ms(1000);
         nrf_gpio_pin_set(GREEN_LED);
     
@@ -366,53 +379,6 @@ int main(void)
             //power_manage();
         }
     }  
-
-    while(1)
-    {
-        nrf_gpio_pin_set(GREEN_LED);
-        nrf_delay_ms(300);
-        nrf_gpio_pin_clear(GREEN_LED);
-        nrf_delay_ms(300);
-
-        do
-        {
-            __WFE();
-        }while (m_xfer_done == false);
-
-        read_sensor_data();
-    }   
-    configure_motors();
-    my_configure();
-
-    pwm_buzzer_frequency(2000);
-    //pwm_motor_stepping(2000);
-    while(1)
-    {
-      sendbytes(0);
-      afunc();
-      nrf_gpio_pin_set(GREEN_LED);
-      nrf_delay_ms(4000);
-      sendbytes(1);
-      nrf_gpio_pin_clear(GREEN_LED);
-      nrf_delay_ms(500);
-
-    }
-    cnt = 39;
-    cnt2 = 0;
-    i = 0;
-    flipper = 0;
-    while(1)
-    {
-         pwm_buzzer_frequency(freq[i++]);
-         if (i == 8)
-          i = 0;
-  
-        nrf_delay_ms(500);
-        nrf_gpio_pin_clear(GREEN_LED);
-        nrf_delay_ms(500);
-        nrf_gpio_pin_set(GREEN_LED);
-    }
-    
 }
 
 void configure_microphone(void)
@@ -574,7 +540,7 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
         case NRF_DRV_TWI_EVT_DONE:
             if (p_event->xfer_desc.type == NRF_DRV_TWI_XFER_RX)
             {
-                data_handler(m_sample);
+                //data_handler(m_sample);
             }
             m_xfer_done = true;
             break;
@@ -656,6 +622,8 @@ void cb_test(void)
 
 void mb_test(void)
 {
+  static uint8_t range, buf[64];
+
   configure_motors();
   nrf_gpio_cfg_output(MIC_CLK);
   nrf_gpio_cfg_output(MIC_DI);
@@ -683,6 +651,11 @@ void mb_test(void)
     nrf_gpio_pin_set(MIC_DI);
     nrf_gpio_pin_set(MIC_SEL);
     nrf_delay_ms(500);
+    range = getDistance();
+    sprintf(buf,"Range is %d\r\n",range);
+    TxUART(buf);
+
+    nrf_delay_ms(500);
   }
 
 }
@@ -697,7 +670,6 @@ void stop_stepping(void)
   NRF_PWM1->TASKS_STOP = 1;
 }
 
-#if SPARKFUN || CB_TEST
 void uart_init(void)
 {
   NRF_UARTE0->BAUDRATE = 0x00275000; //9600bps
@@ -710,7 +682,6 @@ void uart_init(void)
   NRF_UARTE0->CONFIG = 0;  //Enable  stop bit, no parity
   NRF_UARTE0->ENABLE = 8;
 }
-#endif
 
 void my_configure(void)
 {
@@ -767,9 +738,34 @@ void charging(void)
     }
 }
 
+void TxUART(uint8_t* buf)
+{
+    uint8_t j;
+
+    j=0;
+    while(buf[j] != 0)
+    {
+        sendbuffer[j] = buf[j];
+        ++j;
+        if (j > 20)
+        {
+          j = 20;
+          break;
+        }
+    }
+    NRF_UARTE0->TXD.MAXCNT = j;
+    NRF_UARTE0->TASKS_STARTTX = 1;
+
+    NRF_UARTE0->RXD.MAXCNT = 1;
+    NRF_UARTE0->TASKS_STARTRX = 1;
+    nrf_delay_ms(20);
+    while(NRF_UARTE0->EVENTS_ENDTX != 1);
+    while(NRF_UARTE0->EVENTS_ENDRX != 1);
+}
+
 void sendbytes(uint8_t which)
 {
-  uint8_t i, j;
+  uint8_t i;
   static uint8_t buf[32];
   float32_t max_value, scalar_factor;
   uint32_t  max_val_index;
@@ -782,25 +778,11 @@ void sendbytes(uint8_t which)
 
     scalar_factor = max_value / 100.0f;
 
-    for(i=0;(i<64);i++)
-    {
-        sprintf(buf,"%d,",(uint8_t)(m_fft_output_f32[i]/scalar_factor));
-        j=0;
-        while(buf[j] != 0)
-        {
-            sendbuffer[j] = buf[j];
-            ++j;
-            if (j > 20)
-            {
-              j = 20;
-              break;
-            }
-        }
-        NRF_UARTE0->TXD.MAXCNT = j;
-        NRF_UARTE0->TASKS_STARTTX = 1;
-        nrf_delay_ms(20);
-        while(NRF_UARTE0->EVENTS_ENDTX != 1);
-     }
+      for(i=0;(i<64);i++)
+      {
+          sprintf(buf,"%d,",(uint8_t)(m_fft_output_f32[i]/scalar_factor));
+          TxUART(buf);
+      }
    }
    else
    {
@@ -809,21 +791,7 @@ void sendbytes(uint8_t which)
     {
         actual_value = p_rx_buffer[i+500]; 
         sprintf(buf,"%d,",actual_value);
-        j=0;
-        while(buf[j] != 0)
-        {
-            sendbuffer[j] = buf[j];
-            ++j;
-            if (j > 20)
-            {
-              j = 20;
-              break;
-            }
-        }
-        NRF_UARTE0->TXD.MAXCNT = j;
-        NRF_UARTE0->TASKS_STARTTX = 1;
-        nrf_delay_ms(20);
-        while(NRF_UARTE0->EVENTS_ENDTX != 1);
+        TxUART(buf);
      }
    }
    sendbuffer[0] = 13;
@@ -919,7 +887,7 @@ static void advertising_init(void)
     ble_advdata_t advdata;
     ble_advdata_t srdata;
 
-    ble_uuid_t adv_uuids[] = {{LBS_UUID_SERVICE, m_lbs.uuid_type}};
+    ble_uuid_t adv_uuids[] = {{LBS_UUID_SERVICE, uuid_type}};
 
     // Build and set advertising data
     memset(&advdata, 0, sizeof(advdata));
@@ -938,30 +906,143 @@ static void advertising_init(void)
 }
 
 
-/**@brief Function for handling write events to the LED characteristic.
- *
- * @param[in] p_lbs     Instance of LED Button Service to which the write applies.
- * @param[in] led_state Written/desired state of the LED.
- */
-static void inbyte_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t inbyte)
+static uint32_t add_second_char(void)
 {
-    g_inbyte = inbyte;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read  = 1;
+    char_md.char_props.write = 1;
+    char_md.p_char_user_desc = NULL;
+    char_md.p_char_pf        = NULL;
+    char_md.p_user_desc_md   = NULL;
+    char_md.p_cccd_md        = NULL;
+    char_md.p_sccd_md        = NULL;
+
+    ble_uuid.type = uuid_type;
+    ble_uuid.uuid = LBS_UUID_LED_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 0;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = sizeof(uint8_t);
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = sizeof(uint8_t);
+    attr_char_value.p_value   = NULL;
+
+    return sd_ble_gatts_characteristic_add(svc_handle,
+                                           &char_md,
+                                           &attr_char_value,
+                                           &led_handle);
+
 }
 
+static uint32_t add_first_char(void)
+{
+    ret_code_t     err_code;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+       
+    memset(&cccd_md, 0, sizeof(cccd_md));
 
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read   = 1;
+    char_md.char_props.notify = 1;
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md;
+    char_md.p_sccd_md         = NULL;
+
+    ble_uuid.type = uuid_type;
+    ble_uuid.uuid = LBS_UUID_BUTTON_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 0;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = sizeof(uint8_t);
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = sizeof(uint8_t);
+    attr_char_value.p_value   = NULL;
+
+    err_code = sd_ble_gatts_characteristic_add(svc_handle,
+                                           &char_md,
+                                           &attr_char_value,
+                                           &button_handle);   
+    VERIFY_SUCCESS(err_code);
+}
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
 {
     ret_code_t     err_code;
-    ble_lbs_init_t init;
+    ble_uuid_t ble_uuid;
+  
+  // Add service.
+    ble_uuid128_t base_uuid = {LBS_UUID_BASE};
+    err_code = sd_ble_uuid_vs_add(&base_uuid, &uuid_type);
+    VERIFY_SUCCESS(err_code);
 
-    init.led_write_handler = inbyte_handler;
+    ble_uuid.uuid = LBS_UUID_SERVICE;
+    ble_uuid.type = uuid_type;
 
-    err_code = ble_lbs_init(&m_lbs, &init);
+    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &svc_handle);
+    VERIFY_SUCCESS(err_code);
+       
+    err_code = add_first_char();
+    VERIFY_SUCCESS(err_code);
+    
+    err_code = add_second_char();
+    VERIFY_SUCCESS(err_code);
+    
     APP_ERROR_CHECK(err_code);
 }
 
+uint32_t update_remote_byte(void)
+{
+    ble_gatts_hvx_params_t params;
+    uint16_t len = 1;
+
+    memset(&params, 0, sizeof(params));
+    params.type   = BLE_GATT_HVX_NOTIFICATION;
+    params.handle = button_handle.value_handle;
+    params.p_data = &button_value;
+    params.p_len  = &len;
+
+    return sd_ble_gatts_hvx(m_conn_handle, &params);
+}
 
 /**@brief Function for handling the Connection Parameters Module.
  *
@@ -1053,14 +1134,11 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-
-             APP_ERROR_CHECK(err_code);
+            m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
-            APP_ERROR_CHECK(err_code);
             advertising_start();
             break;
 
@@ -1146,6 +1224,40 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     }
 }
 
+void on_write(ble_evt_t const * p_ble_evt)
+{    
+    ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
+
+    if ((p_evt_write->handle == led_handle.value_handle)
+        && (p_evt_write->len == 1))
+    {
+         led_value = p_evt_write->data[0];
+    }
+    else
+    {
+      if ((p_evt_write->handle == button_handle.value_handle)
+          && (p_evt_write->len == 1))
+      {
+           button_value = p_evt_write->data[0];
+      }
+    }
+
+}
+
+void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
+{
+
+    switch (p_ble_evt->header.evt_id)
+    {
+        case BLE_GATTS_EVT_WRITE:
+            on_write(p_ble_evt);
+            break;
+
+        default:
+            // No implementation needed.
+            break;
+    }
+}
 
 /**@brief Function for initializing the BLE stack.
  *
@@ -1172,49 +1284,15 @@ static void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-static void setoutbyteBLE(uint8_t sendbyte)
-{
-    ret_code_t err_code;
-    err_code = ble_lbs_on_button_change(m_conn_handle, &m_lbs, sendbyte);
-}
-
-/**@brief Function for handling events from the button handler module.
- *
- * @param[in] pin_no        The pin that the event applies to.
- * @param[in] button_action The button action (press/release).
- */
-static void button_event_handler(uint8_t pin_no, uint8_t button_action)
-{
-    ret_code_t err_code;
-
-    err_code = ble_lbs_on_button_change(m_conn_handle, &m_lbs, button_action);
-    if (err_code != NRF_SUCCESS &&
-        err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
-        err_code != NRF_ERROR_INVALID_STATE &&
-        err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
-    {
-        APP_ERROR_CHECK(err_code);
-    }
-}
-
-
-/**@brief Function for initializing the button handler module.
- */
-static void buttons_init(void)
-{
-    ret_code_t err_code;
-
-}
-
 static void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
-
 }
 
 
-/**@brief Function for the Power Manager.
+/*
+*@brief Function for the Power Manager.
  */
 static void power_manage(void)
 {
@@ -1222,9 +1300,8 @@ static void power_manage(void)
     APP_ERROR_CHECK(err_code);
 }
 
-/**@brief Function for the Timer initialization.
- *
- * @details Initializes the timer module.
+/*
+*@brief Function for the Timer initialization.
  */
 static void timers_init(void)
 {

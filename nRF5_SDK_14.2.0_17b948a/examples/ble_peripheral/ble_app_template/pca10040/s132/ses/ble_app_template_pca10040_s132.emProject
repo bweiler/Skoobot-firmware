@@ -78,11 +78,6 @@
       <file file_name="../../../../../../components/drivers_nrf/twi_master/nrf_drv_twi.c" />
       <file file_name="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" />
     </folder>
-    <folder Name="Board Support">
-      <file file_name="../../../../../../components/libraries/bsp/bsp.c" />
-      <file file_name="../../../../../../components/libraries/bsp/bsp_btn_ble.c" />
-      <file file_name="../../../../../../components/libraries/bsp/bsp_nfc.c" />
-    </folder>
     <folder Name="Application">
       <configuration
         Name="Debug"

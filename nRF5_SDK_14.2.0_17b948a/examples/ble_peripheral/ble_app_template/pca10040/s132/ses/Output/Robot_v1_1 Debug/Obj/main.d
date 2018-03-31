@@ -72,20 +72,9 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/ble/common/ble_gatt_db.h \
  ../../../../../../components/ble/peer_manager/peer_database.h \
  ../../../../../../components/ble/peer_manager/peer_manager_internal.h \
- ../../../../../../components/libraries/bsp/bsp_btn_ble.h \
- ../../../../../../components/libraries/bsp/bsp.h \
- ../../../../../../components/boards/boards.h \
- ../../../../../../components/drivers_nrf/hal/nrf_gpio.h \
- ../../../../../../components/drivers_nrf/hal/nrf_peripherals.h \
- ../../../../../../components/device/nrf52832_peripherals.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdlib.h \
- ../../../../../../components/boards/pca10040.h \
- ../../../../../../components/libraries/button/app_button.h \
- ../../../../../../components/libraries/sensorsim/sensorsim.h \
  ../../../../../../components/ble/common/ble_conn_state.h \
  ../../../../../../components/libraries/util/sdk_mapped_flags.h \
  ../../../../../../components/ble/nrf_ble_gatt/nrf_ble_gatt.h \
- ../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.h \
  ../../../../../../components/libraries/experimental_log/nrf_log.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \
  ../../../../../../components/libraries/strerror/nrf_strerror.h \
@@ -94,6 +83,7 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/libraries/experimental_log/src/nrf_log_ctrl_internal.h \
  ../../../../../../components/libraries/experimental_log/nrf_log_backend_interface.h \
  ../../../../../../components/libraries/experimental_memobj/nrf_memobj.h \
+ C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdlib.h \
  ../../../../../../components/libraries/balloc/nrf_balloc.h \
  ../../../../../../components/libraries/experimental_log/nrf_log_default_backends.h \
  ../../../../../../components/toolchain/cmsis/include/arm_const_structs.h \
@@ -103,9 +93,12 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/toolchain/cmsis/include/arm_common_tables.h \
  ../../../../../../components/drivers_nrf/twi_master/nrf_drv_twi.h \
  ../../../../../../components/drivers_nrf/hal/nrf_peripherals.h \
+ ../../../../../../components/device/nrf52832_peripherals.h \
  ../../../../../../components/drivers_nrf/hal/nrf_twi.h \
+ ../../../../../../components/drivers_nrf/hal/nrf_peripherals.h \
  ../../../../../../components/drivers_nrf/hal/nrf_twim.h \
  ../../../../../../components/drivers_nrf/delay/nrf_delay.h \
+ ../../../../../../components/drivers_nrf/hal/nrf_gpio.h \
  C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\examples\ble_peripheral\ble_app_template\vl6180.h \
  ../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h \
  ../../../../../../components/drivers_nrf/hal/nrf_pdm.h
