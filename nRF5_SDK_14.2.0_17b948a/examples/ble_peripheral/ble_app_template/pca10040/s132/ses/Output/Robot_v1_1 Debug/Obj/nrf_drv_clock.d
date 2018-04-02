@@ -49,5 +49,4 @@ Output/Robot_v1_1\ Debug/Obj/nrf_drv_clock.o: \
  ../../../../../../components/softdevice/common/nrf_sdh_soc.h \
  ../../../../../../components/libraries/experimental_log/nrf_log.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \
- ../../../../../../components/libraries/strerror/nrf_strerror.h \
  ../../../../../../components/libraries/experimental_log/src/nrf_log_internal.h

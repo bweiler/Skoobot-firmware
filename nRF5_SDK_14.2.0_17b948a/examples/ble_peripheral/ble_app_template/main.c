@@ -53,6 +53,7 @@
 #include "nrf_drv_twi.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
+#include "nrf_pwm.h"
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
@@ -66,6 +67,7 @@
 */
 #define CB_TEST 0
 #define MB_TEST 0
+#define MICROPHONE 0
 #define SPARKFUN 0
 #if CB_TEST
 #define SPARKFUN 0
@@ -186,7 +188,7 @@ uint8_t g_inbyte = 0;
 uint16_t svc_handle;
 ble_gatts_char_handles_t button_handle, led_handle;
 uint8_t uuid_type;
-uint8_t led_value = 0, button_value = 0;  
+uint8_t led_value = 0, button_value = 0, BLE_Connected = 0, new_cmd = 0;  
 //BLE prototype functions
 static void timers_init(void);
 static void log_init(void);
@@ -216,20 +218,22 @@ void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 //#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
 static uint32_t  m_ifft_flag             = 0;                            //!< Flag that selects forward (0) or inverse (1) transform.
 static uint32_t  m_do_bit_reverse        = 1;                            //!< Flag that enables (1) or disables (0) bit reversal of output.
+#define FFT_TEST_COMP_SAMPLES_LEN        128    
 static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
 static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
+static int32_t p_out_buffer[FFT_TEST_COMP_SAMPLES_LEN/2+1];
 void afunc(void);
 
 //Microphone
-//#define SAMPLE_BUFFER_CNT 8096
-#define SAMPLE_BUFFER_CNT 256
+#define SAMPLE_BUFFER_CNT 8096
+//#define SAMPLE_BUFFER_CNT 1024
 int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
+volatile bool m_xfer_done = false;
 void configure_microphone(void);
-void audio_handler(nrf_drv_pdm_evt_t const * const evt);
+void audio_handler(nrf_drv_pdm_evt_t const * const evt);                //Just sets xfer_done
 
 //Distance sensor
 #define TWI_INSTANCE_ID 0
-volatile bool m_xfer_done = false;
 const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
 void configure_VLX6180(void);
 void VLX6180_init(void);
@@ -268,14 +272,12 @@ void mb_test(void);
  */
 int main(void)
 {
-    static uint8_t range, buf[64];
-    int16_t i;
-    uint32_t cnt, cnt2;
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
-    ret_code_t ret;
+    static uint8_t range, buf[64];
+    uint32_t cnt;
 
     nrf_gpio_cfg_output(GREEN_LED);
-    nrf_gpio_pin_clear(GREEN_LED);
+    nrf_gpio_pin_set(GREEN_LED);
     nrf_gpio_cfg_output(SLEEP);
     nrf_gpio_pin_set(SLEEP);
     
@@ -284,14 +286,15 @@ int main(void)
     #else
       configure_VLX6180();
       uart_init();
+      #if MICROPHONE
+        configure_microphone();
+      #endif
     #endif
     #if MB_TEST
       mb_test();
     #endif
 
-    #if SPARKFUN
-      configure_microphone();
-    #endif
+
 
     // Initialize.
     timers_init();
@@ -301,40 +304,55 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-
-    // Start execution.
- 
     advertising_start();
 
-    configure_motors();
-    stepping_mode(1);
- 
-    my_configure();
-   
- 
-    #if SPARKFUN
+    configure_motors();     //sets DIR_L and DIR_R
+    my_configure();         //sets PWM0 for step, PWM1 for buzzer
+    stepping_mode(1);       //sets M0 and M1
+       
+
+    #if MICROPHONE
     //like 6700 samples in p_rx_buffer
     m_xfer_done = false;
     nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
     nrf_drv_pdm_start();
-    nrf_delay_ms(400);
+    while(m_xfer_done == false);
     nrf_drv_pdm_stop();
     afunc();            //do fft, then check m_fft_output_f32 64 bytes
     #endif
-   
-    nrf_delay_ms(5000);     //wait 5 seconds, let me connect BLE
-  
+
+    //Wait until BLE connected
+    while (BLE_Connected == 0)
+    {
+      nrf_delay_ms(200);
+    }
+    pwm_motor_stepping(100);              //go forward
+      
+    for(;;)
+    {
+        //range = getDistance();
+        //sprintf(buf,"Distance is %d\r\n",range);
+        //TxUART(buf);
+        nrf_delay_ms(500);
+        nrf_gpio_pin_set(GREEN_LED);      //led off
+        nrf_delay_ms(500);
+        nrf_gpio_pin_clear(GREEN_LED);    //led on
+    }
     //switch interval is 1 second
     cnt = 0;
     for (;;)
     {
+          if (0) //new_cmd == 1)
+          {
+            new_cmd = 0;
+            stop_stepping();
+            nrf_delay_ms(3000);
+          }
           ++cnt;
-          if (cnt > 7)
-            cnt = 1;
           switch(cnt)
           {
           case 1:
-            pwm_motor_stepping(150);    //go forward
+            pwm_motor_stepping(100);    //go forward
             //pwm_buzzer_frequency(1000);
             break;
           case 2:
@@ -381,14 +399,13 @@ int main(void)
     }  
 }
 
+//Left channel configured by default
 void configure_microphone(void)
 {
-  nrf_gpio_cfg_output(MIC_SEL);
-  nrf_gpio_pin_clear(MIC_SEL);    //Select Left Channel
 
   nrf_drv_pdm_config_t pdm_config = NRF_DRV_PDM_DEFAULT_CONFIG(MIC_CLK,MIC_DI);
 
-  pdm_config.clock_freq = NRF_PDM_FREQ_1067K;
+  pdm_config.clock_freq = NRF_PDM_FREQ_1032K;
   pdm_config.mode = NRF_PDM_MODE_MONO;
   pdm_config.edge = NRF_PDM_EDGE_LEFTRISING;
   pdm_config.gain_l = NRF_PDM_GAIN_DEFAULT;
@@ -542,7 +559,6 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
             {
                 //data_handler(m_sample);
             }
-            m_xfer_done = true;
             break;
         default:
             break;
@@ -569,7 +585,8 @@ void twi_init(void)
 
 void audio_handler(nrf_drv_pdm_evt_t const * const evt)
 {
-    m_xfer_done = true;
+   if (evt->buffer_requested == false)
+       m_xfer_done = true;
 }
 
 void pwm_motor_stepping(uint32_t steps_per_second)
@@ -580,10 +597,10 @@ void pwm_motor_stepping(uint32_t steps_per_second)
   cnt_128k = 128000 / steps_per_second;  
   pwm_duty[0] = pwm_duty[1] = cnt_128k / 2;
 
-  NRF_PWM1->COUNTERTOP = (cnt_128k << PWM_COUNTERTOP_COUNTERTOP_Pos); 
-  NRF_PWM1->SEQ[0].PTR = pwm_duty;
-  NRF_PWM1->SEQ[0].CNT = (1 << PWM_SEQ_CNT_CNT_Pos);
-  NRF_PWM1->TASKS_SEQSTART[0] = 1;   
+  NRF_PWM0->COUNTERTOP = cnt_128k; 
+  NRF_PWM0->SEQ[0].PTR = pwm_duty;
+  NRF_PWM0->SEQ[0].CNT = 1;
+  NRF_PWM0->TASKS_SEQSTART[0] = 1;   
 }
 
 //125000/freq=    125000/250
@@ -597,10 +614,10 @@ void pwm_buzzer_frequency(float freq)
   pwm_top = (uint16_t)main_freq;
   pwm_duty[0] = pwm_duty[1] = (uint16_t)(main_freq / 2.0);
 
-  NRF_PWM0->COUNTERTOP = (pwm_top << PWM_COUNTERTOP_COUNTERTOP_Pos); //1 msec
-  NRF_PWM0->SEQ[0].PTR = (uint32_t)(pwm_duty);
-  NRF_PWM0->SEQ[0].CNT = (1 << PWM_SEQ_CNT_CNT_Pos);
-  NRF_PWM0->TASKS_SEQSTART[0] = 1;   
+  NRF_PWM1->COUNTERTOP = pwm_top; //1 msec
+  NRF_PWM1->SEQ[0].PTR = (uint32_t)(pwm_duty);
+  NRF_PWM1->SEQ[0].CNT = 1;
+  NRF_PWM1->TASKS_SEQSTART[0] = 1;   
 }
 
 void cb_test(void)
@@ -662,12 +679,12 @@ void mb_test(void)
 
 void stop_buzzer(void)
 {
-  NRF_PWM0->TASKS_STOP = 1;
+  NRF_PWM1->TASKS_STOP = 1;
 }
 
 void stop_stepping(void)
 {
-  NRF_PWM1->TASKS_STOP = 1;
+  NRF_PWM0->TASKS_STOP = 1;
 }
 
 void uart_init(void)
@@ -685,26 +702,30 @@ void uart_init(void)
 
 void my_configure(void)
 {
-
-  NRF_PWM1->PSEL.OUT[0] = (STEP << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
-  NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
-  NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-  NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_128 << PWM_PRESCALER_PRESCALER_Pos);
-  NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
-  NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-  NRF_PWM1->SEQ[0].REFRESH = 0;
-  NRF_PWM1->SEQ[0].ENDDELAY = 0;
-#if CB_TEST == 0
-  nrf_gpio_cfg_output(BUZZER_10MM);
-  nrf_gpio_pin_clear(BUZZER_10MM);
-  NRF_PWM0->PSEL.OUT[0] = (BUZZER_10MM << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
-  NRF_PWM0->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
-  NRF_PWM0->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-  NRF_PWM0->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_128 << PWM_PRESCALER_PRESCALER_Pos);
-  NRF_PWM0->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+  nrf_gpio_pin_clear(STEP);
+  nrf_gpio_cfg_output(STEP);
+  NRF_PWM0->PSEL.OUT[0] = STEP;
+  
+  NRF_PWM0->ENABLE = PWM_ENABLE_ENABLE_Enabled;
+  NRF_PWM0->MODE = PWM_MODE_UPDOWN_Up;
+  NRF_PWM0->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
+  NRF_PWM0->LOOP = PWM_LOOP_CNT_Disabled;
   NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
   NRF_PWM0->SEQ[0].REFRESH = 0;
   NRF_PWM0->SEQ[0].ENDDELAY = 0;
+
+#if CB_TEST == 0
+  nrf_gpio_pin_clear(BUZZER_10MM);
+  nrf_gpio_cfg_output(BUZZER_10MM);
+  NRF_PWM1->PSEL.OUT[0] = BUZZER_10MM;
+
+  NRF_PWM1->ENABLE = PWM_ENABLE_ENABLE_Enabled;
+  NRF_PWM1->MODE = PWM_MODE_UPDOWN_Up;
+  NRF_PWM1->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
+  NRF_PWM1->LOOP = PWM_LOOP_CNT_Disabled;
+  NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+  NRF_PWM1->SEQ[0].REFRESH = 0;
+  NRF_PWM1->SEQ[0].ENDDELAY = 0;
 #endif
 }
 
@@ -715,16 +736,12 @@ void my_configure(void)
 //
 void configure_motors(void)
 {
-    nrf_gpio_cfg_output(STEP);
     nrf_gpio_cfg_output(DIR_L);
     nrf_gpio_cfg_output(DIR_R);
- 
-    stepping_mode(0);
-
-    nrf_gpio_pin_clear(STEP);
     nrf_gpio_pin_set(DIR_L);
     nrf_gpio_pin_clear(DIR_R);
- }
+    stepping_mode(1);
+}
 
 
 void charging(void)
@@ -756,11 +773,11 @@ void TxUART(uint8_t* buf)
     NRF_UARTE0->TXD.MAXCNT = j;
     NRF_UARTE0->TASKS_STARTTX = 1;
 
-    NRF_UARTE0->RXD.MAXCNT = 1;
-    NRF_UARTE0->TASKS_STARTRX = 1;
+    //NRF_UARTE0->RXD.MAXCNT = 1;
+    //NRF_UARTE0->TASKS_STARTRX = 1;
     nrf_delay_ms(20);
     while(NRF_UARTE0->EVENTS_ENDTX != 1);
-    while(NRF_UARTE0->EVENTS_ENDRX != 1);
+    //while(NRF_UARTE0->EVENTS_ENDRX != 1);
 }
 
 void sendbytes(uint8_t which)
@@ -810,15 +827,19 @@ void afunc(void)
     uint8_t ifftFlag  = 0;
 
 
-    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i+=2)
+    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i++)
     {
-          m_fft_input_f32[i] = p_rx_buffer[i+400];      //magnitude part        
+          m_fft_input_f32[i] = p_rx_buffer[i+50];      //magnitude part        
     }
 
     ret = arm_rfft_fast_init_f32(&S,fftLen);
     
     arm_rfft_fast_f32(&S,m_fft_input_f32,m_fft_output_f32,ifftFlag);
 
+   for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN/2);i++)
+   {
+          p_out_buffer[i] = m_fft_output_f32[i];         
+   }
     //arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
     // Calculate the magnitude at each bin using Complex Magnitude Module function.
     //arm_cmplx_mag_f32(p_input, p_output, output_size);
@@ -1135,10 +1156,12 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+            BLE_Connected = 1;
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             m_conn_handle = BLE_CONN_HANDLE_INVALID;
+            BLE_Connected  = 0;
             advertising_start();
             break;
 
@@ -1232,6 +1255,7 @@ void on_write(ble_evt_t const * p_ble_evt)
         && (p_evt_write->len == 1))
     {
          led_value = p_evt_write->data[0];
+         new_cmd = 1;
     }
     else
     {
@@ -1239,6 +1263,7 @@ void on_write(ble_evt_t const * p_ble_evt)
           && (p_evt_write->len == 1))
       {
            button_value = p_evt_write->data[0];
+           new_cmd = 1;
       }
     }
 

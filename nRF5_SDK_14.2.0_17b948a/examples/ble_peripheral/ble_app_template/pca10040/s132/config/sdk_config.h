@@ -261,7 +261,7 @@
  
 
 #ifndef BLE_LBS_ENABLED
-#define BLE_LBS_ENABLED 1
+#define BLE_LBS_ENABLED 0
 #endif
 
 // <q> BLE_LLS_ENABLED  - ble_lls - Link Loss Service
@@ -650,7 +650,7 @@
 
 
 #ifndef I2S_CONFIG_LRCK_PIN
-#define I2S_CONFIG_LRCK_PIN 30
+#define I2S_CONFIG_LRCK_PIN 31
 #endif
 
 // <o> I2S_CONFIG_MCK_PIN - MCK pin 
@@ -863,7 +863,7 @@
 // <e> PDM_ENABLED - nrf_drv_pdm - PDM peripheral driver
 //==========================================================
 #ifndef PDM_ENABLED
-#define PDM_ENABLED 0
+#define PDM_ENABLED 1
 #endif
 // <o> PDM_CONFIG_MODE  - Mode
  
@@ -1013,7 +1013,7 @@
 // <7=> 125 kHz 
 
 #ifndef PWM_DEFAULT_CONFIG_BASE_CLOCK
-#define PWM_DEFAULT_CONFIG_BASE_CLOCK 4
+#define PWM_DEFAULT_CONFIG_BASE_CLOCK 7
 #endif
 
 // <o> PWM_DEFAULT_CONFIG_COUNT_MODE  - Count mode
@@ -1099,7 +1099,7 @@
 // <i> done for the next sequence to be played.
 //==========================================================
 #ifndef PWM_NRF52_ANOMALY_109_WORKAROUND_ENABLED
-#define PWM_NRF52_ANOMALY_109_WORKAROUND_ENABLED 0
+#define PWM_NRF52_ANOMALY_109_WORKAROUND_ENABLED 1
 #endif
 // <o> PWM_NRF52_ANOMALY_109_EGU_INSTANCE  - EGU instance used by the nRF52 Anomaly 109 workaround for PWM.
  
@@ -1850,7 +1850,7 @@
 // <e> UART_ENABLED - nrf_drv_uart - UART/UARTE peripheral driver
 //==========================================================
 #ifndef UART_ENABLED
-#define UART_ENABLED 1
+#define UART_ENABLED 0
 #endif
 // <o> UART_DEFAULT_CONFIG_HWFC  - Hardware Flow Control
  
@@ -2211,14 +2211,14 @@
  
 
 #ifndef BUTTON_ENABLED
-#define BUTTON_ENABLED 1
+#define BUTTON_ENABLED 0
 #endif
 
 // <q> CRC16_ENABLED  - crc16 - CRC16 calculation routines
  
 
 #ifndef CRC16_ENABLED
-#define CRC16_ENABLED 1
+#define CRC16_ENABLED 0
 #endif
 
 // <q> CRC32_ENABLED  - crc32 - CRC32 calculation routines
@@ -2638,7 +2638,7 @@
 // <e> NRF_BALLOC_ENABLED - nrf_balloc - Block allocator module
 //==========================================================
 #ifndef NRF_BALLOC_ENABLED
-#define NRF_BALLOC_ENABLED 1
+#define NRF_BALLOC_ENABLED 0
 #endif
 // <e> NRF_BALLOC_CONFIG_DEBUG_ENABLED - Enables debug mode in the module.
 //==========================================================
@@ -2762,7 +2762,7 @@
  
 
 #ifndef NRF_FPRINTF_ENABLED
-#define NRF_FPRINTF_ENABLED 1
+#define NRF_FPRINTF_ENABLED 0
 #endif
 
 // <e> NRF_FSTORAGE_ENABLED - nrf_fstorage - Flash abstraction library
@@ -2808,13 +2808,13 @@
  
 
 #ifndef NRF_MEMOBJ_ENABLED
-#define NRF_MEMOBJ_ENABLED 1
+#define NRF_MEMOBJ_ENABLED 0
 #endif
 
 // <e> NRF_PWR_MGMT_ENABLED - nrf_pwr_mgmt - Power management module
 //==========================================================
 #ifndef NRF_PWR_MGMT_ENABLED
-#define NRF_PWR_MGMT_ENABLED 1
+#define NRF_PWR_MGMT_ENABLED 0
 #endif
 // <e> NRF_PWR_MGMT_CONFIG_DEBUG_PIN_ENABLED - Enables pin debug in the module.
 
@@ -2972,7 +2972,7 @@
  
 
 #ifndef NRF_CLI_BUILD_IN_CMDS_ENABLED
-#define NRF_CLI_BUILD_IN_CMDS_ENABLED 1
+#define NRF_CLI_BUILD_IN_CMDS_ENABLED 0
 #endif
 
 // <o> NRF_CLI_CMD_BUFF_SIZE - Maximum buffer size for a single command. 
@@ -2984,7 +2984,7 @@
  
 
 #ifndef NRF_CLI_ECHO_STATUS
-#define NRF_CLI_ECHO_STATUS 1
+#define NRF_CLI_ECHO_STATUS 0
 #endif
 
 // <o> NRF_CLI_PRINTF_BUFF_SIZE - Maximum print buffer size. 
@@ -2995,7 +2995,7 @@
 // <e> NRF_CLI_HISTORY_ENABLED - Enable CLI history mode.
 //==========================================================
 #ifndef NRF_CLI_HISTORY_ENABLED
-#define NRF_CLI_HISTORY_ENABLED 1
+#define NRF_CLI_HISTORY_ENABLED 0
 #endif
 // <o> NRF_CLI_HISTORY_ELEMENT_SIZE - Size of one memory object reserved for CLI history. 
 #ifndef NRF_CLI_HISTORY_ELEMENT_SIZE
@@ -3013,21 +3013,21 @@
  
 
 #ifndef NRF_CLI_VT100_COLORS_ENABLED
-#define NRF_CLI_VT100_COLORS_ENABLED 1
+#define NRF_CLI_VT100_COLORS_ENABLED 0
 #endif
 
 // <q> NRF_CLI_STATISTICS_ENABLED  - Enable CLI statistics.
  
 
 #ifndef NRF_CLI_STATISTICS_ENABLED
-#define NRF_CLI_STATISTICS_ENABLED 1
+#define NRF_CLI_STATISTICS_ENABLED 0
 #endif
 
 // <q> NRF_CLI_LOG_BACKEND  - Enable logger backend interface.
  
 
 #ifndef NRF_CLI_LOG_BACKEND
-#define NRF_CLI_LOG_BACKEND 1
+#define NRF_CLI_LOG_BACKEND 0
 #endif
 
 // <q> NRF_CLI_USES_TASK_MANAGER_ENABLED  - Enable CLI to use task_manager
@@ -3066,7 +3066,7 @@
 // <e> NRF_LOG_BACKEND_UART_ENABLED - nrf_log_backend_uart - Log UART backend
 //==========================================================
 #ifndef NRF_LOG_BACKEND_UART_ENABLED
-#define NRF_LOG_BACKEND_UART_ENABLED 1
+#define NRF_LOG_BACKEND_UART_ENABLED 0
 #endif
 // <o> NRF_LOG_BACKEND_UART_TX_PIN - UART TX pin 
 #ifndef NRF_LOG_BACKEND_UART_TX_PIN
@@ -3114,7 +3114,7 @@
 // <e> NRF_LOG_ENABLED - Logging module for nRF5 SDK
 //==========================================================
 #ifndef NRF_LOG_ENABLED
-#define NRF_LOG_ENABLED 1
+#define NRF_LOG_ENABLED 0
 #endif
 // <e> NRF_LOG_USES_COLORS - If enabled then ANSI escape code for colors is prefixed to every string
 //==========================================================

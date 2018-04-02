@@ -25,28 +25,4 @@ Output/Robot_v1_1\ Debug/Obj/nrf_log_str_formatter.o: \
  ../../../../../../components/device/nrf51_to_nrf52.h \
  ../../../../../../components/device/nrf52_name_change.h \
  ../../../../../../components/device/compiler_abstraction.h \
- ../../../../../../components/libraries/util/sdk_macros.h \
- ../../../../../../components/libraries/experimental_log/nrf_log_str_formatter.h \
- ../../../../../../external/fprintf/nrf_fprintf.h \
- ../../../../../../components/libraries/experimental_log/nrf_log_ctrl.h \
- ../../../../../../components/libraries/util/sdk_errors.h \
- ../../../../../../components/libraries/experimental_log/src/nrf_log_ctrl_internal.h \
- ../../../../../../components/libraries/experimental_log/nrf_log_backend_interface.h \
- ../../../../../../components/libraries/experimental_memobj/nrf_memobj.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdlib.h \
- ../../../../../../components/libraries/balloc/nrf_balloc.h \
- ../../../../../../components/libraries/util/app_util_platform.h \
- ../../../../../../components/softdevice/s132/headers/nrf_soc.h \
- ../../../../../../components/softdevice/s132/headers/nrf_svc.h \
- ../../../../../../components/softdevice/s132/headers/nrf_error_soc.h \
- ../../../../../../components/softdevice/s132/headers/nrf_error.h \
- ../../../../../../components/softdevice/s132/headers/nrf_nvic.h \
- ../../../../../../components/libraries/util/nrf_assert.h \
- ../../../../../../components/libraries/util/app_error.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdio.h \
- ../../../../../../components/libraries/util/app_error_weak.h \
- ../../../../../../components/libraries/util/app_util.h \
- C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\components\libraries\experimental_log\src\nrf_log_internal.h \
- ../../../../../../components/libraries/experimental_log/nrf_log_ctrl.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/ctype.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/__crossworks.h
+ ../../../../../../components/libraries/util/sdk_macros.h

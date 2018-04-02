@@ -77,7 +77,6 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/ble/nrf_ble_gatt/nrf_ble_gatt.h \
  ../../../../../../components/libraries/experimental_log/nrf_log.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \
- ../../../../../../components/libraries/strerror/nrf_strerror.h \
  ../../../../../../components/libraries/experimental_log/src/nrf_log_internal.h \
  ../../../../../../components/libraries/experimental_log/nrf_log_ctrl.h \
  ../../../../../../components/libraries/experimental_log/src/nrf_log_ctrl_internal.h \
@@ -99,6 +98,7 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/drivers_nrf/hal/nrf_twim.h \
  ../../../../../../components/drivers_nrf/delay/nrf_delay.h \
  ../../../../../../components/drivers_nrf/hal/nrf_gpio.h \
+ ../../../../../../components/drivers_nrf/hal/nrf_pwm.h \
  C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\examples\ble_peripheral\ble_app_template\vl6180.h \
  ../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h \
  ../../../../../../components/drivers_nrf/hal/nrf_pdm.h

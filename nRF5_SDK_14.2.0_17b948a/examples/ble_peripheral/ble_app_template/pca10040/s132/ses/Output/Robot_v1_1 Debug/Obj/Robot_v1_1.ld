@@ -63,12 +63,12 @@ SECTIONS
 
   . = ASSERT(__nrf_sections_run_start__ == __nrf_sections_run_end__ || (__nrf_sections_run_end__ >= __RAM_segment_start__ && __nrf_sections_run_end__ <= __RAM_segment_end__) , "error: .nrf_sections_run is too large to fit in RAM memory segment");
 
-  __reserved_flash_load_start__ = 0x0;
-  .reserved_flash 0x0 (NOLOAD) : AT(0x0)
+  __reserved_flash_load_start__ = 0x0000;
+  .reserved_flash 0x0000 (NOLOAD) : AT(0x0000)
   {
     __reserved_flash_start__ = .;
     *(.reserved_flash .reserved_flash.*)
-    . = MAX(__reserved_flash_start__ + 0x23000-0x0 , .);
+    . = MAX(__reserved_flash_start__ + 0x23000-0x0000 , .);
   }
   __reserved_flash_end__ = __reserved_flash_start__ + SIZEOF(.reserved_flash);
   __reserved_flash_size__ = SIZEOF(.reserved_flash);

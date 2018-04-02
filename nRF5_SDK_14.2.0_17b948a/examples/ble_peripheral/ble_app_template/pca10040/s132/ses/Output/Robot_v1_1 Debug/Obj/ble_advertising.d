@@ -46,10 +46,9 @@ Output/Robot_v1_1\ Debug/Obj/ble_advertising.o: \
  ../../../../../../components/libraries/experimental_log/nrf_log.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \
  ../../../../../../components/libraries/util/nordic_common.h \
- ../../../../../../components/libraries/strerror/nrf_strerror.h \
- ../../../../../../components/libraries/util/sdk_errors.h \
  ../../../../../../components/libraries/experimental_log/src/nrf_log_internal.h \
  ../../../../../../components/libraries/fstorage/nrf_fstorage.h \
+ ../../../../../../components/libraries/util/sdk_errors.h \
  ../../../../../../components/softdevice/common/nrf_sdh_ble.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section_iter.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \

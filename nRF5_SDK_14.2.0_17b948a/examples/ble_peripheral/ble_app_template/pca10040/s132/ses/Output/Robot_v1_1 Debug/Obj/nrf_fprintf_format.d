@@ -25,11 +25,4 @@ Output/Robot_v1_1\ Debug/Obj/nrf_fprintf_format.o: \
  ../../../../../../components/device/nrf51_to_nrf52.h \
  ../../../../../../components/device/nrf52_name_change.h \
  ../../../../../../components/device/compiler_abstraction.h \
- ../../../../../../components/libraries/util/sdk_macros.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdarg.h \
- ../../../../../../components/libraries/util/nrf_assert.h \
- ../../../../../../components/libraries/util/app_error.h \
- C:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 3.34/include/stdio.h \
- ../../../../../../components/libraries/util/app_error_weak.h \
- C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\external\fprintf\nrf_fprintf.h \
- C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\external\fprintf\nrf_fprintf_format.h
+ ../../../../../../components/libraries/util/sdk_macros.h

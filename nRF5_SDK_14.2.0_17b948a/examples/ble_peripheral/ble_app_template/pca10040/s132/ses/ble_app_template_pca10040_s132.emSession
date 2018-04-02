@@ -2,13 +2,14 @@
 <session>
  <Bookmarks/>
  <Breakpoints groups="Breakpoints" active_group="Breakpoints">
-  <BreakpointListItem trigger="" line="142" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="142" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="55" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/ble/common/ble_srv_common.h" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="115" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../main.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="707" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="204" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="340" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="671" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="60" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="478" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/hal/nrf_i2s.h" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="123" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="2" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="123" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="66" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="1" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="vl6180.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="108" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../vl6180.c" useHWbreakpoint="false"/>
@@ -18,7 +19,7 @@
   <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
  </FrameBufferWindow>
  <Memory1>
-  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="Robot_v1_1" radix="16" sizeText="" addressText=""/>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="1" addressOrder="0" columnsText="" refreshPeriod="0" name="Robot_v1_1" radix="16" sizeText="sizeof p_rx_buffer" addressText="&amp;p_rx_buffer"/>
  </Memory1>
  <Memory2>
   <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="Robot_v1_1" radix="16" sizeText="" addressText=""/>
@@ -33,13 +34,10 @@
   <ProjectSessionItem path="Robot_v1_1"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;Application"/>
-  <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;Board Definition"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;Device"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_BLE"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_Drivers"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_Libraries"/>
-  <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_Log"/>
-  <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_Segger_RTT"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;nRF_SoftDevice"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;Segger Startup Files"/>
   <ProjectSessionItem path="Robot_v1_1;Robot_v1_1;Third Party"/>
@@ -61,8 +59,9 @@
  </TraceWindow>
  <Watch1>
   <Watches active="1" update="Never">
-   <Watchpoint numelements="64" expression="m_fft_output_f32" evalMode="2" name="m_fft_output_f32" radix="-1" linenumber="0" filename="../ses" list=""/>
+   <Watchpoint numelements="65" expression="p_out_buffer" evalMode="2" name="p_out_buffer" radix="10" linenumber="0" filename="../ses" list=""/>
    <Watchpoint numelements="0" expression="p_lbs" evalMode="1" name="p_lbs" radix="-1" linenumber="0" filename="../ses" list=""/>
+   <Watchpoint numelements="0" expression="NRF_GPIO->OUTSET" evalMode="0" name="NRF_GPIO->OUTSET" radix="16" linenumber="0" filename="../ses" list=""/>
    <Watchpoint numelements="0" expression="m_bas" evalMode="0" name="m_bas" radix="-1" linenumber="0" filename="../ses" list=""/>
    <Watchpoint numelements="64" expression="buf" evalMode="2" name="buf" radix="-1" linenumber="0" filename="../ses" list=""/>
   </Watches>
@@ -77,25 +76,21 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="309" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="309" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="241" useTextEdit="1" useBinaryEdit="0" left="0" path="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" debugPath="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" selected="0" top="225" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="218" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh.c" debugPath="../../../../../../components/softdevice/common/nrf_sdh.c" selected="0" top="192" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="437" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble_gap.h" debugPath="../../../../../../components/softdevice/s132/headers/ble_gap.h" selected="0" top="410" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="660" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/ble/common/ble_advdata.c" debugPath="../../../../../../components/ble/common/ble_advdata.c" selected="0" top="658" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="191" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" debugPath="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" selected="0" top="136" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="99" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh_ble.c" debugPath="../../../../../../components/softdevice/common/nrf_sdh_ble.c" selected="0" top="73" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp.c" debugPath="../../../../../../components/libraries/bsp/bsp.c" selected="0" top="21" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp_btn_ble.c" debugPath="../../../../../../components/libraries/bsp/bsp_btn_ble.c" selected="0" top="36" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp_nfc.c" debugPath="../../../../../../components/libraries/bsp/bsp_nfc.c" selected="0" top="9" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="442" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble_gatts.h" debugPath="../../../../../../components/softdevice/s132/headers/ble_gatts.h" selected="0" top="416" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="116" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.h" debugPath="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.h" selected="0" top="75" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="84" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh_ble.h" debugPath="../../../../../../components/softdevice/common/nrf_sdh_ble.h" selected="0" top="61" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="5456" useTextEdit="1" useBinaryEdit="0" left="0" path="../config/sdk_config.h" debugPath="../config/sdk_config.h" selected="0" top="5430" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble_gatt.h" debugPath="../../../../../../components/softdevice/s132/headers/ble_gatt.h" selected="0" top="168" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="336" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble_gattc.h" debugPath="../../../../../../components/softdevice/s132/headers/ble_gattc.h" selected="0" top="329" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="194" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble_types.h" debugPath="../../../../../../components/softdevice/s132/headers/ble_types.h" selected="0" top="169" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="ble_app_template_pca10040_s132.emProject" debugPath="ble_app_template_pca10040_s132.emProject" selected="0" top="3" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="494" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s132/headers/ble.h" debugPath="../../../../../../components/softdevice/s132/headers/ble.h" selected="0" top="462" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="3" y="339" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="295" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="479" useTextEdit="1" useBinaryEdit="0" left="0" path="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" debugPath="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" selected="0" top="24" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="240" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh_ble.c" debugPath="../../../../../../components/softdevice/common/nrf_sdh_ble.c" selected="0" top="203" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="79" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/toolchain/ses/ses_nRF_Startup.s" debugPath="../../../../../../components/toolchain/ses/ses_nRF_Startup.s" selected="0" top="53" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="39" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/toolchain/ses/ses_nrf52_Vectors.s" debugPath="../../../../../../components/toolchain/ses/ses_nrf52_Vectors.s" selected="0" top="13" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="150" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/toolchain/cmsis/include/core_cm4.h" debugPath="../../../../../../components/toolchain/cmsis/include/core_cm4.h" selected="0" top="109" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/toolchain/system_nrf52.c" debugPath="../../../../../../components/toolchain/system_nrf52.c" selected="0" top="27" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="626" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/hal/nrf_gpio.h" debugPath="../../../../../../components/drivers_nrf/hal/nrf_gpio.h" selected="0" top="600" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="8131" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/device/nrf52_bitfields.h" debugPath="../../../../../../components/device/nrf52_bitfields.h" selected="0" top="8105" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="1875" useTextEdit="1" useBinaryEdit="0" left="0" path="../config/sdk_config.h" debugPath="../config/sdk_config.h" selected="0" top="1909" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="184" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" selected="0" top="140" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" selected="0" top="147" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="125" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/hal/nrf_pdm.h" debugPath="../../../../../../components/drivers_nrf/hal/nrf_pdm.h" selected="0" top="98" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/clock/nrf_drv_clock.c" debugPath="../../../../../../components/drivers_nrf/clock/nrf_drv_clock.c" selected="0" top="321" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="96" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/util/app_error_weak.c" debugPath="../../../../../../components/libraries/util/app_error_weak.c" selected="0" top="34" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="Robot_v1_1" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="C:/Nordic_Semi/nRF5_SDK_14.2.0_17b948a/components/softdevice/s132/headers" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <ARMCrossStudioWindow activeProject="Robot_v1_1" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="C:/Nordic_Semi/nRF5_SDK_14.2.0_17b948a/components/libraries/fstorage" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>
