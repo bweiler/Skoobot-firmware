@@ -1,30 +1,40 @@
 /*
-      Tiny Robot Code, v0.1
+      Tiny Robot Code, v0.2
       by Bill Weiler
 
-      Segger IDE and nRF BLE SDK integrated code. Start of project is example in BLE_Peripheral Template. 
-      Segger ARM M version: 3.34
-      Nordic Semi SDK nRF5 version: 14.2
-      Uses CMSIS
-      ARM assembler floating point library 
+      Segger Embedded Studio - full version is free for Nordic chips, using ARM M version v3.34
+      Nordic nRF5 SDK v14.2
+      Nordic SDK BLE_Peripheral_Template example used as starting point 
+      CMSIS DSP Library
       Nordic chip: nRF52832 QFN48 AA
-      Softdevice is S132, version: 5.0.0
+      nRF52832 runs at 64Mhz, has 512k flash and 64k SRAM, and hardware single precision floating point
+      Nordic BLE Stack called Softdevice, is S132 v5.0.0, linked a hex file
 
       Targets for this code are Tiny Robot and Sparkfun nRF52832 reference design
       Tiny Robot has these features:
       1. VLX6180 distance sensor through i2c
-      2. 2 motors, left and right, driven through 2 TI DRV8834 driven by uC gpio's, plus the PWM1 peripheral for stepping
+      2. 2 motors, left and right, driven through 2 TI DRV8834 driven by uC gpio's, plus the PWM0 peripheral for stepping
       3. Microphone through PDM peripheral
-      4. Buzzer through PWM0 peripheral
-      5. 1 LED through gpio
-      6. BLE antenna, robot acts as a BLE peripheral
+      4. Buzzer through PWM1 peripheral
+      5. 1 LED through gpio, active low (clearing it (0) turns led on)
+      6. BLE antenna, s132 supports central and peripheral, observer and broadcaster, total 20 connections (that's 19 robots and a cellphone!)
 
-      There is no LF oscillator, the softdevice uses the internal RC oscillator, there is a 32Mhz crystal HF oscillator
+      There is no crystal LF oscillator in Tiny Robot, the softdevice uses the internal RC oscillator, there is a 32Mhz crystal HF oscillator for CPU
 
-      nRF52832 runs at 64Mhz, has 512k flash and 64k SRAM, and hardware single precision floating point
-
-      Nordic #define FPU_USE has to be 1 for floating point unit, FPU is enabled in SystemInit()
       GCC is not always smart enough, use idioms or intrinsics for floating point, or just check disassembly to make sure FPU instructions were generated.
+
+      Watch out modifying code, the BLE stack takes peripherals and scheduling. Notably it takes Timer0, some flash and ram, and a lot of cpu cycles. If you
+      have problems, use their API for scheduling time slots. Check the Softdevice documentation for blocked peripherals.
+
+      Read this stuff:
+      1. nRF52832 datasheet, watch out for old versions, like on Sparkfun, I am using v1.4
+      2. Softdevice Specification
+      3. Errata
+      4. Softdevice API - online only
+      5. Nordic devzone forums
+      6. Compatability list (really boring but useful)
+      7. VLX6180 datasheet
+      8. Microphone - stuff about PDM and PCM, can play raw audio you grab out of IDE in Audacity (free download)
 */
 #include <stdbool.h>
 #include <stdint.h>
@@ -54,6 +64,7 @@
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 #include "nrf_pwm.h"
+#include "nrf_timer.h"
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
@@ -62,7 +73,7 @@
     ========================================================
     CB_TEST 1 = companion board tester code
     MB_TEST 1 = mainboard (or frontboard FB) tester
-    SPARKFUN 1 = sparkfun reference code
+    SPARKFUN 1 = Sparkfun reference code
     SPARTFUN 0 = Tiny Robot firmware
 */
 #define CB_TEST 0
@@ -247,11 +258,14 @@ void sendbytes(uint8_t a);
 void TxUART(uint8_t* buf);
 
 //Motors
+uint8_t timer1_enabled_for_motors;
+uint32_t timer1_counter, timer1_match_value;
 void configure_motors(void);
-void motors_forward(void);
+void motors_forward(uint32_t freq);
 void motors_backward(void);
 void motors_right(void);
 void motors_left(void);
+void turn_left_90_degrees(void);
 void pwm_motor_stepping(uint32_t steps_per_second);
 void stop_stepping(void);
 void stepping_mode(uint8_t mode);
@@ -321,75 +335,66 @@ int main(void)
     afunc();            //do fft, then check m_fft_output_f32 64 bytes
     #endif
 
-    //Wait until BLE connected
-    while (BLE_Connected == 0)
-    {
-      nrf_delay_ms(200);
-    }
-    pwm_motor_stepping(100);              //go forward
-      
-    for(;;)
-    {
-        //range = getDistance();
-        //sprintf(buf,"Distance is %d\r\n",range);
-        //TxUART(buf);
-        nrf_delay_ms(500);
-        nrf_gpio_pin_set(GREEN_LED);      //led off
-        nrf_delay_ms(500);
-        nrf_gpio_pin_clear(GREEN_LED);    //led on
-    }
     //switch interval is 1 second
     cnt = 0;
     for (;;)
     {
-          if (0) //new_cmd == 1)
+          //Wait until BLE connected
+          while (BLE_Connected == 0)
           {
-            new_cmd = 0;
+            stop_buzzer();
             stop_stepping();
-            nrf_delay_ms(3000);
+            nrf_delay_ms(200);
           }
           ++cnt;
           switch(cnt)
           {
           case 1:
-            pwm_motor_stepping(100);    //go forward
-            //pwm_buzzer_frequency(1000);
+            stop_buzzer();
+            nrf_gpio_pin_clear(GREEN_LED);
+            motors_forward(80);            //go forward 
             break;
           case 2:
-            //pwm_buzzer_frequency(2000);
             stop_stepping();
-            motors_right();
+            pwm_buzzer_frequency(1000.0);
             break;
           case 3:
-            pwm_motor_stepping(100);    //turn right
-            //pwm_buzzer_frequency(3000);
+            stop_buzzer();
+            turn_left_90_degrees();
             break;
           case 4:
             stop_stepping();
-            motors_forward();
-            //stop_buzzer();
-            pwm_motor_stepping(200);    //go forward
+            pwm_buzzer_frequency(2000.0);
             break;
           case 5:
-            stop_stepping();
-            motors_right();
+            stop_buzzer();
+            motors_backward();
+            pwm_motor_stepping(50);    //go backwards
             break;
           case 6:
-            pwm_motor_stepping(100);    //turn right
-            break;
-         case 7:
             stop_stepping();
-            motors_forward();
-            cnt = 0;
+            pwm_buzzer_frequency(3000.0);
+            break;
+          case 7:
+            stop_buzzer();
+            motors_right();           //turn right
+            pwm_motor_stepping(50);    
+            nrf_delay_ms(100);        //this should be 5 steps each motor for 90 degree turn
+            stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+            break;
+          case 8:
+            stop_stepping();
+            pwm_buzzer_frequency(4000.0);
+            cnt  = 0;
             break;
          default:
             stop_stepping();
             break;
         }
-        range = getDistance();
-        sprintf(buf,"Distance is %d\r\n",range);
-        TxUART(buf);
-        nrf_delay_ms(1000);
+        //range = getDistance();
+        //sprintf(buf,"Distance is %d\r\n",range);
+        //TxUART(buf);
+        nrf_delay_ms(2000);
         nrf_gpio_pin_set(GREEN_LED);
     
       // if (NRF_LOG_PROCESS() == false)
@@ -397,6 +402,14 @@ int main(void)
             //power_manage();
         }
     }  
+}
+
+void turn_left_90_degrees(void)
+{
+  motors_left();            //turn left
+  pwm_motor_stepping(50);   
+  nrf_delay_ms(100);        //this should be 5 steps each motor for 90 degree turn
+  stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
 }
 
 //Left channel configured by default
@@ -422,6 +435,7 @@ void step_mode_experiment(void)
 
     // Enter main loop.
     stepmode = 0;
+    motors_forward(0);
     for (;;)
     {
         //for now is 1 second
@@ -429,24 +443,24 @@ void step_mode_experiment(void)
         switch(stepmode)
         {
           case 0:
-            pwm_motor_stepping(50);    //go forward
+            pwm_motor_stepping(40);    //go forward
             nrf_gpio_pin_clear(GREEN_LED);
             break;
           case 1:
-            pwm_motor_stepping(100);    //go forward
+            pwm_motor_stepping(80);    //go forward
             nrf_gpio_pin_set(GREEN_LED);
             break;
           case 2:
-            pwm_motor_stepping(200);    //go forward
+            pwm_motor_stepping(160);    //go forward
             break;
           case 3:
-            pwm_motor_stepping(400);    //go forward
+            pwm_motor_stepping(320);    //go forward
             break;
           case 4:
-            pwm_motor_stepping(800);    //go forward
+            pwm_motor_stepping(640);    //go forward
             break;
           case 5:
-            pwm_motor_stepping(1600);    //go forward
+            pwm_motor_stepping(1280);    //go forward
             break;
         }
         ++stepmode;
@@ -458,16 +472,28 @@ void step_mode_experiment(void)
     }
 }
 
-void motors_forward(void)
+void motors_forward_with_timer(uint32_t freq, uint32_t ms)
 {
-  nrf_gpio_pin_clear(DIR_R);
-  nrf_gpio_pin_set(DIR_L);
+  nrf_gpio_pin_set(DIR_R);
+  nrf_gpio_pin_clear(DIR_L);
+  timer1_counter = 0;
+  timer1_match_value = 125000 / ms;
+  timer1_enabled_for_motors = 1;
+  pwm_motor_stepping(freq);
+  NRF_TIMER1->TASKS_START = 1;
+}
+
+void motors_forward(uint32_t freq)
+{
+  nrf_gpio_pin_set(DIR_R);
+  nrf_gpio_pin_clear(DIR_L);
+  pwm_motor_stepping(freq);    
 }
 
 void motors_backward(void)
 {
-   nrf_gpio_pin_clear(DIR_L);
-   nrf_gpio_pin_set(DIR_R);
+   nrf_gpio_pin_set(DIR_L);
+   nrf_gpio_pin_clear(DIR_R);
 }
 
 void motors_right(void)
@@ -550,6 +576,21 @@ __STATIC_INLINE void data_handler(uint8_t temp)
 
 }
 
+//TIMER1 - this is the motor timer
+void TIMER1_IRQHandler(void)
+{
+  if (timer1_enabled_for_motors == 1)
+  {
+    ++timer1_counter;
+    if (timer1_counter == timer1_match_value)
+    {
+      NRF_TIMER1->TASKS_STOP = 1;     //do this first so you don't pop in here again while doing this
+      stop_stepping();
+      timer1_enabled_for_motors = 0;  //this is redundant, but maybe useful later
+    }
+  }
+}
+
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
 {
     switch (p_event->type)
@@ -628,7 +669,7 @@ void cb_test(void)
   for(;;)
   {
     nrf_gpio_pin_clear(GREEN_LED);
-    pwm_motor_stepping(200);
+    motors_forward(100);
     nrf_delay_ms(2000);
     stop_motors();
     nrf_gpio_pin_set(GREEN_LED);
@@ -713,6 +754,11 @@ void my_configure(void)
   NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
   NRF_PWM0->SEQ[0].REFRESH = 0;
   NRF_PWM0->SEQ[0].ENDDELAY = 0;
+
+  nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
+  nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
+  nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
+  nrf_timer_int_enable(NRF_TIMER1,1);
 
 #if CB_TEST == 0
   nrf_gpio_pin_clear(BUZZER_10MM);

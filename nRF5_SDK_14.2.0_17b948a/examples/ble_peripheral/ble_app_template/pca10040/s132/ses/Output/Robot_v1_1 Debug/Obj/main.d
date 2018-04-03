@@ -99,6 +99,7 @@ Output/Robot_v1_1\ Debug/Obj/main.o: \
  ../../../../../../components/drivers_nrf/delay/nrf_delay.h \
  ../../../../../../components/drivers_nrf/hal/nrf_gpio.h \
  ../../../../../../components/drivers_nrf/hal/nrf_pwm.h \
+ ../../../../../../components/drivers_nrf/hal/nrf_timer.h \
  C:\Nordic_Semi\nRF5_SDK_14.2.0_17b948a\examples\ble_peripheral\ble_app_template\vl6180.h \
  ../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h \
  ../../../../../../components/drivers_nrf/hal/nrf_pdm.h
