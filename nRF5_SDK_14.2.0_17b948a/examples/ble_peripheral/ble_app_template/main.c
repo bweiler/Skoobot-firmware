@@ -68,6 +68,21 @@
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
+//COMMAND SET FOR BLE
+#define MOTORS_RIGHT      0x10
+#define MOTORS_LEFT       0x11
+#define MOTORS_FORWARD    0x12
+#define MOTORS_BACKWARD   0x13
+#define MOTORS_STOP       0x14
+#define MOTORS_SLEEP      0x15
+#define STEPPING_TEST     0x16
+
+#define GET_DISTANCE      0x22
+#define GET_AMBIENT       0x21
+
+#define RECORD_SOUND      0x30
+#define INCREASE_GAIN     0x31
+#define DECREASE_GAIN     0x32
 /*
     Conditional compilation
     ========================================================
@@ -128,8 +143,6 @@
 //microphone
 #define MIC_CLK   28
 #define MIC_DI    29
-//this is placeholder, mic_sel is no longer exists
-#define MIC_SEL   27
 
 //VLX6180
 #define GP0       14
@@ -233,7 +246,7 @@ static uint32_t  m_do_bit_reverse        = 1;                            //!< Fl
 static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
 static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
 static int32_t p_out_buffer[FFT_TEST_COMP_SAMPLES_LEN/2+1];
-void afunc(void);
+void do_dft(void);
 
 //Microphone
 #define SAMPLE_BUFFER_CNT 8096
@@ -258,9 +271,8 @@ void sendbytes(uint8_t a);
 void TxUART(uint8_t* buf);
 
 //Motors
-uint8_t timer1_enabled_for_motors;
+uint8_t timer1_enabled_for_motors = 0;
 uint32_t timer1_counter, timer1_match_value;
-void configure_motors(void);
 void motors_forward(uint32_t freq);
 void motors_backward(void);
 void motors_right(void);
@@ -270,6 +282,8 @@ void pwm_motor_stepping(uint32_t steps_per_second);
 void stop_stepping(void);
 void stepping_mode(uint8_t mode);
 void step_mode_experiment(void);
+void motors_sleep(void);
+void motors_wake(void);
 
 //Buzzer
 void pwm_buzzer_frequency(float freq);
@@ -279,6 +293,8 @@ void stop_buzzer(void);
 void my_configure(void);
 void cb_test(void);
 void mb_test(void);
+void led_off(void);
+void led_on(void);
 
 /**
  * Motor might be 15 degrees per step, so 24 steps per revolution.
@@ -288,13 +304,12 @@ int main(void)
 {
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
     static uint8_t range, buf[64];
-    uint32_t cnt;
+    uint8_t new_cmd_flag;
 
     nrf_gpio_cfg_output(GREEN_LED);
-    nrf_gpio_pin_set(GREEN_LED);
-    nrf_gpio_cfg_output(SLEEP);
-    nrf_gpio_pin_set(SLEEP);
-    
+    led_off();
+    my_configure();         //sets gpios and PWM0 for step, PWM1 for buzzer
+ 
     #if CB_TEST
       cb_test();
     #else
@@ -308,8 +323,6 @@ int main(void)
       mb_test();
     #endif
 
-
-
     // Initialize.
     timers_init();
     ble_stack_init();
@@ -320,11 +333,6 @@ int main(void)
     conn_params_init();
     advertising_start();
 
-    configure_motors();     //sets DIR_L and DIR_R
-    my_configure();         //sets PWM0 for step, PWM1 for buzzer
-    stepping_mode(1);       //sets M0 and M1
-       
-
     #if MICROPHONE
     //like 6700 samples in p_rx_buffer
     m_xfer_done = false;
@@ -332,76 +340,87 @@ int main(void)
     nrf_drv_pdm_start();
     while(m_xfer_done == false);
     nrf_drv_pdm_stop();
-    afunc();            //do fft, then check m_fft_output_f32 64 bytes
+    do_dft();            //do fft, then check m_fft_output_f32 64 bytes
     #endif
 
-    //switch interval is 1 second
-    cnt = 0;
+    new_cmd_flag = 0;
+  
     for (;;)
     {
-          //Wait until BLE connected
+          //Trap here when BLE not connected
           while (BLE_Connected == 0)
           {
             stop_buzzer();
             stop_stepping();
+            motors_sleep();
             nrf_delay_ms(200);
           }
-          ++cnt;
-          switch(cnt)
+          if (new_cmd_flag == 1)
           {
-          case 1:
-            stop_buzzer();
-            nrf_gpio_pin_clear(GREEN_LED);
-            motors_forward(80);            //go forward 
-            break;
-          case 2:
-            stop_stepping();
-            pwm_buzzer_frequency(1000.0);
-            break;
-          case 3:
-            stop_buzzer();
-            turn_left_90_degrees();
-            break;
-          case 4:
-            stop_stepping();
-            pwm_buzzer_frequency(2000.0);
-            break;
-          case 5:
-            stop_buzzer();
-            motors_backward();
-            pwm_motor_stepping(50);    //go backwards
-            break;
-          case 6:
-            stop_stepping();
-            pwm_buzzer_frequency(3000.0);
-            break;
-          case 7:
-            stop_buzzer();
-            motors_right();           //turn right
-            pwm_motor_stepping(50);    
-            nrf_delay_ms(100);        //this should be 5 steps each motor for 90 degree turn
-            stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
-            break;
-          case 8:
-            stop_stepping();
-            pwm_buzzer_frequency(4000.0);
-            cnt  = 0;
-            break;
-         default:
-            stop_stepping();
-            break;
-        }
-        //range = getDistance();
-        //sprintf(buf,"Distance is %d\r\n",range);
-        //TxUART(buf);
+            switch(led_value)
+            {
+            case MOTORS_RIGHT:
+              motors_right();
+              break;
+            case MOTORS_LEFT:
+              motors_left();
+              break;
+            case MOTORS_FORWARD:
+              motors_forward(100);
+              break;
+            case MOTORS_BACKWARD:
+              motors_backward();
+              break;
+            case MOTORS_STOP:
+              stop_stepping();
+              break;
+            case MOTORS_SLEEP:
+              motors_sleep();
+              break;
+            case STEPPING_TEST:
+              step_mode_experiment();
+              break;
+            case GET_DISTANCE:
+              range = getDistance();
+              break;
+            case GET_AMBIENT:
+              break;
+            case RECORD_SOUND:
+              m_xfer_done = false;
+              nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
+              nrf_drv_pdm_start();
+              while(m_xfer_done == false);
+              nrf_drv_pdm_stop();
+              do_dft(); 
+              break;
+            case INCREASE_GAIN:
+              break;
+            case DECREASE_GAIN:
+              break;
+           default:
+               break;
+          }
+          new_cmd_flag = 0;
+      }
+      else
+      {
+        pwm_buzzer_frequency(2000.0);
+        led_on();
+        motors_forward(100);      //go forward
+        motors_wake();
         nrf_delay_ms(2000);
-        nrf_gpio_pin_set(GREEN_LED);
-    
-      // if (NRF_LOG_PROCESS() == false)
-        {
-            //power_manage();
-        }
-    }  
+        led_off();
+        stop_stepping();          
+        motors_sleep();
+        stop_buzzer();
+        motors_right();           //go right 90 degrees
+        pwm_motor_stepping(50);
+        motors_wake();
+        nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
+        stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+        motors_sleep();
+      }
+   }  
 }
 
 void turn_left_90_degrees(void)
@@ -431,45 +450,66 @@ void configure_microphone(void)
 
 void step_mode_experiment(void)
 {
-    uint8_t stepmode;
+    uint8_t stepmode, cnt_of_trys;
 
-    // Enter main loop.
+    motors_sleep();
     stepmode = 0;
-    motors_forward(0);
-    for (;;)
+    for (cnt_of_trys=0;(cnt_of_trys<5);cnt_of_trys++)
     {
-        //for now is 1 second
         stepping_mode(stepmode);
         switch(stepmode)
         {
           case 0:
-            pwm_motor_stepping(40);    //go forward
-            nrf_gpio_pin_clear(GREEN_LED);
+            motors_forward(40);     //whole step
+            led_on();               //mark start of test
             break;
           case 1:
-            pwm_motor_stepping(80);    //go forward
-            nrf_gpio_pin_set(GREEN_LED);
+            motors_forward(80);     //1/2 step
+            led_off();
             break;
           case 2:
-            pwm_motor_stepping(160);    //go forward
+            motors_forward(160);    //1/4 step
             break;
           case 3:
-            pwm_motor_stepping(320);    //go forward
+            motors_forward(320);    //1/8 step
             break;
           case 4:
-            pwm_motor_stepping(640);    //go forward
+            motors_forward(640);    //1/16 step
             break;
           case 5:
-            pwm_motor_stepping(1280);    //go forward
+            motors_forward(1280);   //1/32 step
             break;
         }
         ++stepmode;
         if (stepmode == 6)
             stepmode = 0;
+        motors_wake();
         nrf_delay_ms(2000);
         stop_stepping();
+        motors_sleep();
         nrf_delay_ms(500);
     }
+    return;
+}
+
+inline void led_off(void)
+{
+    nrf_gpio_pin_set(GREEN_LED);
+}
+
+inline void led_on(void)
+{
+    nrf_gpio_pin_clear(GREEN_LED);
+}
+
+inline void motors_sleep(void)
+{
+    nrf_gpio_pin_clear(SLEEP);
+}
+
+inline void motors_wake(void)
+{
+    nrf_gpio_pin_set(SLEEP);
 }
 
 void motors_forward_with_timer(uint32_t freq, uint32_t ms)
@@ -663,16 +703,17 @@ void pwm_buzzer_frequency(float freq)
 
 void cb_test(void)
 {
-  configure_motors();
   my_configure();
 
   for(;;)
   {
-    nrf_gpio_pin_clear(GREEN_LED);
+    led_on();
     motors_forward(100);
+    wake_motors();
     nrf_delay_ms(2000);
     stop_motors();
-    nrf_gpio_pin_set(GREEN_LED);
+    sleep_motors();
+    led_off();
     nrf_delay_ms(2000);
   }
 
@@ -682,14 +723,13 @@ void mb_test(void)
 {
   static uint8_t range, buf[64];
 
-  configure_motors();
   nrf_gpio_cfg_output(MIC_CLK);
   nrf_gpio_cfg_output(MIC_DI);
-  nrf_gpio_cfg_output(MIC_SEL);
+  nrf_gpio_cfg_output(SLEEP);
   
   for(;;)
   {
-    nrf_gpio_pin_clear(GREEN_LED);
+    led_on();
     nrf_gpio_pin_clear(STEP);
     nrf_gpio_pin_clear(DIR_L);
     nrf_gpio_pin_clear(DIR_R);
@@ -697,9 +737,9 @@ void mb_test(void)
     nrf_gpio_pin_clear(M0);
     nrf_gpio_pin_clear(MIC_CLK);
     nrf_gpio_pin_clear(MIC_DI);
-    nrf_gpio_pin_clear(MIC_SEL);
+    nrf_gpio_pin_clear(SLEEP);
     nrf_delay_ms(500);
-    nrf_gpio_pin_set(GREEN_LED);
+    led_off();
     nrf_gpio_pin_set(STEP);
     nrf_gpio_pin_set(DIR_L);
     nrf_gpio_pin_set(DIR_R);
@@ -707,7 +747,7 @@ void mb_test(void)
     nrf_gpio_pin_set(M0);
     nrf_gpio_pin_set(MIC_CLK);
     nrf_gpio_pin_set(MIC_DI);
-    nrf_gpio_pin_set(MIC_SEL);
+    nrf_gpio_pin_set(SLEEP);
     nrf_delay_ms(500);
     range = getDistance();
     sprintf(buf,"Range is %d\r\n",range);
@@ -743,10 +783,18 @@ void uart_init(void)
 
 void my_configure(void)
 {
+  nrf_gpio_cfg_output(DIR_L);
+  nrf_gpio_cfg_output(DIR_R);
+  nrf_gpio_cfg_output(SLEEP);
+  motors_sleep();                 //sleep motors
+  nrf_gpio_pin_set(DIR_L);        //set direction forward
+  nrf_gpio_pin_clear(DIR_R);
+  stepping_mode(1);               //initial mode 1, 1/2 stepping
+
   nrf_gpio_pin_clear(STEP);
   nrf_gpio_cfg_output(STEP);
   NRF_PWM0->PSEL.OUT[0] = STEP;
-  
+
   NRF_PWM0->ENABLE = PWM_ENABLE_ENABLE_Enabled;
   NRF_PWM0->MODE = PWM_MODE_UPDOWN_Up;
   NRF_PWM0->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
@@ -775,28 +823,13 @@ void my_configure(void)
 #endif
 }
 
-// 32 microstep M1 high, M0 high-z
-//
-//
-//
-//
-void configure_motors(void)
-{
-    nrf_gpio_cfg_output(DIR_L);
-    nrf_gpio_cfg_output(DIR_R);
-    nrf_gpio_pin_set(DIR_L);
-    nrf_gpio_pin_clear(DIR_R);
-    stepping_mode(1);
-}
-
-
-void charging(void)
+void idle_while_charging(void)
 {
     for (;;)
     {
-        nrf_gpio_pin_set(GREEN_LED);
+        led_off();
         nrf_delay_ms(500);
-        nrf_gpio_pin_clear(GREEN_LED);
+        led_on();
         nrf_delay_ms(500);
     }
 }
@@ -864,7 +897,7 @@ void sendbytes(uint8_t which)
 
 }
 
-void afunc(void)
+void do_dft(void)
 {
     uint16_t fftLen = FFT_TEST_COMP_SAMPLES_LEN;  //currently 128
     arm_status ret;
@@ -882,10 +915,10 @@ void afunc(void)
     
     arm_rfft_fast_f32(&S,m_fft_input_f32,m_fft_output_f32,ifftFlag);
 
-   for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN/2);i++)
-   {
+    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN/2);i++)
+    {
           p_out_buffer[i] = m_fft_output_f32[i];         
-   }
+    }
     //arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
     // Calculate the magnitude at each bin using Complex Magnitude Module function.
     //arm_cmplx_mag_f32(p_input, p_output, output_size);
@@ -975,7 +1008,7 @@ static void advertising_init(void)
 
 static uint32_t add_second_char(void)
 {
-    ble_gatts_char_md_t char_md;
+    ble_gatts_char_md_t char_md;          //server characteristic metadata
     ble_gatts_attr_t    attr_char_value;
     ble_uuid_t          ble_uuid;
     ble_gatts_attr_md_t attr_md;
@@ -1022,7 +1055,7 @@ static uint32_t add_first_char(void)
 {
     ret_code_t     err_code;
     ble_gatts_char_md_t char_md;
-    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_md_t cccd_md;          //client characteristic metadata
     ble_gatts_attr_t    attr_char_value;
     ble_uuid_t          ble_uuid;
     ble_gatts_attr_md_t attr_md;
