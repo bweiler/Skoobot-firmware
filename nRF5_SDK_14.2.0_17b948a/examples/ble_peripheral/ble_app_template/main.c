@@ -168,8 +168,8 @@
 //BLE defines, refactored from SDK
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
 
-#define DEVICE_NAME                     "Tiny Robot"                       /**< Name of device. Will be included in the advertising data. */
-#define MANUFACTURER_NAME               "William Weiler Eng"                   /**< Manufacturer. Will be passed to Device Information Service. */
+#define DEVICE_NAME                     "Skoobot"                               /**< Name of device. Will be included in the advertising data. */
+#define MANUFACTURER_NAME               "William Weiler Eng"                    /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
@@ -199,8 +199,8 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                         \
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
                               0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
 #define LBS_UUID_SERVICE     0x1523
-#define LBS_UUID_BUTTON_CHAR 0x1524
-#define LBS_UUID_LED_CHAR    0x1525
+#define LBS_UUID_DATA_CHAR   0x1524
+#define LBS_UUID_CMD_CHAR    0x1525
 
 BLE_BILL_DEF(m_bill);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
@@ -212,7 +212,7 @@ uint8_t g_inbyte = 0;
 uint16_t svc_handle;
 ble_gatts_char_handles_t button_handle, led_handle;
 uint8_t uuid_type;
-uint8_t led_value = 0, button_value = 0, BLE_Connected = 0, new_cmd = 0;  
+uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;  
 //BLE prototype functions
 static void timers_init(void);
 static void log_init(void);
@@ -223,8 +223,8 @@ static void services_init(void);
 static void advertising_init(void);
 static void conn_params_init(void);
 static void advertising_start(void);
-static uint32_t add_second_char(void);
-static uint32_t add_first_char(void);
+static uint32_t add_cmd_characteristic(void);
+static uint32_t add_data_characteristic(void);
 uint32_t update_remote_byte(void);    //sends button_value
 void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 
@@ -295,6 +295,7 @@ void cb_test(void);
 void mb_test(void);
 void led_off(void);
 void led_on(void);
+void idle_while_charging(void);
 
 /**
  * Motor might be 15 degrees per step, so 24 steps per revolution.
@@ -304,7 +305,6 @@ int main(void)
 {
     float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
     static uint8_t range, buf[64];
-    uint8_t new_cmd_flag;
 
     nrf_gpio_cfg_output(GREEN_LED);
     led_off();
@@ -343,7 +343,7 @@ int main(void)
     do_dft();            //do fft, then check m_fft_output_f32 64 bytes
     #endif
 
-    new_cmd_flag = 0;
+    new_cmd = 0;
   
     for (;;)
     {
@@ -355,27 +355,49 @@ int main(void)
             motors_sleep();
             nrf_delay_ms(200);
           }
-          if (new_cmd_flag == 1)
+          if (new_cmd == 1)
           {
-            switch(led_value)
+            switch(cmd_value)
             {
             case MOTORS_RIGHT:
-              motors_right();
+              motors_right();           //go right 90 degrees
+              pwm_motor_stepping(50);
+              motors_wake();
+              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
+              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              motors_sleep();
               break;
             case MOTORS_LEFT:
               motors_left();
+              pwm_motor_stepping(50);
+              motors_wake();
+              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
+              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              motors_sleep();
               break;
             case MOTORS_FORWARD:
               motors_forward(100);
+              pwm_motor_stepping(50);
+              motors_wake();
+              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
+              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              motors_sleep();
               break;
             case MOTORS_BACKWARD:
               motors_backward();
+              pwm_motor_stepping(50);
+              motors_wake();
+              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
+              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              motors_sleep();
               break;
             case MOTORS_STOP:
               stop_stepping();
+              nrf_delay_ms(1000);     
               break;
             case MOTORS_SLEEP:
               motors_sleep();
+              nrf_delay_ms(1000);       
               break;
             case STEPPING_TEST:
               step_mode_experiment();
@@ -400,7 +422,7 @@ int main(void)
            default:
                break;
           }
-          new_cmd_flag = 0;
+          new_cmd = 0;
       }
       else
       {
@@ -1006,7 +1028,7 @@ static void advertising_init(void)
 }
 
 
-static uint32_t add_second_char(void)
+static uint32_t add_cmd_characteristic(void)
 {
     ble_gatts_char_md_t char_md;          //server characteristic metadata
     ble_gatts_attr_t    attr_char_value;
@@ -1024,7 +1046,7 @@ static uint32_t add_second_char(void)
     char_md.p_sccd_md        = NULL;
 
     ble_uuid.type = uuid_type;
-    ble_uuid.uuid = LBS_UUID_LED_CHAR;
+    ble_uuid.uuid = LBS_UUID_CMD_CHAR;
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -1051,7 +1073,7 @@ static uint32_t add_second_char(void)
 
 }
 
-static uint32_t add_first_char(void)
+static uint32_t add_data_characteristic(void)
 {
     ret_code_t     err_code;
     ble_gatts_char_md_t char_md;
@@ -1077,7 +1099,7 @@ static uint32_t add_first_char(void)
     char_md.p_sccd_md         = NULL;
 
     ble_uuid.type = uuid_type;
-    ble_uuid.uuid = LBS_UUID_BUTTON_CHAR;
+    ble_uuid.uuid = LBS_UUID_DATA_CHAR;
 
     memset(&attr_md, 0, sizeof(attr_md));
 
@@ -1121,10 +1143,10 @@ static void services_init(void)
     err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &svc_handle);
     VERIFY_SUCCESS(err_code);
        
-    err_code = add_first_char();
+    err_code = add_cmd_characteristic();
     VERIFY_SUCCESS(err_code);
     
-    err_code = add_second_char();
+    err_code = add_data_characteristic();
     VERIFY_SUCCESS(err_code);
     
     APP_ERROR_CHECK(err_code);
@@ -1138,7 +1160,7 @@ uint32_t update_remote_byte(void)
     memset(&params, 0, sizeof(params));
     params.type   = BLE_GATT_HVX_NOTIFICATION;
     params.handle = button_handle.value_handle;
-    params.p_data = &button_value;
+    params.p_data = &data_value;
     params.p_len  = &len;
 
     return sd_ble_gatts_hvx(m_conn_handle, &params);
@@ -1333,7 +1355,8 @@ void on_write(ble_evt_t const * p_ble_evt)
     if ((p_evt_write->handle == led_handle.value_handle)
         && (p_evt_write->len == 1))
     {
-         led_value = p_evt_write->data[0];
+         cmd_value = p_evt_write->data[0];
+         
          new_cmd = 1;
     }
     else
@@ -1341,7 +1364,7 @@ void on_write(ble_evt_t const * p_ble_evt)
       if ((p_evt_write->handle == button_handle.value_handle)
           && (p_evt_write->len == 1))
       {
-           button_value = p_evt_write->data[0];
+           data_value = p_evt_write->data[0];
            new_cmd = 1;
       }
     }

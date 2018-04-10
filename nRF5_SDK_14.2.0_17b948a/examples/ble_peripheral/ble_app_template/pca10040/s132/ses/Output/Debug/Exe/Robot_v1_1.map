@@ -3227,13 +3227,13 @@ Discarded input sections
                 0x0000000000000000       0x2c Output/Robot_v1_1 Debug/Obj/main.o
  .text.power_manage
                 0x0000000000000000       0x2c Output/Robot_v1_1 Debug/Obj/main.o
- .bss.buf.14459
+ .bss.buf.14461
                 0x0000000000000000       0x40 Output/Robot_v1_1 Debug/Obj/main.o
- .bss.range.14594
+ .bss.range.14595
                 0x0000000000000000        0x1 Output/Robot_v1_1 Debug/Obj/main.o
- .bss.buf.14595
+ .bss.buf.14596
                 0x0000000000000000       0x40 Output/Robot_v1_1 Debug/Obj/main.o
- .bss.buf.14627
+ .bss.buf.14628
                 0x0000000000000000       0x20 Output/Robot_v1_1 Debug/Obj/main.o
  .debug_macro   0x0000000000000000      0x904 Output/Robot_v1_1 Debug/Obj/main.o
  .debug_macro   0x0000000000000000       0x22 Output/Robot_v1_1 Debug/Obj/main.o
@@ -11190,7 +11190,7 @@ Linker script and memory map
                 0x0000000000000001                . = ASSERT (((__init_rodata_start__ == __init_rodata_end__) || ((__init_rodata_end__ >= __FLASH_segment_start__) && (__init_rodata_end__ <= __FLASH_segment_end__))), error: .init_rodata is too large to fit in FLASH memory segment)
                 0x00000000000232f4                __text_load_start__ = ALIGN (__init_rodata_end__, 0x4)
 
-.text           0x00000000000232f4     0xd81c
+.text           0x00000000000232f4     0xd89c
                 0x00000000000232f4                __text_start__ = .
  *(.text .text.* .glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*)
  .glue_7        0x00000000000232f4        0x0 linker stubs
@@ -11726,834 +11726,834 @@ Linker script and memory map
                 0x00000000000279e8       0x2a Output/Robot_v1_1 Debug/Obj/main.o
  .text.nrf_timer_frequency_set
                 0x0000000000027a12       0x2a Output/Robot_v1_1 Debug/Obj/main.o
- .text.main     0x0000000000027a3c      0x1f4 Output/Robot_v1_1 Debug/Obj/main.o
+ .text.main     0x0000000000027a3c      0x274 Output/Robot_v1_1 Debug/Obj/main.o
                 0x0000000000027a3c                main
  .text.step_mode_experiment
-                0x0000000000027c30       0xd4 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027c30                step_mode_experiment
- .text.led_off  0x0000000000027d04        0xc Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d04                led_off
- .text.led_on   0x0000000000027d10        0xc Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d10                led_on
+                0x0000000000027cb0       0xd4 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027cb0                step_mode_experiment
+ .text.led_off  0x0000000000027d84        0xc Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027d84                led_off
+ .text.led_on   0x0000000000027d90        0xc Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027d90                led_on
  .text.motors_sleep
-                0x0000000000027d1c        0xc Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d1c                motors_sleep
+                0x0000000000027d9c        0xc Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027d9c                motors_sleep
  .text.motors_wake
-                0x0000000000027d28        0xc Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d28                motors_wake
+                0x0000000000027da8        0xc Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027da8                motors_wake
  .text.motors_forward
-                0x0000000000027d34       0x20 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d34                motors_forward
+                0x0000000000027db4       0x20 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027db4                motors_forward
  .text.motors_backward
-                0x0000000000027d54       0x12 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d54                motors_backward
+                0x0000000000027dd4       0x12 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027dd4                motors_backward
  .text.motors_right
-                0x0000000000027d66       0x12 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d66                motors_right
+                0x0000000000027de6       0x12 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027de6                motors_right
  .text.motors_left
-                0x0000000000027d78       0x12 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d78                motors_left
- *fill*         0x0000000000027d8a        0x2 
+                0x0000000000027df8       0x12 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027df8                motors_left
+ *fill*         0x0000000000027e0a        0x2 
  .text.stepping_mode
-                0x0000000000027d8c       0xe8 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027d8c                stepping_mode
+                0x0000000000027e0c       0xe8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027e0c                stepping_mode
  .text.configure_VLX6180
-                0x0000000000027e74        0xe Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027e74                configure_VLX6180
+                0x0000000000027ef4        0xe Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027ef4                configure_VLX6180
  .text.VLX6180_init
-                0x0000000000027e82       0x22 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027e82                VLX6180_init
+                0x0000000000027f02       0x22 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027f02                VLX6180_init
  .text.TIMER1_IRQHandler
-                0x0000000000027ea4       0x44 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027ea4                TIMER1_IRQHandler
+                0x0000000000027f24       0x44 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027f24                TIMER1_IRQHandler
  .text.twi_init
-                0x0000000000027ee8       0x44 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027ee8                twi_init
+                0x0000000000027f68       0x44 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027f68                twi_init
  .text.pwm_motor_stepping
-                0x0000000000027f2c       0x54 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027f2c                pwm_motor_stepping
+                0x0000000000027fac       0x54 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000027fac                pwm_motor_stepping
  .text.pwm_buzzer_frequency
-                0x0000000000027f80       0x94 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000027f80                pwm_buzzer_frequency
+                0x0000000000028000       0x94 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028000                pwm_buzzer_frequency
  .text.stop_buzzer
-                0x0000000000028014       0x10 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028014                stop_buzzer
+                0x0000000000028094       0x10 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028094                stop_buzzer
  .text.stop_stepping
-                0x0000000000028024       0x10 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028024                stop_stepping
+                0x00000000000280a4       0x10 Output/Robot_v1_1 Debug/Obj/main.o
+                0x00000000000280a4                stop_stepping
  .text.uart_init
-                0x0000000000028034       0x5c Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028034                uart_init
+                0x00000000000280b4       0x5c Output/Robot_v1_1 Debug/Obj/main.o
+                0x00000000000280b4                uart_init
  .text.my_configure
-                0x0000000000028090       0xf4 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028090                my_configure
- .text.do_dft   0x0000000000028184       0xc8 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028184                do_dft
+                0x0000000000028110       0xf4 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028110                my_configure
+ .text.do_dft   0x0000000000028204       0xc8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028204                do_dft
  .text.gap_params_init
-                0x000000000002824c       0xa4 Output/Robot_v1_1 Debug/Obj/main.o
+                0x00000000000282cc       0xa4 Output/Robot_v1_1 Debug/Obj/main.o
  .text.gatt_init
-                0x00000000000282f0       0x34 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028370       0x34 Output/Robot_v1_1 Debug/Obj/main.o
  .text.advertising_init
-                0x0000000000028324       0x7c Output/Robot_v1_1 Debug/Obj/main.o
- .text.add_second_char
-                0x00000000000283a0      0x110 Output/Robot_v1_1 Debug/Obj/main.o
- .text.add_first_char
-                0x00000000000284b0      0x16c Output/Robot_v1_1 Debug/Obj/main.o
+                0x00000000000283a4       0x7c Output/Robot_v1_1 Debug/Obj/main.o
+ .text.add_cmd_characteristic
+                0x0000000000028420      0x110 Output/Robot_v1_1 Debug/Obj/main.o
+ .text.add_data_characteristic
+                0x0000000000028530      0x16c Output/Robot_v1_1 Debug/Obj/main.o
  .text.services_init
-                0x000000000002861c       0x98 Output/Robot_v1_1 Debug/Obj/main.o
+                0x000000000002869c       0x98 Output/Robot_v1_1 Debug/Obj/main.o
  .text.on_conn_params_evt
-                0x00000000000286b4       0x44 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028734       0x44 Output/Robot_v1_1 Debug/Obj/main.o
  .text.conn_params_error_handler
-                0x00000000000286f8       0x20 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028778       0x20 Output/Robot_v1_1 Debug/Obj/main.o
  .text.conn_params_init
-                0x0000000000028718       0x70 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028798       0x70 Output/Robot_v1_1 Debug/Obj/main.o
  .text.advertising_start
-                0x0000000000028788       0x5c Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028808       0x5c Output/Robot_v1_1 Debug/Obj/main.o
  .text.ble_evt_handler
-                0x00000000000287e4      0x33c Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028864      0x33c Output/Robot_v1_1 Debug/Obj/main.o
  .text.on_write
-                0x0000000000028b20       0x6c Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028b20                on_write
+                0x0000000000028ba0       0x6c Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028ba0                on_write
  .text.ble_bill_on_ble_evt
-                0x0000000000028b8c       0x22 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000028b8c                ble_bill_on_ble_evt
- *fill*         0x0000000000028bae        0x2 
+                0x0000000000028c0c       0x22 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028c0c                ble_bill_on_ble_evt
+ *fill*         0x0000000000028c2e        0x2 
  .text.ble_stack_init
-                0x0000000000028bb0       0x74 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028c30       0x74 Output/Robot_v1_1 Debug/Obj/main.o
  .text.timers_init
-                0x0000000000028c24       0x2c Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000028ca4       0x2c Output/Robot_v1_1 Debug/Obj/main.o
  .text.nrf_delay_us
-                0x0000000000028c50       0xa0 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028cd0       0xa0 Output/Robot_v1_1 Debug/Obj/vl6180.o
  .text.nrf_delay_ms
-                0x0000000000028cf0       0x1e Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028d70       0x1e Output/Robot_v1_1 Debug/Obj/vl6180.o
  .text.VL6180xInit
-                0x0000000000028d0e      0x128 Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028d0e                VL6180xInit
+                0x0000000000028d8e      0x128 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028d8e                VL6180xInit
  .text.VL6180xDefautSettings
-                0x0000000000028e36       0x94 Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028e36                VL6180xDefautSettings
+                0x0000000000028eb6       0x94 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028eb6                VL6180xDefautSettings
  .text.getDistance
-                0x0000000000028eca       0x24 Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028eca                getDistance
- *fill*         0x0000000000028eee        0x2 
+                0x0000000000028f4a       0x24 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028f4a                getDistance
+ *fill*         0x0000000000028f6e        0x2 
  .text.VL6180x_setRegister
-                0x0000000000028ef0       0x50 Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028ef0                VL6180x_setRegister
+                0x0000000000028f70       0x50 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028f70                VL6180x_setRegister
  .text.VL6180x_setRegister16bit
-                0x0000000000028f40       0x60 Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028f40                VL6180x_setRegister16bit
+                0x0000000000028fc0       0x60 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000028fc0                VL6180x_setRegister16bit
  .text.VL6180x_getRegister
-                0x0000000000028fa0       0x5c Output/Robot_v1_1 Debug/Obj/vl6180.o
-                0x0000000000028fa0                VL6180x_getRegister
+                0x0000000000029020       0x5c Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x0000000000029020                VL6180x_getRegister
  .text.sd_ble_gap_addr_get
-                0x0000000000028ffc        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002907c        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.sd_ble_gap_adv_data_set
-                0x0000000000029004        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029084        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.sd_ble_gap_appearance_get
-                0x000000000002900c        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002908c        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.sd_ble_gap_device_name_get
-                0x0000000000029014        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029094        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.sd_ble_uuid_encode
-                0x000000000002901c        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002909c        0x8 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.uint16_encode
-                0x0000000000029024       0x2c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000290a4       0x2c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.ble_device_addr_encode
-                0x0000000000029050       0xce Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000290d0       0xce Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.name_encode
-                0x000000000002911e      0x13e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002919e      0x13e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.appearance_encode
-                0x000000000002925c       0x9c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000292dc       0x9c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.flags_encode
-                0x00000000000292f8       0x7e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029378       0x7e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.tx_power_level_encode
-                0x0000000000029376       0x7e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000293f6       0x7e Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.uuid_list_sized_encode
-                0x00000000000293f4      0x150 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029474      0x150 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.uuid_list_encode
-                0x0000000000029544       0x66 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000295c4       0x66 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.conn_int_check
-                0x00000000000295aa       0x78 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002962a       0x78 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.conn_int_encode
-                0x0000000000029622       0xc0 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x00000000000296a2       0xc0 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.manuf_specific_data_encode
-                0x00000000000296e2       0xe0 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029762       0xe0 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.service_data_encode
-                0x00000000000297c2      0x108 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029842      0x108 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.ble_advdata_encode
-                0x00000000000298ca      0x1d2 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
-                0x00000000000298ca                ble_advdata_encode
+                0x000000000002994a      0x1d2 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000002994a                ble_advdata_encode
  .text.advdata_check
-                0x0000000000029a9c       0x1c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029b1c       0x1c Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.srdata_check
-                0x0000000000029ab8       0x18 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029b38       0x18 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .text.ble_advdata_set
-                0x0000000000029ad0       0xb4 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
-                0x0000000000029ad0                ble_advdata_set
+                0x0000000000029b50       0xb4 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x0000000000029b50                ble_advdata_set
  .text.sd_ble_gap_conn_param_update
-                0x0000000000029b84        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c04        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.sd_ble_gap_disconnect
-                0x0000000000029b8c        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c0c        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.sd_ble_gap_ppcp_set
-                0x0000000000029b94        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c14        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.sd_ble_gap_ppcp_get
-                0x0000000000029b9c        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c1c        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.instance_get
-                0x0000000000029ba4       0x50 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c24       0x50 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.instance_claim
-                0x0000000000029bf4       0x34 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029c74       0x34 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.instance_free
-                0x0000000000029c28       0x12 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029ca8       0x12 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.is_conn_params_ok
-                0x0000000000029c3a       0xca Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029cba       0xca Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.send_error_evt
-                0x0000000000029d04       0x24 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029d84       0x24 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.send_update_request
-                0x0000000000029d28       0x40 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029da8       0x40 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.update_timeout_handler
-                0x0000000000029d68       0xb0 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029de8       0xb0 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.ble_conn_params_init
-                0x0000000000029e18       0xd4 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
-                0x0000000000029e18                ble_conn_params_init
+                0x0000000000029e98       0xd4 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029e98                ble_conn_params_init
  .text.conn_params_negotiation
-                0x0000000000029eec       0x7c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029f6c       0x7c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.on_connect
-                0x0000000000029f68       0x84 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000029fe8       0x84 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.on_disconnect
-                0x0000000000029fec       0x46 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
- *fill*         0x000000000002a032        0x2 
+                0x000000000002a06c       0x46 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+ *fill*         0x000000000002a0b2        0x2 
  .text.on_write
-                0x000000000002a034       0x7c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x000000000002a0b4       0x7c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.on_conn_params_update
-                0x000000000002a0b0       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x000000000002a130       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.ble_evt_handler
-                0x000000000002a104       0x4c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x000000000002a184       0x4c Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .text.record_activate
-                0x000000000002a150       0x74 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a1d0       0x74 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.record_invalidate
-                0x000000000002a1c4       0x30 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a244       0x30 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.record_set_disconnected
-                0x000000000002a1f4       0x28 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a274       0x28 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.record_purge_disconnected
-                0x000000000002a21c       0x5c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a29c       0x5c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.user_flag_is_acquired
-                0x000000000002a278       0x2c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a2f8       0x2c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.ble_evt_handler
-                0x000000000002a2a4       0xcc Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a324       0xcc Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .text.ble_conn_state_role
-                0x000000000002a370       0x64 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a370                ble_conn_state_role
+                0x000000000002a3f0       0x64 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a3f0                ble_conn_state_role
  .text.ble_conn_state_encrypted
-                0x000000000002a3d4       0x2c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a3d4                ble_conn_state_encrypted
+                0x000000000002a454       0x2c Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a454                ble_conn_state_encrypted
  .text.ble_conn_state_conn_handles
-                0x000000000002a400       0x24 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a400                ble_conn_state_conn_handles
+                0x000000000002a480       0x24 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a480                ble_conn_state_conn_handles
  .text.ble_conn_state_user_flag_get
-                0x000000000002a424       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a424                ble_conn_state_user_flag_get
+                0x000000000002a4a4       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a4a4                ble_conn_state_user_flag_get
  .text.ble_conn_state_user_flag_set
-                0x000000000002a478       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a478                ble_conn_state_user_flag_set
+                0x000000000002a4f8       0x54 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a4f8                ble_conn_state_user_flag_set
  .text.ble_conn_state_user_flag_collection
-                0x000000000002a4cc       0x38 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
-                0x000000000002a4cc                ble_conn_state_user_flag_collection
+                0x000000000002a54c       0x38 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000002a54c                ble_conn_state_user_flag_collection
  .text.uint16_decode
-                0x000000000002a504       0x20 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+                0x000000000002a584       0x20 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
  .text.ble_srv_is_notification_enabled
-                0x000000000002a524       0x2c Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
-                0x000000000002a524                ble_srv_is_notification_enabled
+                0x000000000002a5a4       0x2c Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+                0x000000000002a5a4                ble_srv_is_notification_enabled
  .text.sdk_mapped_flags_any_set
-                0x000000000002a550       0x16 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
- *fill*         0x000000000002a566        0x2 
+                0x000000000002a5d0       0x16 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+ *fill*         0x000000000002a5e6        0x2 
  .text.evt_send
-                0x000000000002a568       0x44 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a5e8       0x44 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.cccd_written
-                0x000000000002a5ac       0x32 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a62c       0x32 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.send_unexpected_error
-                0x000000000002a5de       0x3c Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
- *fill*         0x000000000002a61a        0x2 
+                0x000000000002a65e       0x3c Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+ *fill*         0x000000000002a69a        0x2 
  .text.local_db_apply_in_evt
-                0x000000000002a61c       0xb4 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a69c       0xb4 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.local_db_update
-                0x000000000002a6d0       0x30 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a750       0x30 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.local_db_update_in_evt
-                0x000000000002a700       0xa4 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a780       0xa4 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.service_changed_send_in_evt
-                0x000000000002a7a4       0xe8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a824       0xe8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.pending_flags_check
-                0x000000000002a88c      0x100 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002a90c      0x100 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.apply_pending_flags_check
-                0x000000000002a98c       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002aa0c       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.update_pending_flags_check
-                0x000000000002a9a0       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002aa20       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.service_changed_pending_flags_check
-                0x000000000002a9b4       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002aa34       0x14 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .text.gcm_im_evt_handler
-                0x000000000002a9c8       0x48 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
-                0x000000000002a9c8                gcm_im_evt_handler
+                0x000000000002aa48       0x48 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002aa48                gcm_im_evt_handler
  .text.gcm_pdb_evt_handler
-                0x000000000002aa10       0xc8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
-                0x000000000002aa10                gcm_pdb_evt_handler
+                0x000000000002aa90       0xc8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002aa90                gcm_pdb_evt_handler
  .text.gcm_ble_evt_handler
-                0x000000000002aad8       0xc8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
-                0x000000000002aad8                gcm_ble_evt_handler
+                0x000000000002ab58       0xc8 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x000000000002ab58                gcm_ble_evt_handler
  .text.sd_ble_gatts_service_changed
-                0x000000000002aba0        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002ac20        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .text.sd_ble_gatts_sys_attr_set
-                0x000000000002aba8        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002ac28        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .text.sd_ble_gatts_sys_attr_get
-                0x000000000002abb0        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002ac30        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .text.sd_ble_gatts_initial_user_handle_get
-                0x000000000002abb8        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002ac38        0x8 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .text.service_changed_pending_set
-                0x000000000002abc0       0x68 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002ac40       0x68 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .text.gscm_pdb_evt_handler
-                0x000000000002ac28       0x24 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002ac28                gscm_pdb_evt_handler
+                0x000000000002aca8       0x24 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002aca8                gscm_pdb_evt_handler
  .text.gscm_local_db_cache_update
-                0x000000000002ac4c       0xe6 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002ac4c                gscm_local_db_cache_update
+                0x000000000002accc       0xe6 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002accc                gscm_local_db_cache_update
  .text.gscm_local_db_cache_apply
-                0x000000000002ad32       0xf2 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002ad32                gscm_local_db_cache_apply
+                0x000000000002adb2       0xf2 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002adb2                gscm_local_db_cache_apply
  .text.gscm_service_changed_ind_needed
-                0x000000000002ae24       0x46 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002ae24                gscm_service_changed_ind_needed
- *fill*         0x000000000002ae6a        0x2 
+                0x000000000002aea4       0x46 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002aea4                gscm_service_changed_ind_needed
+ *fill*         0x000000000002aeea        0x2 
  .text.gscm_service_changed_ind_send
-                0x000000000002ae6c       0x68 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002ae6c                gscm_service_changed_ind_send
+                0x000000000002aeec       0x68 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002aeec                gscm_service_changed_ind_send
  .text.gscm_db_change_notification_done
-                0x000000000002aed4       0x30 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
-                0x000000000002aed4                gscm_db_change_notification_done
+                0x000000000002af54       0x30 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000002af54                gscm_db_change_notification_done
  .text.sd_ecb_block_encrypt
-                0x000000000002af04        0x8 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002af84        0x8 Output/Robot_v1_1 Debug/Obj/id_manager.o
  .text.evt_send
-                0x000000000002af0c       0x30 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002af8c       0x30 Output/Robot_v1_1 Debug/Obj/id_manager.o
  .text.get_free_connection
-                0x000000000002af3c       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002af3c                get_free_connection
+                0x000000000002afbc       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002afbc                get_free_connection
  .text.get_connection_by_conn_handle
-                0x000000000002af94       0x64 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002af94                get_connection_by_conn_handle
+                0x000000000002b014       0x64 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b014                get_connection_by_conn_handle
  .text.new_connection
-                0x000000000002aff8       0xc0 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002aff8                new_connection
+                0x000000000002b078       0xc0 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b078                new_connection
  .text.is_valid_irk
-                0x000000000002b0b8       0x2e Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b0b8                is_valid_irk
+                0x000000000002b138       0x2e Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b138                is_valid_irk
  .text.addr_compare
-                0x000000000002b0e6       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b0e6                addr_compare
+                0x000000000002b166       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b166                addr_compare
  .text.im_ble_evt_handler
-                0x000000000002b13e      0x124 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b13e                im_ble_evt_handler
+                0x000000000002b1be      0x124 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b1be                im_ble_evt_handler
  .text.im_is_duplicate_bonding_data
-                0x000000000002b262       0xf6 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b262                im_is_duplicate_bonding_data
+                0x000000000002b2e2       0xf6 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b2e2                im_is_duplicate_bonding_data
  .text.im_find_duplicate_bonding_data
-                0x000000000002b358       0x54 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b358                im_find_duplicate_bonding_data
+                0x000000000002b3d8       0x54 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b3d8                im_find_duplicate_bonding_data
  .text.im_peer_id_get_by_conn_handle
-                0x000000000002b3ac       0x48 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b3ac                im_peer_id_get_by_conn_handle
+                0x000000000002b42c       0x48 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b42c                im_peer_id_get_by_conn_handle
  .text.im_ble_addr_get
-                0x000000000002b3f4       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b3f4                im_ble_addr_get
+                0x000000000002b474       0x58 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b474                im_ble_addr_get
  .text.im_master_ids_compare
-                0x000000000002b44c       0x52 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b44c                im_master_ids_compare
+                0x000000000002b4cc       0x52 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b4cc                im_master_ids_compare
  .text.im_peer_id_get_by_master_id
-                0x000000000002b49e       0x56 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b49e                im_peer_id_get_by_master_id
+                0x000000000002b51e       0x56 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b51e                im_peer_id_get_by_master_id
  .text.im_conn_handle_get
-                0x000000000002b4f4       0x54 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b4f4                im_conn_handle_get
+                0x000000000002b574       0x54 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b574                im_conn_handle_get
  .text.im_master_id_is_valid
-                0x000000000002b548       0x3c Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b548                im_master_id_is_valid
+                0x000000000002b5c8       0x3c Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b5c8                im_master_id_is_valid
  .text.peer_id_set
-                0x000000000002b584       0x4c Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b604       0x4c Output/Robot_v1_1 Debug/Obj/id_manager.o
  .text.im_new_peer_id
-                0x000000000002b5d0       0x2a Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b5d0                im_new_peer_id
+                0x000000000002b650       0x2a Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b650                im_new_peer_id
  .text.im_peer_free
-                0x000000000002b5fa       0x50 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b5fa                im_peer_free
- .text.ah       0x000000000002b64a       0xa0 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b64a                ah
+                0x000000000002b67a       0x50 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b67a                im_peer_free
+ .text.ah       0x000000000002b6ca       0xa0 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b6ca                ah
  .text.im_address_resolve
-                0x000000000002b6ea       0x62 Output/Robot_v1_1 Debug/Obj/id_manager.o
-                0x000000000002b6ea                im_address_resolve
+                0x000000000002b76a       0x62 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x000000000002b76a                im_address_resolve
  .text.sd_ble_gap_data_length_update
-                0x000000000002b74c        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b7cc        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.sd_ble_gattc_exchange_mtu_request
-                0x000000000002b754        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b7d4        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.sd_ble_gatts_exchange_mtu_reply
-                0x000000000002b75c        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b7dc        0x8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.link_init
-                0x000000000002b764       0x2e Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b7e4       0x2e Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.data_length_update
-                0x000000000002b792       0x54 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b812       0x54 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_connected_evt
-                0x000000000002b7e6       0xa0 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b866       0xa0 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_disconnected_evt
-                0x000000000002b886       0x22 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b906       0x22 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_exchange_mtu_rsp_evt
-                0x000000000002b8a8       0x92 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b928       0x92 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_exchange_mtu_request_evt
-                0x000000000002b93a       0x9e Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002b9ba       0x9e Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_data_length_update_evt
-                0x000000000002b9d8       0x7c Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002ba58       0x7c Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.on_data_length_update_request_evt
-                0x000000000002ba54       0x6a Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002bad4       0x6a Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .text.nrf_ble_gatt_init
-                0x000000000002babe       0x56 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
-                0x000000000002babe                nrf_ble_gatt_init
+                0x000000000002bb3e       0x56 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002bb3e                nrf_ble_gatt_init
  .text.nrf_ble_gatt_on_ble_evt
-                0x000000000002bb14       0xd8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
-                0x000000000002bb14                nrf_ble_gatt_on_ble_evt
+                0x000000000002bb94       0xd8 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x000000000002bb94                nrf_ble_gatt_on_ble_evt
  .text.pds_evt_send
-                0x000000000002bbec       0x34 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bc6c       0x34 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.peer_id_to_file_id
-                0x000000000002bc20       0x18 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bca0       0x18 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.file_id_to_peer_id
-                0x000000000002bc38       0x18 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bcb8       0x18 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.peer_data_id_to_record_key
-                0x000000000002bc50       0x1a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bcd0       0x1a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.peer_data_id_is_valid
-                0x000000000002bc6a       0x4a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bcea       0x4a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.send_unexpected_error
-                0x000000000002bcb4       0x3c Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bd34       0x3c Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.peer_data_delete
-                0x000000000002bcf0       0xd8 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bd70       0xd8 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.peer_data_find
-                0x000000000002bdc8       0x6e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002be48       0x6e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .text.pds_peer_data_read
-                0x000000000002be36       0xc4 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002be36                pds_peer_data_read
- *fill*         0x000000000002befa        0x2 
+                0x000000000002beb6       0xc4 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002beb6                pds_peer_data_read
+ *fill*         0x000000000002bf7a        0x2 
  .text.pds_peer_data_iterate_prepare
-                0x000000000002befc       0x14 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002befc                pds_peer_data_iterate_prepare
+                0x000000000002bf7c       0x14 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bf7c                pds_peer_data_iterate_prepare
  .text.pds_peer_data_iterate
-                0x000000000002bf10       0xa8 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002bf10                pds_peer_data_iterate
+                0x000000000002bf90       0xa8 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002bf90                pds_peer_data_iterate
  .text.pds_space_reserve
-                0x000000000002bfb8       0x54 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002bfb8                pds_space_reserve
+                0x000000000002c038       0x54 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c038                pds_space_reserve
  .text.pds_space_reserve_cancel
-                0x000000000002c00c       0x24 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c00c                pds_space_reserve_cancel
+                0x000000000002c08c       0x24 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c08c                pds_space_reserve_cancel
  .text.pds_peer_data_store
-                0x000000000002c030      0x12c Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c030                pds_peer_data_store
+                0x000000000002c0b0      0x12c Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c0b0                pds_peer_data_store
  .text.pds_peer_id_allocate
-                0x000000000002c15c       0x10 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c15c                pds_peer_id_allocate
+                0x000000000002c1dc       0x10 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c1dc                pds_peer_id_allocate
  .text.pds_peer_id_free
-                0x000000000002c16c       0x2e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c16c                pds_peer_id_free
+                0x000000000002c1ec       0x2e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c1ec                pds_peer_id_free
  .text.pds_peer_id_is_allocated
-                0x000000000002c19a       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c19a                pds_peer_id_is_allocated
+                0x000000000002c21a       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c21a                pds_peer_id_is_allocated
  .text.pds_next_peer_id_get
-                0x000000000002c1b8       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c1b8                pds_next_peer_id_get
+                0x000000000002c238       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c238                pds_next_peer_id_get
  .text.pds_next_deleted_peer_id_get
-                0x000000000002c1d6       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
-                0x000000000002c1d6                pds_next_deleted_peer_id_get
+                0x000000000002c256       0x1e Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x000000000002c256                pds_next_deleted_peer_id_get
  .text.write_buffer_record_invalidate
-                0x000000000002c1f4       0x44 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c274       0x44 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.write_buffer_record_find_next
-                0x000000000002c238       0x4c Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c2b8       0x4c Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.write_buffer_record_find
-                0x000000000002c284       0x7e Output/Robot_v1_1 Debug/Obj/peer_database.o
- *fill*         0x000000000002c302        0x2 
+                0x000000000002c304       0x7e Output/Robot_v1_1 Debug/Obj/peer_database.o
+ *fill*         0x000000000002c382        0x2 
  .text.write_buffer_record_find_stored
-                0x000000000002c304       0x40 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c384       0x40 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.write_buffer_record_find_unused
-                0x000000000002c344       0x12 Output/Robot_v1_1 Debug/Obj/peer_database.o
- *fill*         0x000000000002c356        0x2 
+                0x000000000002c3c4       0x12 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ *fill*         0x000000000002c3d6        0x2 
  .text.write_buffer_record_release
-                0x000000000002c358       0x44 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c3d8       0x44 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.write_buffer_record_acquire
-                0x000000000002c39c       0x4c Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c41c       0x4c Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.pdb_evt_send
-                0x000000000002c3e8       0x30 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c468       0x30 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.peer_data_point_to_buffer
-                0x000000000002c418       0x46 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c498       0x46 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.peer_data_const_point_to_buffer
-                0x000000000002c45e       0x28 Output/Robot_v1_1 Debug/Obj/peer_database.o
- *fill*         0x000000000002c486        0x2 
+                0x000000000002c4de       0x28 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ *fill*         0x000000000002c506        0x2 
  .text.write_buf_length_words_set
-                0x000000000002c488       0x68 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c508       0x68 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.write_buf_store
-                0x000000000002c4f0      0x114 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c4f0                write_buf_store
+                0x000000000002c570      0x114 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c570                write_buf_store
  .text.write_buf_store_in_event
-                0x000000000002c604       0x52 Output/Robot_v1_1 Debug/Obj/peer_database.o
- *fill*         0x000000000002c656        0x2 
+                0x000000000002c684       0x52 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ *fill*         0x000000000002c6d6        0x2 
  .text.reattempt_previous_operations
-                0x000000000002c658       0x90 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c6d8       0x90 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .text.pdb_pds_evt_handler
-                0x000000000002c6e8       0xa8 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c6e8                pdb_pds_evt_handler
+                0x000000000002c768       0xa8 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c768                pdb_pds_evt_handler
  .text.pdb_peer_allocate
-                0x000000000002c790        0xc Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c790                pdb_peer_allocate
+                0x000000000002c810        0xc Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c810                pdb_peer_allocate
  .text.pdb_peer_free
-                0x000000000002c79c       0x98 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c79c                pdb_peer_free
+                0x000000000002c81c       0x98 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c81c                pdb_peer_free
  .text.pdb_peer_data_ptr_get
-                0x000000000002c834       0x2c Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c834                pdb_peer_data_ptr_get
+                0x000000000002c8b4       0x2c Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c8b4                pdb_peer_data_ptr_get
  .text.pdb_write_buf_get
-                0x000000000002c860      0x1c4 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002c860                pdb_write_buf_get
+                0x000000000002c8e0      0x1c4 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002c8e0                pdb_write_buf_get
  .text.pdb_write_buf_release
-                0x000000000002ca24       0x60 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002ca24                pdb_write_buf_release
+                0x000000000002caa4       0x60 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002caa4                pdb_write_buf_release
  .text.pdb_write_buf_store_prepare
-                0x000000000002ca84       0xb8 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002ca84                pdb_write_buf_store_prepare
+                0x000000000002cb04       0xb8 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cb04                pdb_write_buf_store_prepare
  .text.pdb_write_buf_store
-                0x000000000002cb3c       0x66 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002cb3c                pdb_write_buf_store
+                0x000000000002cbbc       0x66 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cbbc                pdb_write_buf_store
  .text.pdb_next_peer_id_get
-                0x000000000002cba2       0x1e Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002cba2                pdb_next_peer_id_get
+                0x000000000002cc22       0x1e Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cc22                pdb_next_peer_id_get
  .text.pdb_next_deleted_peer_id_get
-                0x000000000002cbc0       0x1e Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002cbc0                pdb_next_deleted_peer_id_get
+                0x000000000002cc40       0x1e Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cc40                pdb_next_deleted_peer_id_get
  .text.pdb_peer_data_load
-                0x000000000002cbde       0x34 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002cbde                pdb_peer_data_load
+                0x000000000002cc5e       0x34 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cc5e                pdb_peer_data_load
  .text.pdb_raw_store
-                0x000000000002cc12       0x26 Output/Robot_v1_1 Debug/Obj/peer_database.o
-                0x000000000002cc12                pdb_raw_store
- .text.claim    0x000000000002cc38       0x80 Output/Robot_v1_1 Debug/Obj/peer_id.o
- .text.release  0x000000000002ccb8       0x28 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cc92       0x26 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000002cc92                pdb_raw_store
+ .text.claim    0x000000000002ccb8       0x80 Output/Robot_v1_1 Debug/Obj/peer_id.o
+ .text.release  0x000000000002cd38       0x28 Output/Robot_v1_1 Debug/Obj/peer_id.o
  .text.peer_id_allocate
-                0x000000000002cce0       0x24 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cce0                peer_id_allocate
+                0x000000000002cd60       0x24 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cd60                peer_id_allocate
  .text.peer_id_delete
-                0x000000000002cd04       0x4c Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cd04                peer_id_delete
+                0x000000000002cd84       0x4c Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cd84                peer_id_delete
  .text.peer_id_free
-                0x000000000002cd50       0x34 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cd50                peer_id_free
+                0x000000000002cdd0       0x34 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cdd0                peer_id_free
  .text.peer_id_is_allocated
-                0x000000000002cd84       0x30 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cd84                peer_id_is_allocated
+                0x000000000002ce04       0x30 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002ce04                peer_id_is_allocated
  .text.peer_id_is_deleted
-                0x000000000002cdb4       0x30 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cdb4                peer_id_is_deleted
+                0x000000000002ce34       0x30 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002ce34                peer_id_is_deleted
  .text.next_id_get
-                0x000000000002cde4       0x60 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002cde4                next_id_get
+                0x000000000002ce64       0x60 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002ce64                next_id_get
  .text.peer_id_get_next_used
-                0x000000000002ce44       0x68 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002ce44                peer_id_get_next_used
+                0x000000000002cec4       0x68 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cec4                peer_id_get_next_used
  .text.peer_id_get_next_deleted
-                0x000000000002ceac       0x24 Output/Robot_v1_1 Debug/Obj/peer_id.o
-                0x000000000002ceac                peer_id_get_next_deleted
+                0x000000000002cf2c       0x24 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000002cf2c                peer_id_get_next_deleted
  .text.evt_send
-                0x000000000002ced0       0x3c Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002cf50       0x3c Output/Robot_v1_1 Debug/Obj/peer_manager.o
  .text.rank_vars_update
-                0x000000000002cf0c       0x44 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002cf8c       0x44 Output/Robot_v1_1 Debug/Obj/peer_manager.o
  .text.pm_pdb_evt_handler
-                0x000000000002cf50      0x210 Output/Robot_v1_1 Debug/Obj/peer_manager.o
-                0x000000000002cf50                pm_pdb_evt_handler
+                0x000000000002cfd0      0x210 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002cfd0                pm_pdb_evt_handler
  .text.pm_sm_evt_handler
-                0x000000000002d160       0x50 Output/Robot_v1_1 Debug/Obj/peer_manager.o
-                0x000000000002d160                pm_sm_evt_handler
+                0x000000000002d1e0       0x50 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002d1e0                pm_sm_evt_handler
  .text.pm_gcm_evt_handler
-                0x000000000002d1b0       0x14 Output/Robot_v1_1 Debug/Obj/peer_manager.o
-                0x000000000002d1b0                pm_gcm_evt_handler
+                0x000000000002d230       0x14 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002d230                pm_gcm_evt_handler
  .text.pm_im_evt_handler
-                0x000000000002d1c4       0x34 Output/Robot_v1_1 Debug/Obj/peer_manager.o
-                0x000000000002d1c4                pm_im_evt_handler
+                0x000000000002d244       0x34 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002d244                pm_im_evt_handler
  .text.ble_evt_handler
-                0x000000000002d1f8       0x38 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002d278       0x38 Output/Robot_v1_1 Debug/Obj/peer_manager.o
  .text.pm_peer_ranks_get
-                0x000000000002d230      0x12c Output/Robot_v1_1 Debug/Obj/peer_manager.o
-                0x000000000002d230                pm_peer_ranks_get
+                0x000000000002d2b0      0x12c Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000002d2b0                pm_peer_ranks_get
  .text.pm_buffer_block_acquire
-                0x000000000002d35c       0xcc Output/Robot_v1_1 Debug/Obj/pm_buffer.o
-                0x000000000002d35c                pm_buffer_block_acquire
+                0x000000000002d3dc       0xcc Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+                0x000000000002d3dc                pm_buffer_block_acquire
  .text.pm_buffer_ptr_get
-                0x000000000002d428       0x64 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
-                0x000000000002d428                pm_buffer_ptr_get
+                0x000000000002d4a8       0x64 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+                0x000000000002d4a8                pm_buffer_ptr_get
  .text.pm_buffer_release
-                0x000000000002d48c       0x5c Output/Robot_v1_1 Debug/Obj/pm_buffer.o
-                0x000000000002d48c                pm_buffer_release
+                0x000000000002d50c       0x5c Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+                0x000000000002d50c                pm_buffer_release
  .text.lock_by_mask
-                0x000000000002d4e8       0x6e Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x000000000002d568       0x6e Output/Robot_v1_1 Debug/Obj/pm_mutex.o
  .text.pm_mutex_lock
-                0x000000000002d556       0x44 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
-                0x000000000002d556                pm_mutex_lock
+                0x000000000002d5d6       0x44 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x000000000002d5d6                pm_mutex_lock
  .text.pm_mutex_unlock
-                0x000000000002d59a       0x8c Output/Robot_v1_1 Debug/Obj/pm_mutex.o
-                0x000000000002d59a                pm_mutex_unlock
+                0x000000000002d61a       0x8c Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x000000000002d61a                pm_mutex_unlock
  .text.pm_mutex_lock_first_available
-                0x000000000002d626       0x6c Output/Robot_v1_1 Debug/Obj/pm_mutex.o
-                0x000000000002d626                pm_mutex_lock_first_available
+                0x000000000002d6a6       0x6c Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x000000000002d6a6                pm_mutex_lock_first_available
  .text.pm_mutex_lock_status_get
-                0x000000000002d692       0x46 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
-                0x000000000002d692                pm_mutex_lock_status_get
+                0x000000000002d712       0x46 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x000000000002d712                pm_mutex_lock_status_get
  .text.sd_ble_gap_authenticate
-                0x000000000002d6d8        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d758        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sd_ble_gap_sec_params_reply
-                0x000000000002d6e0        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d760        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sd_ble_gap_sec_info_reply
-                0x000000000002d6e8        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d768        0x8 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_procedure
-                0x000000000002d6f0       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- .text.pairing  0x000000000002d718       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- .text.bonding  0x000000000002d740       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d770       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ .text.pairing  0x000000000002d798       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ .text.bonding  0x000000000002d7c0       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.peer_created
-                0x000000000002d768       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d7e8       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.allow_repairing
-                0x000000000002d790       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d810       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.evt_send
-                0x000000000002d7b8       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d838       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_start_send
-                0x000000000002d7f4       0x46 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d874       0x46 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.send_unexpected_error
-                0x000000000002d83a       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- *fill*         0x000000000002d876        0x2 
+                0x000000000002d8ba       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ *fill*         0x000000000002d8f6        0x2 
  .text.conn_sec_failure
-                0x000000000002d878       0x7c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d8f8       0x7c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.pairing_failure
-                0x000000000002d8f4       0xb0 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002d974       0xb0 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.encryption_failure
-                0x000000000002d9a4       0x30 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002da24       0x30 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.link_secure_failure
-                0x000000000002d9d4       0x64 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002da54       0x64 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_proc_start
-                0x000000000002da38       0xa0 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dab8       0xa0 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_proc_housekeeping
-                0x000000000002dad8       0x74 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002db58       0x74 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_info_request_process
-                0x000000000002db4c      0x10c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dbcc      0x10c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.send_config_req
-                0x000000000002dc58       0x34 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dcd8       0x34 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.disconnect_process
-                0x000000000002dc8c       0x34 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dd0c       0x34 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.send_params_req
-                0x000000000002dcc0       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dd40       0x3c Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_params_request_process
-                0x000000000002dcfc       0x4e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- *fill*         0x000000000002dd4a        0x2 
+                0x000000000002dd7c       0x4e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ *fill*         0x000000000002ddca        0x2 
  .text.auth_status_success_process
-                0x000000000002dd4c      0x1d4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002ddcc      0x1d4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.auth_status_failure_process
-                0x000000000002df20       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dfa0       0x28 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.auth_status_process
-                0x000000000002df48       0x26 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- *fill*         0x000000000002df6e        0x2 
+                0x000000000002dfc8       0x26 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ *fill*         0x000000000002dfee        0x2 
  .text.conn_sec_update_process
-                0x000000000002df70       0x84 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002dff0       0x84 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.sec_keyset_fill
-                0x000000000002dff4       0xc4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002e074       0xc4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.smd_params_reply
-                0x000000000002e0b8      0x1b4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
-                0x000000000002e0b8                smd_params_reply
+                0x000000000002e138      0x1b4 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002e138                smd_params_reply
  .text.link_secure_peripheral
-                0x000000000002e26c       0x2e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002e2ec       0x2e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .text.smd_link_secure
-                0x000000000002e29a       0x46 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
-                0x000000000002e29a                smd_link_secure
+                0x000000000002e31a       0x46 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002e31a                smd_link_secure
  .text.smd_ble_evt_handler
-                0x000000000002e2e0       0x84 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
-                0x000000000002e2e0                smd_ble_evt_handler
+                0x000000000002e360       0x84 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x000000000002e360                smd_ble_evt_handler
  .text.sdk_mapped_flags_any_set
-                0x000000000002e364       0x16 Output/Robot_v1_1 Debug/Obj/security_manager.o
- *fill*         0x000000000002e37a        0x2 
+                0x000000000002e3e4       0x16 Output/Robot_v1_1 Debug/Obj/security_manager.o
+ *fill*         0x000000000002e3fa        0x2 
  .text.evt_send
-                0x000000000002e37c       0x2c Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e3fc       0x2c Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.flags_set_from_err_code
-                0x000000000002e3a8       0xdc Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e428       0xdc Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.events_send_from_err_code
-                0x000000000002e484       0xa8 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e504       0xa8 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.params_req_send
-                0x000000000002e52c       0x44 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e5ac       0x44 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.new_context_get
-                0x000000000002e570       0x34 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e5f0       0x34 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.link_secure
-                0x000000000002e5a4      0x134 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e624      0x134 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.smd_params_reply_perform
-                0x000000000002e6d8       0x5c Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e758       0x5c Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.params_req_process
-                0x000000000002e734       0x1e Output/Robot_v1_1 Debug/Obj/security_manager.o
- *fill*         0x000000000002e752        0x2 
+                0x000000000002e7b4       0x1e Output/Robot_v1_1 Debug/Obj/security_manager.o
+ *fill*         0x000000000002e7d2        0x2 
  .text.sec_req_process
-                0x000000000002e754       0x88 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e7d4       0x88 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.evt_forward
-                0x000000000002e7dc       0x14 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e85c       0x14 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.sm_smd_evt_handler
-                0x000000000002e7f0       0x32 Output/Robot_v1_1 Debug/Obj/security_manager.o
-                0x000000000002e7f0                sm_smd_evt_handler
- *fill*         0x000000000002e822        0x2 
+                0x000000000002e870       0x32 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e870                sm_smd_evt_handler
+ *fill*         0x000000000002e8a2        0x2 
  .text.link_secure_pending_process
-                0x000000000002e824       0xcc Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e8a4       0xcc Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.params_reply_pending_process
-                0x000000000002e8f0       0x80 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e970       0x80 Output/Robot_v1_1 Debug/Obj/security_manager.o
  .text.sm_pdb_evt_handler
-                0x000000000002e970       0x5c Output/Robot_v1_1 Debug/Obj/security_manager.o
-                0x000000000002e970                sm_pdb_evt_handler
+                0x000000000002e9f0       0x5c Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002e9f0                sm_pdb_evt_handler
  .text.sm_ble_evt_handler
-                0x000000000002e9cc       0x24 Output/Robot_v1_1 Debug/Obj/security_manager.o
-                0x000000000002e9cc                sm_ble_evt_handler
+                0x000000000002ea4c       0x24 Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x000000000002ea4c                sm_ble_evt_handler
  .text.NVIC_SystemReset
-                0x000000000002e9f0       0x24 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ea70       0x24 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.SystemCoreClockUpdate
-                0x000000000002ea14       0x14 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
-                0x000000000002ea14                SystemCoreClockUpdate
+                0x000000000002ea94       0x14 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ea94                SystemCoreClockUpdate
  .text.SystemInit
-                0x000000000002ea28      0x2a8 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
-                0x000000000002ea28                SystemInit
+                0x000000000002eaa8      0x2a8 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002eaa8                SystemInit
  .text.errata_12
-                0x000000000002ecd0       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ed50       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_16
-                0x000000000002ed28       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002eda8       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_31
-                0x000000000002ed60       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ede0       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_32
-                0x000000000002edb8       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ee38       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_36
-                0x000000000002edf0       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ee70       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_37
-                0x000000000002ee48       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002eec8       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_57
-                0x000000000002ee80       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ef00       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_66
-                0x000000000002eeb8       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ef38       0x38 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_108
-                0x000000000002eef0       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002ef70       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.errata_136
-                0x000000000002ef48       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x000000000002efc8       0x58 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .text.NVIC_EnableIRQ
-                0x000000000002efa0       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f020       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.NVIC_SetPriority
-                0x000000000002efcc       0x50 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f04c       0x50 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.NVIC_GetPriority
-                0x000000000002f01c       0x48 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f09c       0x48 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.nrf_section_iter_get
-                0x000000000002f064       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f0e4       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.sd_softdevice_enable
-                0x000000000002f088        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f108        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.__sd_nvic_app_accessible_irq
-                0x000000000002f090       0x58 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f110       0x58 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.__sd_nvic_is_app_accessible_priority
-                0x000000000002f0e8       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f168       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.sd_nvic_EnableIRQ
-                0x000000000002f114       0x88 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f194       0x88 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.sd_nvic_SetPriority
-                0x000000000002f19c       0x4a Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
- *fill*         0x000000000002f1e6        0x2 
+                0x000000000002f21c       0x4a Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+ *fill*         0x000000000002f266        0x2 
  .text.sdh_request_observer_notify
-                0x000000000002f1e8       0x64 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f268       0x64 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.sdh_state_observer_notify
-                0x000000000002f24c       0x58 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f2cc       0x58 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.softdevices_evt_irq_enable
-                0x000000000002f2a4       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f324       0x2c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.swi_interrupt_priority_workaround
-                0x000000000002f2d0       0x4c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f350       0x4c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .text.nrf_sdh_enable_request
-                0x000000000002f31c       0x88 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
-                0x000000000002f31c                nrf_sdh_enable_request
+                0x000000000002f39c       0x88 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f39c                nrf_sdh_enable_request
  .text.nrf_sdh_is_enabled
-                0x000000000002f3a4        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
-                0x000000000002f3a4                nrf_sdh_is_enabled
+                0x000000000002f424        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f424                nrf_sdh_is_enabled
  .text.nrf_sdh_evts_poll
-                0x000000000002f3b0       0x4c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
-                0x000000000002f3b0                nrf_sdh_evts_poll
+                0x000000000002f430       0x4c Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f430                nrf_sdh_evts_poll
  .text.SWI2_EGU2_IRQHandler
-                0x000000000002f3fc        0xa Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
-                0x000000000002f3fc                SWI2_EGU2_IRQHandler
+                0x000000000002f47c        0xa Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x000000000002f47c                SWI2_EGU2_IRQHandler
  .text.sd_ble_enable
-                0x000000000002f406        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f486        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .text.sd_ble_cfg_set
-                0x000000000002f40e        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f48e        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .text.sd_ble_evt_get
-                0x000000000002f416        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
- *fill*         0x000000000002f41e        0x2 
+                0x000000000002f496        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ *fill*         0x000000000002f49e        0x2 
  .text.nrf_section_iter_get
-                0x000000000002f420       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f4a0       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .text.nrf_sdh_ble_app_ram_start_get
-                0x000000000002f444       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
-                0x000000000002f444                nrf_sdh_ble_app_ram_start_get
+                0x000000000002f4c4       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f4c4                nrf_sdh_ble_app_ram_start_get
  .text.nrf_sdh_ble_default_cfg_set
-                0x000000000002f468       0xf2 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
-                0x000000000002f468                nrf_sdh_ble_default_cfg_set
+                0x000000000002f4e8       0xf2 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f4e8                nrf_sdh_ble_default_cfg_set
  .text.nrf_sdh_ble_enable
-                0x000000000002f55a       0x1e Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
-                0x000000000002f55a                nrf_sdh_ble_enable
+                0x000000000002f5da       0x1e Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f5da                nrf_sdh_ble_enable
  .text.nrf_sdh_ble_evts_poll
-                0x000000000002f578       0x8c Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x000000000002f5f8       0x8c Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .text.nrf_section_iter_get
-                0x000000000002f604       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x000000000002f684       0x24 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
  .text.sd_evt_get
-                0x000000000002f628        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x000000000002f6a8        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
  .text.nrf_sdh_soc_evts_poll
-                0x000000000002f630       0x78 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x000000000002f6b0       0x78 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
  .text.arm_rfft_fast_init_f32
-                0x000000000002f6a8      0x108 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
-                0x000000000002f6a8                arm_rfft_fast_init_f32
+                0x000000000002f728      0x108 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
+                0x000000000002f728                arm_rfft_fast_init_f32
  .text.arm_rfft_fast_f32
-                0x000000000002f7b0      0x188 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
-                0x000000000002f7b0                arm_rfft_fast_f32
+                0x000000000002f830      0x188 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
+                0x000000000002f830                arm_rfft_fast_f32
  .text.arm_cfft_radix8by2_f32
-                0x000000000002f938      0x1a4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
-                0x000000000002f938                arm_cfft_radix8by2_f32
+                0x000000000002f9b8      0x1a4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+                0x000000000002f9b8                arm_cfft_radix8by2_f32
  .text.arm_cfft_radix8by4_f32
-                0x000000000002fadc      0x4bc ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
-                0x000000000002fadc                arm_cfft_radix8by4_f32
+                0x000000000002fb5c      0x4bc ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+                0x000000000002fb5c                arm_cfft_radix8by4_f32
  .text.arm_cfft_f32
-                0x000000000002ff98       0xf4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
-                0x000000000002ff98                arm_cfft_f32
- .text          0x000000000003008c       0xc0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
-                0x000000000003008c                arm_bitreversal_32
-                0x00000000000300f6                arm_bitreversal_16
+                0x0000000000030018       0xf4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+                0x0000000000030018                arm_cfft_f32
+ .text          0x000000000003010c       0xc0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
+                0x000000000003010c                arm_bitreversal_32
+                0x0000000000030176                arm_bitreversal_16
  .text.arm_radix8_butterfly_f32
-                0x000000000003014c      0x5c4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
-                0x000000000003014c                arm_radix8_butterfly_f32
+                0x00000000000301cc      0x5c4 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
+                0x00000000000301cc                arm_radix8_butterfly_f32
  .text.libc.__float64_to_uint32
-                0x0000000000030710       0x2c C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
-                0x0000000000030710                __aeabi_d2uiz
-                0x0000000000030710                __float64_to_uint32
-                0x0000000000030710                __fixunsdfsi
+                0x0000000000030790       0x2c C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
+                0x0000000000030790                __aeabi_d2uiz
+                0x0000000000030790                __float64_to_uint32
+                0x0000000000030790                __fixunsdfsi
  .text.libc.__float32_to_float64
-                0x000000000003073c       0x38 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
-                0x000000000003073c                __float32_to_float64
-                0x000000000003073c                __aeabi_f2d
-                0x000000000003073c                __extendsfdf2
+                0x00000000000307bc       0x38 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
+                0x00000000000307bc                __float32_to_float64
+                0x00000000000307bc                __aeabi_f2d
+                0x00000000000307bc                __extendsfdf2
  .text.libc.__float64_div
-                0x0000000000030774      0x214 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
-                0x0000000000030774                __divdf3
-                0x0000000000030774                __float64_div
-                0x0000000000030774                __aeabi_ddiv
+                0x00000000000307f4      0x214 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libm_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libm_asm.o)
+                0x00000000000307f4                __divdf3
+                0x00000000000307f4                __float64_div
+                0x00000000000307f4                __aeabi_ddiv
  .text.libc.memcmp
-                0x0000000000030988       0x6a C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2.o)
-                0x0000000000030988                memcmp
- *fill*         0x00000000000309f2        0x2 
+                0x0000000000030a08       0x6a C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2.o)
+                0x0000000000030a08                memcmp
+ *fill*         0x0000000000030a72        0x2 
  .text.libc.memcpy
-                0x00000000000309f4       0x54 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
-                0x00000000000309f4                __aeabi_memcpy
-                0x00000000000309f4                memcpy
-                0x0000000000030a00                __aeabi_memcpy8
-                0x0000000000030a00                __aeabi_memcpy4
+                0x0000000000030a74       0x54 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
+                0x0000000000030a74                __aeabi_memcpy
+                0x0000000000030a74                memcpy
+                0x0000000000030a80                __aeabi_memcpy8
+                0x0000000000030a80                __aeabi_memcpy4
  .text.libc.memset
-                0x0000000000030a48       0x68 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
-                0x0000000000030a48                memset
+                0x0000000000030ac8       0x68 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
+                0x0000000000030ac8                memset
  .text.libc.strlen
-                0x0000000000030ab0       0x60 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
-                0x0000000000030ab0                strlen
-                0x0000000000030b10                __text_end__ = (__text_start__ + SIZEOF (.text))
-                0x000000000000d81c                __text_size__ = SIZEOF (.text)
-                0x0000000000030b10                __text_load_end__ = __text_end__
+                0x0000000000030b30       0x60 C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2_asm.o)
+                0x0000000000030b30                strlen
+                0x0000000000030b90                __text_end__ = (__text_start__ + SIZEOF (.text))
+                0x000000000000d89c                __text_size__ = SIZEOF (.text)
+                0x0000000000030b90                __text_load_end__ = __text_end__
 
 .vfp11_veneer   0x0000000100000000        0x0
  .vfp11_veneer  0x0000000100000000        0x0 linker stubs
@@ -12564,139 +12564,139 @@ Linker script and memory map
 .iplt           0x0000000100000000        0x0
  .iplt          0x0000000100000000        0x0 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
                 0x0000000000000001                . = ASSERT (((__text_start__ == __text_end__) || ((__text_end__ >= __FLASH_segment_start__) && (__text_end__ <= __FLASH_segment_end__))), error: .text is too large to fit in FLASH memory segment)
-                0x0000000000030b10                __sdh_soc_observers_load_start__ = ALIGN (__text_end__, 0x4)
+                0x0000000000030b90                __sdh_soc_observers_load_start__ = ALIGN (__text_end__, 0x4)
 
 .sdh_soc_observers
-                0x0000000000030b10        0x8
-                0x0000000000030b10                __sdh_soc_observers_start__ = .
-                0x0000000000030b10                __start_sdh_soc_observers = __sdh_soc_observers_start__
+                0x0000000000030b90        0x8
+                0x0000000000030b90                __sdh_soc_observers_start__ = .
+                0x0000000000030b90                __start_sdh_soc_observers = __sdh_soc_observers_start__
  *(SORT(.sdh_soc_observers*))
  .sdh_soc_observers0
-                0x0000000000030b10        0x8 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
-                0x0000000000030b18                __sdh_soc_observers_end__ = (__sdh_soc_observers_start__ + SIZEOF (.sdh_soc_observers))
+                0x0000000000030b90        0x8 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
+                0x0000000000030b98                __sdh_soc_observers_end__ = (__sdh_soc_observers_start__ + SIZEOF (.sdh_soc_observers))
                 0x0000000000000008                __sdh_soc_observers_size__ = SIZEOF (.sdh_soc_observers)
-                0x0000000000030b18                __stop_sdh_soc_observers = __sdh_soc_observers_end__
-                0x0000000000030b18                __sdh_soc_observers_load_end__ = __sdh_soc_observers_end__
+                0x0000000000030b98                __stop_sdh_soc_observers = __sdh_soc_observers_end__
+                0x0000000000030b98                __sdh_soc_observers_load_end__ = __sdh_soc_observers_end__
                 0x0000000000000001                . = ASSERT (((__sdh_soc_observers_start__ == __sdh_soc_observers_end__) || ((__sdh_soc_observers_end__ >= __FLASH_segment_start__) && (__sdh_soc_observers_end__ <= __FLASH_segment_end__))), error: .sdh_soc_observers is too large to fit in FLASH memory segment)
-                0x0000000000030b18                __pwr_mgmt_data_load_start__ = ALIGN (__sdh_soc_observers_end__, 0x4)
+                0x0000000000030b98                __pwr_mgmt_data_load_start__ = ALIGN (__sdh_soc_observers_end__, 0x4)
 
-.pwr_mgmt_data  0x0000000000030b18        0x0
-                0x0000000000030b18                __pwr_mgmt_data_start__ = .
-                0x0000000000030b18                __start_pwr_mgmt_data = __pwr_mgmt_data_start__
+.pwr_mgmt_data  0x0000000000030b98        0x0
+                0x0000000000030b98                __pwr_mgmt_data_start__ = .
+                0x0000000000030b98                __start_pwr_mgmt_data = __pwr_mgmt_data_start__
  *(SORT(.pwr_mgmt_data*))
-                0x0000000000030b18                __pwr_mgmt_data_end__ = (__pwr_mgmt_data_start__ + SIZEOF (.pwr_mgmt_data))
+                0x0000000000030b98                __pwr_mgmt_data_end__ = (__pwr_mgmt_data_start__ + SIZEOF (.pwr_mgmt_data))
                 0x0000000000000000                __pwr_mgmt_data_size__ = SIZEOF (.pwr_mgmt_data)
-                0x0000000000030b18                __stop_pwr_mgmt_data = __pwr_mgmt_data_end__
-                0x0000000000030b18                __pwr_mgmt_data_load_end__ = __pwr_mgmt_data_end__
+                0x0000000000030b98                __stop_pwr_mgmt_data = __pwr_mgmt_data_end__
+                0x0000000000030b98                __pwr_mgmt_data_load_end__ = __pwr_mgmt_data_end__
                 0x0000000000000001                . = ASSERT (((__pwr_mgmt_data_start__ == __pwr_mgmt_data_end__) || ((__pwr_mgmt_data_end__ >= __FLASH_segment_start__) && (__pwr_mgmt_data_end__ <= __FLASH_segment_end__))), error: .pwr_mgmt_data is too large to fit in FLASH memory segment)
-                0x0000000000030b18                __sdh_ble_observers_load_start__ = ALIGN (__pwr_mgmt_data_end__, 0x4)
+                0x0000000000030b98                __sdh_ble_observers_load_start__ = ALIGN (__pwr_mgmt_data_end__, 0x4)
 
 .sdh_ble_observers
-                0x0000000000030b18       0x30
-                0x0000000000030b18                __sdh_ble_observers_start__ = .
-                0x0000000000030b18                __start_sdh_ble_observers = __sdh_ble_observers_start__
+                0x0000000000030b98       0x30
+                0x0000000000030b98                __sdh_ble_observers_start__ = .
+                0x0000000000030b98                __start_sdh_ble_observers = __sdh_ble_observers_start__
  *(SORT(.sdh_ble_observers*))
  .sdh_ble_observers0
-                0x0000000000030b18        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x0000000000030b98        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .sdh_ble_observers1
-                0x0000000000030b20        0x8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000030ba0        0x8 Output/Robot_v1_1 Debug/Obj/main.o
  .sdh_ble_observers1
-                0x0000000000030b28        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x0000000000030ba8        0x8 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .sdh_ble_observers1
-                0x0000000000030b30        0x8 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x0000000000030bb0        0x8 Output/Robot_v1_1 Debug/Obj/peer_manager.o
  .sdh_ble_observers2
-                0x0000000000030b38        0x8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000030bb8        0x8 Output/Robot_v1_1 Debug/Obj/main.o
  .sdh_ble_observers3
-                0x0000000000030b40        0x8 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000030b48                __sdh_ble_observers_end__ = (__sdh_ble_observers_start__ + SIZEOF (.sdh_ble_observers))
+                0x0000000000030bc0        0x8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000030bc8                __sdh_ble_observers_end__ = (__sdh_ble_observers_start__ + SIZEOF (.sdh_ble_observers))
                 0x0000000000000030                __sdh_ble_observers_size__ = SIZEOF (.sdh_ble_observers)
-                0x0000000000030b48                __stop_sdh_ble_observers = __sdh_ble_observers_end__
-                0x0000000000030b48                __sdh_ble_observers_load_end__ = __sdh_ble_observers_end__
+                0x0000000000030bc8                __stop_sdh_ble_observers = __sdh_ble_observers_end__
+                0x0000000000030bc8                __sdh_ble_observers_load_end__ = __sdh_ble_observers_end__
                 0x0000000000000001                . = ASSERT (((__sdh_ble_observers_start__ == __sdh_ble_observers_end__) || ((__sdh_ble_observers_end__ >= __FLASH_segment_start__) && (__sdh_ble_observers_end__ <= __FLASH_segment_end__))), error: .sdh_ble_observers is too large to fit in FLASH memory segment)
-                0x0000000000030b48                __log_const_data_load_start__ = ALIGN (__sdh_ble_observers_end__, 0x4)
+                0x0000000000030bc8                __log_const_data_load_start__ = ALIGN (__sdh_ble_observers_end__, 0x4)
 
 .log_const_data
-                0x0000000000030b48        0x0
-                0x0000000000030b48                __log_const_data_start__ = .
-                0x0000000000030b48                __start_log_const_data = __log_const_data_start__
+                0x0000000000030bc8        0x0
+                0x0000000000030bc8                __log_const_data_start__ = .
+                0x0000000000030bc8                __start_log_const_data = __log_const_data_start__
  *(SORT(.log_const_data*))
-                0x0000000000030b48                __log_const_data_end__ = (__log_const_data_start__ + SIZEOF (.log_const_data))
+                0x0000000000030bc8                __log_const_data_end__ = (__log_const_data_start__ + SIZEOF (.log_const_data))
                 0x0000000000000000                __log_const_data_size__ = SIZEOF (.log_const_data)
-                0x0000000000030b48                __stop_log_const_data = __log_const_data_end__
-                0x0000000000030b48                __log_const_data_load_end__ = __log_const_data_end__
+                0x0000000000030bc8                __stop_log_const_data = __log_const_data_end__
+                0x0000000000030bc8                __log_const_data_load_end__ = __log_const_data_end__
                 0x0000000000000001                . = ASSERT (((__log_const_data_start__ == __log_const_data_end__) || ((__log_const_data_end__ >= __FLASH_segment_start__) && (__log_const_data_end__ <= __FLASH_segment_end__))), error: .log_const_data is too large to fit in FLASH memory segment)
-                0x0000000000030b48                __sdh_req_observers_load_start__ = ALIGN (__log_const_data_end__, 0x4)
+                0x0000000000030bc8                __sdh_req_observers_load_start__ = ALIGN (__log_const_data_end__, 0x4)
 
 .sdh_req_observers
-                0x0000000000030b48        0x0
-                0x0000000000030b48                __sdh_req_observers_start__ = .
-                0x0000000000030b48                __start_sdh_req_observers = __sdh_req_observers_start__
+                0x0000000000030bc8        0x0
+                0x0000000000030bc8                __sdh_req_observers_start__ = .
+                0x0000000000030bc8                __start_sdh_req_observers = __sdh_req_observers_start__
  *(SORT(.sdh_req_observers*))
-                0x0000000000030b48                __sdh_req_observers_end__ = (__sdh_req_observers_start__ + SIZEOF (.sdh_req_observers))
+                0x0000000000030bc8                __sdh_req_observers_end__ = (__sdh_req_observers_start__ + SIZEOF (.sdh_req_observers))
                 0x0000000000000000                __sdh_req_observers_size__ = SIZEOF (.sdh_req_observers)
-                0x0000000000030b48                __stop_sdh_req_observers = __sdh_req_observers_end__
-                0x0000000000030b48                __sdh_req_observers_load_end__ = __sdh_req_observers_end__
+                0x0000000000030bc8                __stop_sdh_req_observers = __sdh_req_observers_end__
+                0x0000000000030bc8                __sdh_req_observers_load_end__ = __sdh_req_observers_end__
                 0x0000000000000001                . = ASSERT (((__sdh_req_observers_start__ == __sdh_req_observers_end__) || ((__sdh_req_observers_end__ >= __FLASH_segment_start__) && (__sdh_req_observers_end__ <= __FLASH_segment_end__))), error: .sdh_req_observers is too large to fit in FLASH memory segment)
-                0x0000000000030b48                __sdh_state_observers_load_start__ = ALIGN (__sdh_req_observers_end__, 0x4)
+                0x0000000000030bc8                __sdh_state_observers_load_start__ = ALIGN (__sdh_req_observers_end__, 0x4)
 
 .sdh_state_observers
-                0x0000000000030b48        0x8
-                0x0000000000030b48                __sdh_state_observers_start__ = .
-                0x0000000000030b48                __start_sdh_state_observers = __sdh_state_observers_start__
+                0x0000000000030bc8        0x8
+                0x0000000000030bc8                __sdh_state_observers_start__ = .
+                0x0000000000030bc8                __start_sdh_state_observers = __sdh_state_observers_start__
  *(SORT(.sdh_state_observers*))
  .sdh_state_observers0
-                0x0000000000030b48        0x8 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
-                0x0000000000030b50                __sdh_state_observers_end__ = (__sdh_state_observers_start__ + SIZEOF (.sdh_state_observers))
+                0x0000000000030bc8        0x8 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
+                0x0000000000030bd0                __sdh_state_observers_end__ = (__sdh_state_observers_start__ + SIZEOF (.sdh_state_observers))
                 0x0000000000000008                __sdh_state_observers_size__ = SIZEOF (.sdh_state_observers)
-                0x0000000000030b50                __stop_sdh_state_observers = __sdh_state_observers_end__
-                0x0000000000030b50                __sdh_state_observers_load_end__ = __sdh_state_observers_end__
+                0x0000000000030bd0                __stop_sdh_state_observers = __sdh_state_observers_end__
+                0x0000000000030bd0                __sdh_state_observers_load_end__ = __sdh_state_observers_end__
                 0x0000000000000001                . = ASSERT (((__sdh_state_observers_start__ == __sdh_state_observers_end__) || ((__sdh_state_observers_end__ >= __FLASH_segment_start__) && (__sdh_state_observers_end__ <= __FLASH_segment_end__))), error: .sdh_state_observers is too large to fit in FLASH memory segment)
-                0x0000000000030b50                __sdh_stack_observers_load_start__ = ALIGN (__sdh_state_observers_end__, 0x4)
+                0x0000000000030bd0                __sdh_stack_observers_load_start__ = ALIGN (__sdh_state_observers_end__, 0x4)
 
 .sdh_stack_observers
-                0x0000000000030b50       0x10
-                0x0000000000030b50                __sdh_stack_observers_start__ = .
-                0x0000000000030b50                __start_sdh_stack_observers = __sdh_stack_observers_start__
+                0x0000000000030bd0       0x10
+                0x0000000000030bd0                __sdh_stack_observers_start__ = .
+                0x0000000000030bd0                __start_sdh_stack_observers = __sdh_stack_observers_start__
  *(SORT(.sdh_stack_observers*))
  .sdh_stack_observers0
-                0x0000000000030b50        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x0000000000030bd0        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .sdh_stack_observers0
-                0x0000000000030b58        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
-                0x0000000000030b60                __sdh_stack_observers_end__ = (__sdh_stack_observers_start__ + SIZEOF (.sdh_stack_observers))
+                0x0000000000030bd8        0x8 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x0000000000030be0                __sdh_stack_observers_end__ = (__sdh_stack_observers_start__ + SIZEOF (.sdh_stack_observers))
                 0x0000000000000010                __sdh_stack_observers_size__ = SIZEOF (.sdh_stack_observers)
-                0x0000000000030b60                __stop_sdh_stack_observers = __sdh_stack_observers_end__
-                0x0000000000030b60                __sdh_stack_observers_load_end__ = __sdh_stack_observers_end__
+                0x0000000000030be0                __stop_sdh_stack_observers = __sdh_stack_observers_end__
+                0x0000000000030be0                __sdh_stack_observers_load_end__ = __sdh_stack_observers_end__
                 0x0000000000000001                . = ASSERT (((__sdh_stack_observers_start__ == __sdh_stack_observers_end__) || ((__sdh_stack_observers_end__ >= __FLASH_segment_start__) && (__sdh_stack_observers_end__ <= __FLASH_segment_end__))), error: .sdh_stack_observers is too large to fit in FLASH memory segment)
-                0x0000000000030b60                __cli_command_load_start__ = ALIGN (__sdh_stack_observers_end__, 0x4)
+                0x0000000000030be0                __cli_command_load_start__ = ALIGN (__sdh_stack_observers_end__, 0x4)
 
-.cli_command    0x0000000000030b60        0x0
-                0x0000000000030b60                __cli_command_start__ = .
-                0x0000000000030b60                __start_cli_command = __cli_command_start__
+.cli_command    0x0000000000030be0        0x0
+                0x0000000000030be0                __cli_command_start__ = .
+                0x0000000000030be0                __start_cli_command = __cli_command_start__
  *(.cli_command*)
-                0x0000000000030b60                __cli_command_end__ = (__cli_command_start__ + SIZEOF (.cli_command))
+                0x0000000000030be0                __cli_command_end__ = (__cli_command_start__ + SIZEOF (.cli_command))
                 0x0000000000000000                __cli_command_size__ = SIZEOF (.cli_command)
-                0x0000000000030b60                __stop_cli_command = __cli_command_end__
-                0x0000000000030b60                __cli_command_load_end__ = __cli_command_end__
+                0x0000000000030be0                __stop_cli_command = __cli_command_end__
+                0x0000000000030be0                __cli_command_load_end__ = __cli_command_end__
                 0x0000000000000001                . = ASSERT (((__cli_command_start__ == __cli_command_end__) || ((__cli_command_end__ >= __FLASH_segment_start__) && (__cli_command_end__ <= __FLASH_segment_end__))), error: .cli_command is too large to fit in FLASH memory segment)
-                0x0000000000030b60                __nrf_sections_load_start__ = ALIGN (__cli_command_end__, 0x4)
+                0x0000000000030be0                __nrf_sections_load_start__ = ALIGN (__cli_command_end__, 0x4)
 
-.nrf_sections   0x0000000000030b60        0x0
-                0x0000000000030b60                __nrf_sections_start__ = .
-                0x0000000000030b60                __start_nrf_sections = __nrf_sections_start__
+.nrf_sections   0x0000000000030be0        0x0
+                0x0000000000030be0                __nrf_sections_start__ = .
+                0x0000000000030be0                __start_nrf_sections = __nrf_sections_start__
  *(.nrf_sections .nrf_sections.*)
-                0x0000000000030b60                __nrf_sections_end__ = (__nrf_sections_start__ + SIZEOF (.nrf_sections))
+                0x0000000000030be0                __nrf_sections_end__ = (__nrf_sections_start__ + SIZEOF (.nrf_sections))
                 0x0000000000000000                __nrf_sections_size__ = SIZEOF (.nrf_sections)
-                0x0000000000030b60                __nrf_sections_load_end__ = __nrf_sections_end__
+                0x0000000000030be0                __nrf_sections_load_end__ = __nrf_sections_end__
                 0x0000000000000001                . = ASSERT (((__nrf_sections_start__ == __nrf_sections_end__) || ((__nrf_sections_end__ >= __FLASH_segment_start__) && (__nrf_sections_end__ <= __FLASH_segment_end__))), error: .nrf_sections is too large to fit in FLASH memory segment)
-                0x0000000000030b60                __log_dynamic_data_load_start__ = ALIGN (__nrf_sections_end__, 0x4)
+                0x0000000000030be0                __log_dynamic_data_load_start__ = ALIGN (__nrf_sections_end__, 0x4)
 
 .log_dynamic_data
-                0x00000000200020e0        0x0 load address 0x0000000000030b60
+                0x00000000200020e0        0x0 load address 0x0000000000030be0
                 0x00000000200020e0                __log_dynamic_data_start__ = .
  *(SORT(.log_dynamic_data*))
                 0x00000000200020e0                __log_dynamic_data_end__ = (__log_dynamic_data_start__ + SIZEOF (.log_dynamic_data))
                 0x0000000000000000                __log_dynamic_data_size__ = SIZEOF (.log_dynamic_data)
-                0x0000000000030b60                __log_dynamic_data_load_end__ = (__log_dynamic_data_load_start__ + SIZEOF (.log_dynamic_data))
+                0x0000000000030be0                __log_dynamic_data_load_end__ = (__log_dynamic_data_load_start__ + SIZEOF (.log_dynamic_data))
                 0x0000000000000001                . = ASSERT (((__log_dynamic_data_load_start__ == __log_dynamic_data_load_end__) || ((__log_dynamic_data_load_end__ >= __FLASH_segment_start__) && (__log_dynamic_data_load_end__ <= __FLASH_segment_end__))), error: .log_dynamic_data is too large to fit in FLASH memory segment)
 
 .log_dynamic_data_run
@@ -12709,19 +12709,19 @@ Linker script and memory map
                 0x00000000200020e0                __stop_log_dynamic_data = __log_dynamic_data_run_end__
                 0x00000000200020e0                __log_dynamic_data_run_load_end__ = __log_dynamic_data_run_end__
                 0x0000000000000001                . = ASSERT (((__log_dynamic_data_run_start__ == __log_dynamic_data_run_end__) || ((__log_dynamic_data_run_end__ >= __RAM_segment_start__) && (__log_dynamic_data_run_end__ <= __RAM_segment_end__))), error: .log_dynamic_data_run is too large to fit in RAM memory segment)
-                0x0000000000030b60                __fs_data_load_start__ = ALIGN ((__log_dynamic_data_load_start__ + SIZEOF (.log_dynamic_data)), 0x4)
+                0x0000000000030be0                __fs_data_load_start__ = ALIGN ((__log_dynamic_data_load_start__ + SIZEOF (.log_dynamic_data)), 0x4)
 
-.fs_data        0x00000000200020e0       0x14 load address 0x0000000000030b60
+.fs_data        0x00000000200020e0       0x14 load address 0x0000000000030be0
                 0x00000000200020e0                __fs_data_start__ = .
  *(.fs_data*)
  .fs_data       0x00000000200020e0       0x14 Output/Robot_v1_1 Debug/Obj/fds.o
                 0x00000000200020e0                m_fs
                 0x00000000200020f4                __fs_data_end__ = (__fs_data_start__ + SIZEOF (.fs_data))
                 0x0000000000000014                __fs_data_size__ = SIZEOF (.fs_data)
-                0x0000000000030b74                __fs_data_load_end__ = (__fs_data_load_start__ + SIZEOF (.fs_data))
+                0x0000000000030bf4                __fs_data_load_end__ = (__fs_data_load_start__ + SIZEOF (.fs_data))
                 0x0000000000000001                . = ASSERT (((__fs_data_load_start__ == __fs_data_load_end__) || ((__fs_data_load_end__ >= __FLASH_segment_start__) && (__fs_data_load_end__ <= __FLASH_segment_end__))), error: .fs_data is too large to fit in FLASH memory segment)
 
-.fs_data_run    0x00000000200020e0       0x14 load address 0x0000000000030b60
+.fs_data_run    0x00000000200020e0       0x14 load address 0x0000000000030be0
                 0x00000000200020e0                __fs_data_run_start__ = .
                 0x00000000200020e0                __start_fs_data = __fs_data_run_start__
                 0x00000000200020f4                . = MAX ((__fs_data_run_start__ + SIZEOF (.fs_data)), .)
@@ -12731,15 +12731,15 @@ Linker script and memory map
                 0x00000000200020f4                __stop_fs_data = __fs_data_run_end__
                 0x00000000200020f4                __fs_data_run_load_end__ = __fs_data_run_end__
                 0x0000000000000001                . = ASSERT (((__fs_data_run_start__ == __fs_data_run_end__) || ((__fs_data_run_end__ >= __RAM_segment_start__) && (__fs_data_run_end__ <= __RAM_segment_end__))), error: .fs_data_run is too large to fit in RAM memory segment)
-                0x0000000000030b74                __cli_sorted_cmd_ptrs_load_start__ = ALIGN ((__fs_data_load_start__ + SIZEOF (.fs_data)), 0x4)
+                0x0000000000030bf4                __cli_sorted_cmd_ptrs_load_start__ = ALIGN ((__fs_data_load_start__ + SIZEOF (.fs_data)), 0x4)
 
 .cli_sorted_cmd_ptrs
-                0x00000000200020f4        0x0 load address 0x0000000000030b74
+                0x00000000200020f4        0x0 load address 0x0000000000030bf4
                 0x00000000200020f4                __cli_sorted_cmd_ptrs_start__ = .
  *(.cli_sorted_cmd_ptrs*)
                 0x00000000200020f4                __cli_sorted_cmd_ptrs_end__ = (__cli_sorted_cmd_ptrs_start__ + SIZEOF (.cli_sorted_cmd_ptrs))
                 0x0000000000000000                __cli_sorted_cmd_ptrs_size__ = SIZEOF (.cli_sorted_cmd_ptrs)
-                0x0000000000030b74                __cli_sorted_cmd_ptrs_load_end__ = (__cli_sorted_cmd_ptrs_load_start__ + SIZEOF (.cli_sorted_cmd_ptrs))
+                0x0000000000030bf4                __cli_sorted_cmd_ptrs_load_end__ = (__cli_sorted_cmd_ptrs_load_start__ + SIZEOF (.cli_sorted_cmd_ptrs))
                 0x0000000000000001                . = ASSERT (((__cli_sorted_cmd_ptrs_load_start__ == __cli_sorted_cmd_ptrs_load_end__) || ((__cli_sorted_cmd_ptrs_load_end__ >= __FLASH_segment_start__) && (__cli_sorted_cmd_ptrs_load_end__ <= __FLASH_segment_end__))), error: .cli_sorted_cmd_ptrs is too large to fit in FLASH memory segment)
 
 .cli_sorted_cmd_ptrs_run
@@ -12763,180 +12763,180 @@ Linker script and memory map
                 0x0000000000000000                __nrf_sections_run_end_size__ = SIZEOF (.nrf_sections_run_end)
                 0x00000000200020f4                __nrf_sections_run_end_load_end__ = __nrf_sections_run_end_end__
                 0x0000000000000001                . = ASSERT (((__nrf_sections_run_end_start__ == __nrf_sections_run_end_end__) || ((__nrf_sections_run_end_end__ >= __RAM_segment_start__) && (__nrf_sections_run_end_end__ <= __RAM_segment_end__))), error: .nrf_sections_run_end is too large to fit in RAM memory segment)
-                0x0000000000030b74                __dtors_load_start__ = ALIGN ((__cli_sorted_cmd_ptrs_load_start__ + SIZEOF (.cli_sorted_cmd_ptrs)), 0x4)
+                0x0000000000030bf4                __dtors_load_start__ = ALIGN ((__cli_sorted_cmd_ptrs_load_start__ + SIZEOF (.cli_sorted_cmd_ptrs)), 0x4)
 
-.dtors          0x0000000000030b74        0x0
-                0x0000000000030b74                __dtors_start__ = .
+.dtors          0x0000000000030bf4        0x0
+                0x0000000000030bf4                __dtors_start__ = .
  *(SORT(.dtors.*))
  *(.dtors)
  *(.fini_array)
  *(SORT(.fini_array.*))
-                0x0000000000030b74                __dtors_end__ = (__dtors_start__ + SIZEOF (.dtors))
+                0x0000000000030bf4                __dtors_end__ = (__dtors_start__ + SIZEOF (.dtors))
                 0x0000000000000000                __dtors_size__ = SIZEOF (.dtors)
-                0x0000000000030b74                __dtors_load_end__ = __dtors_end__
+                0x0000000000030bf4                __dtors_load_end__ = __dtors_end__
                 0x0000000000000001                . = ASSERT (((__dtors_start__ == __dtors_end__) || ((__dtors_end__ >= __FLASH_segment_start__) && (__dtors_end__ <= __FLASH_segment_end__))), error: .dtors is too large to fit in FLASH memory segment)
-                0x0000000000030b74                __ctors_load_start__ = ALIGN (__dtors_end__, 0x4)
+                0x0000000000030bf4                __ctors_load_start__ = ALIGN (__dtors_end__, 0x4)
 
-.ctors          0x0000000000030b74        0x0
-                0x0000000000030b74                __ctors_start__ = .
+.ctors          0x0000000000030bf4        0x0
+                0x0000000000030bf4                __ctors_start__ = .
  *(SORT(.ctors.*))
  *(.ctors)
  *(.init_array)
  *(SORT(.init_array.*))
-                0x0000000000030b74                __ctors_end__ = (__ctors_start__ + SIZEOF (.ctors))
+                0x0000000000030bf4                __ctors_end__ = (__ctors_start__ + SIZEOF (.ctors))
                 0x0000000000000000                __ctors_size__ = SIZEOF (.ctors)
-                0x0000000000030b74                __ctors_load_end__ = __ctors_end__
+                0x0000000000030bf4                __ctors_load_end__ = __ctors_end__
                 0x0000000000000001                . = ASSERT (((__ctors_start__ == __ctors_end__) || ((__ctors_end__ >= __FLASH_segment_start__) && (__ctors_end__ <= __FLASH_segment_end__))), error: .ctors is too large to fit in FLASH memory segment)
-                0x0000000000030b74                __rodata_load_start__ = ALIGN (__ctors_end__, 0x4)
+                0x0000000000030bf4                __rodata_load_start__ = ALIGN (__ctors_end__, 0x4)
 
-.rodata         0x0000000000030b74    0x13ae4
-                0x0000000000030b74                __rodata_start__ = .
+.rodata         0x0000000000030bf4    0x13ae0
+                0x0000000000030bf4                __rodata_start__ = .
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x0000000000030b74       0x55 Output/Robot_v1_1 Debug/Obj/app_util_platform.o
- *fill*         0x0000000000030bc9        0x3 
- .rodata        0x0000000000030bcc       0x69 Output/Robot_v1_1 Debug/Obj/nrf_section_iter.o
- *fill*         0x0000000000030c35        0x3 
- .rodata        0x0000000000030c38       0x46 Output/Robot_v1_1 Debug/Obj/fds.o
- *fill*         0x0000000000030c7e        0x2 
+ .rodata        0x0000000000030bf4       0x55 Output/Robot_v1_1 Debug/Obj/app_util_platform.o
+ *fill*         0x0000000000030c49        0x3 
+ .rodata        0x0000000000030c4c       0x69 Output/Robot_v1_1 Debug/Obj/nrf_section_iter.o
+ *fill*         0x0000000000030cb5        0x3 
+ .rodata        0x0000000000030cb8       0x46 Output/Robot_v1_1 Debug/Obj/fds.o
+ *fill*         0x0000000000030cfe        0x2 
  .rodata.page_tag_swap.8380
-                0x0000000000030c80        0x8 Output/Robot_v1_1 Debug/Obj/fds.o
+                0x0000000000030d00        0x8 Output/Robot_v1_1 Debug/Obj/fds.o
  .rodata.page_tag_data.8384
-                0x0000000000030c88        0x8 Output/Robot_v1_1 Debug/Obj/fds.o
+                0x0000000000030d08        0x8 Output/Robot_v1_1 Debug/Obj/fds.o
  .rodata.dirty_header.8511
-                0x0000000000030c90        0x4 Output/Robot_v1_1 Debug/Obj/fds.o
- .rodata        0x0000000000030c94       0x54 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
- .rodata        0x0000000000030ce8       0x56 Output/Robot_v1_1 Debug/Obj/nrf_drv_common.o
- *fill*         0x0000000000030d3e        0x2 
- .rodata        0x0000000000030d40       0x8f Output/Robot_v1_1 Debug/Obj/nrf_drv_twi.o
- *fill*         0x0000000000030dcf        0x1 
- .rodata        0x0000000000030dd0       0x88 Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
- .rodata        0x0000000000030e58       0xec Output/Robot_v1_1 Debug/Obj/main.o
- .rodata.m_twi  0x0000000000030f44        0x8 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000000030f44                m_twi
- .rodata        0x0000000000030f4c       0x4e Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
- *fill*         0x0000000000030f9a        0x2 
- .rodata        0x0000000000030f9c       0x10 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x0000000000030d10        0x4 Output/Robot_v1_1 Debug/Obj/fds.o
+ .rodata        0x0000000000030d14       0x54 Output/Robot_v1_1 Debug/Obj/nrf_drv_clock.o
+ .rodata        0x0000000000030d68       0x56 Output/Robot_v1_1 Debug/Obj/nrf_drv_common.o
+ *fill*         0x0000000000030dbe        0x2 
+ .rodata        0x0000000000030dc0       0x8f Output/Robot_v1_1 Debug/Obj/nrf_drv_twi.o
+ *fill*         0x0000000000030e4f        0x1 
+ .rodata        0x0000000000030e50       0x88 Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
+ .rodata        0x0000000000030ed8       0xe8 Output/Robot_v1_1 Debug/Obj/main.o
+ .rodata.m_twi  0x0000000000030fc0        0x8 Output/Robot_v1_1 Debug/Obj/main.o
+                0x0000000000030fc0                m_twi
+ .rodata        0x0000000000030fc8       0x4e Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+ *fill*         0x0000000000031016        0x2 
+ .rodata        0x0000000000031018       0x10 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .rodata.service_changed_pending.9325
-                0x0000000000030fac        0x4 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x0000000000031028        0x4 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .rodata.service_changed_pending.9381
-                0x0000000000030fb0        0x4 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x000000000003102c        0x4 Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .rodata.m_evt_handlers
-                0x0000000000030fb4        0x8 Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x0000000000031030        0x8 Output/Robot_v1_1 Debug/Obj/id_manager.o
  .rodata.m_evt_handlers
-                0x0000000000030fbc       0x10 Output/Robot_v1_1 Debug/Obj/peer_database.o
- .rodata        0x0000000000030fcc       0xa8 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x0000000000031038       0x10 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ .rodata        0x0000000000031048       0xa8 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .rodata.sdh_req_observers
-                0x0000000000031074        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x00000000000310f0        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .rodata.sdh_state_observers
-                0x0000000000031080        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x00000000000310fc        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .rodata.sdh_stack_observers
-                0x000000000003108c        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
- .rodata        0x0000000000031098       0xa6 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
- *fill*         0x000000000003113e        0x2 
+                0x0000000000031108        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+ .rodata        0x0000000000031114       0xa6 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ *fill*         0x00000000000311ba        0x2 
  .rodata.sdh_ble_observers
-                0x0000000000031140        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
- .rodata        0x000000000003114c       0xa6 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
- *fill*         0x00000000000311f2        0x2 
+                0x00000000000311bc        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ .rodata        0x00000000000311c8       0xa6 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+ *fill*         0x000000000003126e        0x2 
  .rodata.sdh_soc_observers
-                0x00000000000311f4        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x0000000000031270        0xc Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
  .rodata.twiddleCoef_2048
-                0x0000000000031200     0x4000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000031200                twiddleCoef_2048
+                0x000000000003127c     0x4000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003127c                twiddleCoef_2048
  .rodata.twiddleCoef_rfft_64
-                0x0000000000035200      0x100 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000035200                twiddleCoef_rfft_64
+                0x000000000003527c      0x100 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003527c                twiddleCoef_rfft_64
  .rodata.armBitRevIndexTable64
-                0x0000000000035300       0x70 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000035300                armBitRevIndexTable64
+                0x000000000003537c       0x70 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003537c                armBitRevIndexTable64
  .rodata.twiddleCoef_rfft_2048
-                0x0000000000035370     0x2000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000035370                twiddleCoef_rfft_2048
+                0x00000000000353ec     0x2000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x00000000000353ec                twiddleCoef_rfft_2048
  .rodata.twiddleCoef_rfft_4096
-                0x0000000000037370     0x4000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000037370                twiddleCoef_rfft_4096
+                0x00000000000373ec     0x4000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x00000000000373ec                twiddleCoef_rfft_4096
  .rodata.twiddleCoef_256
-                0x000000000003b370      0x800 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003b370                twiddleCoef_256
+                0x000000000003b3ec      0x800 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003b3ec                twiddleCoef_256
  .rodata.twiddleCoef_16
-                0x000000000003bb70       0x80 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003bb70                twiddleCoef_16
+                0x000000000003bbec       0x80 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003bbec                twiddleCoef_16
  .rodata.twiddleCoef_1024
-                0x000000000003bbf0     0x2000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003bbf0                twiddleCoef_1024
+                0x000000000003bc6c     0x2000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003bc6c                twiddleCoef_1024
  .rodata.twiddleCoef_32
-                0x000000000003dbf0      0x100 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003dbf0                twiddleCoef_32
+                0x000000000003dc6c      0x100 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003dc6c                twiddleCoef_32
  .rodata.armBitRevIndexTable1024
-                0x000000000003dcf0      0xe10 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003dcf0                armBitRevIndexTable1024
+                0x000000000003dd6c      0xe10 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003dd6c                armBitRevIndexTable1024
  .rodata.armBitRevIndexTable16
-                0x000000000003eb00       0x28 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003eb00                armBitRevIndexTable16
+                0x000000000003eb7c       0x28 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003eb7c                armBitRevIndexTable16
  .rodata.twiddleCoef_rfft_32
-                0x000000000003eb28       0x80 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003eb28                twiddleCoef_rfft_32
+                0x000000000003eba4       0x80 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003eba4                twiddleCoef_rfft_32
  .rodata.armBitRevIndexTable32
-                0x000000000003eba8       0x60 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003eba8                armBitRevIndexTable32
+                0x000000000003ec24       0x60 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003ec24                armBitRevIndexTable32
  .rodata.twiddleCoef_128
-                0x000000000003ec08      0x400 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003ec08                twiddleCoef_128
+                0x000000000003ec84      0x400 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003ec84                twiddleCoef_128
  .rodata.twiddleCoef_512
-                0x000000000003f008     0x1000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x000000000003f008                twiddleCoef_512
+                0x000000000003f084     0x1000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x000000000003f084                twiddleCoef_512
  .rodata.armBitRevIndexTable2048
-                0x0000000000040008     0x1dc0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000040008                armBitRevIndexTable2048
+                0x0000000000040084     0x1dc0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000040084                armBitRevIndexTable2048
  .rodata.twiddleCoef_64
-                0x0000000000041dc8      0x200 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000041dc8                twiddleCoef_64
+                0x0000000000041e44      0x200 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000041e44                twiddleCoef_64
  .rodata.twiddleCoef_rfft_512
-                0x0000000000041fc8      0x800 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000041fc8                twiddleCoef_rfft_512
+                0x0000000000042044      0x800 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000042044                twiddleCoef_rfft_512
  .rodata.armBitRevIndexTable512
-                0x00000000000427c8      0x380 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x00000000000427c8                armBitRevIndexTable512
+                0x0000000000042844      0x380 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000042844                armBitRevIndexTable512
  .rodata.twiddleCoef_rfft_1024
-                0x0000000000042b48     0x1000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000042b48                twiddleCoef_rfft_1024
+                0x0000000000042bc4     0x1000 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000042bc4                twiddleCoef_rfft_1024
  .rodata.twiddleCoef_rfft_256
-                0x0000000000043b48      0x400 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000043b48                twiddleCoef_rfft_256
+                0x0000000000043bc4      0x400 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000043bc4                twiddleCoef_rfft_256
  .rodata.armBitRevIndexTable256
-                0x0000000000043f48      0x370 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x0000000000043f48                armBitRevIndexTable256
+                0x0000000000043fc4      0x370 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000043fc4                armBitRevIndexTable256
  .rodata.twiddleCoef_rfft_128
-                0x00000000000442b8      0x200 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x00000000000442b8                twiddleCoef_rfft_128
+                0x0000000000044334      0x200 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000044334                twiddleCoef_rfft_128
  .rodata.armBitRevIndexTable128
-                0x00000000000444b8      0x1a0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
-                0x00000000000444b8                armBitRevIndexTable128
-                0x0000000000044658                __rodata_end__ = (__rodata_start__ + SIZEOF (.rodata))
-                0x0000000000013ae4                __rodata_size__ = SIZEOF (.rodata)
-                0x0000000000044658                __rodata_load_end__ = __rodata_end__
+                0x0000000000044534      0x1a0 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+                0x0000000000044534                armBitRevIndexTable128
+                0x00000000000446d4                __rodata_end__ = (__rodata_start__ + SIZEOF (.rodata))
+                0x0000000000013ae0                __rodata_size__ = SIZEOF (.rodata)
+                0x00000000000446d4                __rodata_load_end__ = __rodata_end__
 
-.rel.dyn        0x0000000000044658        0x0
- .rel.iplt      0x0000000000044658        0x0 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
+.rel.dyn        0x00000000000446d4        0x0
+ .rel.iplt      0x00000000000446d4        0x0 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
                 0x0000000000000001                . = ASSERT (((__rodata_start__ == __rodata_end__) || ((__rodata_end__ >= __FLASH_segment_start__) && (__rodata_end__ <= __FLASH_segment_end__))), error: .rodata is too large to fit in FLASH memory segment)
-                0x0000000000044658                __ARM.exidx_load_start__ = ALIGN (__rodata_end__, 0x4)
+                0x00000000000446d4                __ARM.exidx_load_start__ = ALIGN (__rodata_end__, 0x4)
 
-.ARM.exidx      0x0000000000044658        0x0
-                0x0000000000044658                __ARM.exidx_start__ = .
-                0x0000000000044658                __exidx_start = __ARM.exidx_start__
+.ARM.exidx      0x00000000000446d4        0x0
+                0x00000000000446d4                __ARM.exidx_start__ = .
+                0x00000000000446d4                __exidx_start = __ARM.exidx_start__
  *(.ARM.exidx .ARM.exidx.*)
-                0x0000000000044658                __ARM.exidx_end__ = (__ARM.exidx_start__ + SIZEOF (.ARM.exidx))
+                0x00000000000446d4                __ARM.exidx_end__ = (__ARM.exidx_start__ + SIZEOF (.ARM.exidx))
                 0x0000000000000000                __ARM.exidx_size__ = SIZEOF (.ARM.exidx)
-                0x0000000000044658                __exidx_end = __ARM.exidx_end__
-                0x0000000000044658                __ARM.exidx_load_end__ = __ARM.exidx_end__
+                0x00000000000446d4                __exidx_end = __ARM.exidx_end__
+                0x00000000000446d4                __ARM.exidx_load_end__ = __ARM.exidx_end__
                 0x0000000000000001                . = ASSERT (((__ARM.exidx_start__ == __ARM.exidx_end__) || ((__ARM.exidx_end__ >= __FLASH_segment_start__) && (__ARM.exidx_end__ <= __FLASH_segment_end__))), error: .ARM.exidx is too large to fit in FLASH memory segment)
-                0x0000000000044658                __fast_load_start__ = ALIGN (__ARM.exidx_end__, 0x4)
+                0x00000000000446d4                __fast_load_start__ = ALIGN (__ARM.exidx_end__, 0x4)
 
-.fast           0x00000000200020f4        0x0 load address 0x0000000000044658
+.fast           0x00000000200020f4        0x0 load address 0x00000000000446d4
                 0x00000000200020f4                __fast_start__ = .
  *(.fast .fast.*)
                 0x00000000200020f4                __fast_end__ = (__fast_start__ + SIZEOF (.fast))
                 0x0000000000000000                __fast_size__ = SIZEOF (.fast)
-                0x0000000000044658                __fast_load_end__ = (__fast_load_start__ + SIZEOF (.fast))
+                0x00000000000446d4                __fast_load_end__ = (__fast_load_start__ + SIZEOF (.fast))
                 0x0000000000000001                . = ASSERT (((__fast_load_start__ == __fast_load_end__) || ((__fast_load_end__ >= __FLASH_segment_start__) && (__fast_load_end__ <= __FLASH_segment_end__))), error: .fast is too large to fit in FLASH memory segment)
 
 .fast_run       0x00000000200020f4        0x0
@@ -12946,9 +12946,9 @@ Linker script and memory map
                 0x0000000000000000                __fast_run_size__ = SIZEOF (.fast_run)
                 0x00000000200020f4                __fast_run_load_end__ = __fast_run_end__
                 0x0000000000000001                . = ASSERT (((__fast_run_start__ == __fast_run_end__) || ((__fast_run_end__ >= __RAM_segment_start__) && (__fast_run_end__ <= __RAM_segment_end__))), error: .fast_run is too large to fit in RAM memory segment)
-                0x0000000000044658                __data_load_start__ = ALIGN ((__fast_load_start__ + SIZEOF (.fast)), 0x4)
+                0x00000000000446d4                __data_load_start__ = ALIGN ((__fast_load_start__ + SIZEOF (.fast)), 0x4)
 
-.data           0x00000000200020f4       0x18 load address 0x0000000000044658
+.data           0x00000000200020f4       0x18 load address 0x00000000000446d4
                 0x00000000200020f4                __data_start__ = .
  *(.data .data.* .gnu.linkonce.d.*)
  .data.m_conn_handle
@@ -12984,13 +12984,13 @@ Linker script and memory map
                 0x0000000020002108                SystemCoreClock
                 0x000000002000210c                __data_end__ = (__data_start__ + SIZEOF (.data))
                 0x0000000000000018                __data_size__ = SIZEOF (.data)
-                0x0000000000044670                __data_load_end__ = (__data_load_start__ + SIZEOF (.data))
+                0x00000000000446ec                __data_load_end__ = (__data_load_start__ + SIZEOF (.data))
 
 .igot.plt       0x0000000100000000        0x0
  .igot.plt      0x0000000100000000        0x0 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
                 0x0000000000000001                . = ASSERT (((__data_load_start__ == __data_load_end__) || ((__data_load_end__ >= __FLASH_segment_start__) && (__data_load_end__ <= __FLASH_segment_end__))), error: .data is too large to fit in FLASH memory segment)
 
-.data_run       0x00000000200020f4       0x18 load address 0x0000000000044658
+.data_run       0x00000000200020f4       0x18 load address 0x00000000000446d4
                 0x00000000200020f4                __data_run_start__ = .
                 0x000000002000210c                . = MAX ((__data_run_start__ + SIZEOF (.data)), .)
  *fill*         0x00000000200020f4       0x18 
@@ -12998,16 +12998,16 @@ Linker script and memory map
                 0x0000000000000018                __data_run_size__ = SIZEOF (.data_run)
                 0x000000002000210c                __data_run_load_end__ = __data_run_end__
                 0x0000000000000001                . = ASSERT (((__data_run_start__ == __data_run_end__) || ((__data_run_end__ >= __RAM_segment_start__) && (__data_run_end__ <= __RAM_segment_end__))), error: .data_run is too large to fit in RAM memory segment)
-                0x0000000000044670                __tdata_load_start__ = ALIGN ((__data_load_start__ + SIZEOF (.data)), 0x4)
+                0x00000000000446ec                __tdata_load_start__ = ALIGN ((__data_load_start__ + SIZEOF (.data)), 0x4)
 
-.tdata          0x000000002000210c        0x0 load address 0x0000000000044670
+.tdata          0x000000002000210c        0x0 load address 0x00000000000446ec
                 0x000000002000210c                __tdata_start__ = .
  *(.tdata .tdata.*)
                 0x000000002000210c                __tdata_end__ = (__tdata_start__ + SIZEOF (.tdata))
                 0x0000000000000000                __tdata_size__ = SIZEOF (.tdata)
-                0x0000000000044670                __tdata_load_end__ = (__tdata_load_start__ + SIZEOF (.tdata))
-                0x0000000000044670                __FLASH_segment_used_end__ = (ALIGN ((__data_load_start__ + SIZEOF (.data)), 0x4) + SIZEOF (.tdata))
-                0x0000000000044670                __FLASH_segment_used_size__ = (__FLASH_segment_used_end__ - __FLASH_segment_start__)
+                0x00000000000446ec                __tdata_load_end__ = (__tdata_load_start__ + SIZEOF (.tdata))
+                0x00000000000446ec                __FLASH_segment_used_end__ = (ALIGN ((__data_load_start__ + SIZEOF (.data)), 0x4) + SIZEOF (.tdata))
+                0x00000000000446ec                __FLASH_segment_used_size__ = (__FLASH_segment_used_end__ - __FLASH_segment_start__)
                 0x0000000000000001                . = ASSERT (((__tdata_load_start__ == __tdata_load_end__) || ((__tdata_load_end__ >= __FLASH_segment_start__) && (__tdata_load_end__ <= __FLASH_segment_end__))), error: .tdata is too large to fit in FLASH memory segment)
 
 .tdata_run      0x000000002000210c        0x0
@@ -13086,12 +13086,12 @@ Linker script and memory map
  .bss.uuid_type
                 0x0000000020002368        0x1 Output/Robot_v1_1 Debug/Obj/main.o
                 0x0000000020002368                uuid_type
- .bss.led_value
+ .bss.cmd_value
                 0x0000000020002369        0x1 Output/Robot_v1_1 Debug/Obj/main.o
-                0x0000000020002369                led_value
- .bss.button_value
+                0x0000000020002369                cmd_value
+ .bss.data_value
                 0x000000002000236a        0x1 Output/Robot_v1_1 Debug/Obj/main.o
-                0x000000002000236a                button_value
+                0x000000002000236a                data_value
  .bss.BLE_Connected
                 0x000000002000236b        0x1 Output/Robot_v1_1 Debug/Obj/main.o
                 0x000000002000236b                BLE_Connected
@@ -13127,17 +13127,17 @@ Linker script and memory map
  .bss.timer1_match_value
                 0x0000000020006840        0x4 Output/Robot_v1_1 Debug/Obj/main.o
                 0x0000000020006840                timer1_match_value
- .bss.range.14458
+ .bss.range.14460
                 0x0000000020006844        0x1 Output/Robot_v1_1 Debug/Obj/main.o
  *fill*         0x0000000020006845        0x3 
- .bss.cnt_128k.14574
+ .bss.cnt_128k.14575
                 0x0000000020006848        0x4 Output/Robot_v1_1 Debug/Obj/main.o
- .bss.pwm_duty.14573
+ .bss.pwm_duty.14574
                 0x000000002000684c        0x8 Output/Robot_v1_1 Debug/Obj/main.o
- .bss.pwm_top.14579
+ .bss.pwm_top.14580
                 0x0000000020006854        0x2 Output/Robot_v1_1 Debug/Obj/main.o
  *fill*         0x0000000020006856        0x2 
- .bss.pwm_duty.14580
+ .bss.pwm_duty.14581
                 0x0000000020006858        0x4 Output/Robot_v1_1 Debug/Obj/main.o
  .bss.m_timer_data
                 0x000000002000685c       0x20 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
@@ -13494,7 +13494,7 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .comment       0x00000000000000bc       0x71 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
  .comment       0x00000000000000bc       0x4d C:/Program Files/SEGGER/SEGGER Embedded Studio for ARM 3.34/lib/libc_v7em_fpv4_sp_d16_hard_t_le_eabi.a(libc2.o)
 
-.debug_line     0x0000000000000000    0x1b126
+.debug_line     0x0000000000000000    0x1b13c
  .debug_line    0x0000000000000000      0x2b4 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
  .debug_line    0x00000000000002b4      0xbab Output/Robot_v1_1 Debug/Obj/app_timer.o
  .debug_line    0x0000000000000e5f      0x7bc Output/Robot_v1_1 Debug/Obj/app_util_platform.o
@@ -13510,38 +13510,38 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .debug_line    0x0000000000005517      0x7f3 Output/Robot_v1_1 Debug/Obj/nrf_drv_common.o
  .debug_line    0x0000000000005d0a      0xedc Output/Robot_v1_1 Debug/Obj/nrf_drv_twi.o
  .debug_line    0x0000000000006be6      0x826 Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
- .debug_line    0x000000000000740c     0x1c78 Output/Robot_v1_1 Debug/Obj/main.o
- .debug_line    0x0000000000009084      0x5dd Output/Robot_v1_1 Debug/Obj/vl6180.o
- .debug_line    0x0000000000009661      0xc79 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
- .debug_line    0x000000000000a2da      0xcf7 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
- .debug_line    0x000000000000afd1      0xc74 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
- .debug_line    0x000000000000bc45      0xad7 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
- .debug_line    0x000000000000c71c     0x103d Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
- .debug_line    0x000000000000d759      0xead Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
- .debug_line    0x000000000000e606     0x128d Output/Robot_v1_1 Debug/Obj/id_manager.o
- .debug_line    0x000000000000f893      0xc42 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
- .debug_line    0x00000000000104d5     0x1122 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
- .debug_line    0x00000000000115f7     0x118c Output/Robot_v1_1 Debug/Obj/peer_database.o
- .debug_line    0x0000000000012783      0xea2 Output/Robot_v1_1 Debug/Obj/peer_id.o
- .debug_line    0x0000000000013625     0x14e7 Output/Robot_v1_1 Debug/Obj/peer_manager.o
- .debug_line    0x0000000000014b0c      0x3f8 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
- .debug_line    0x0000000000014f04      0x734 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
- .debug_line    0x0000000000015638     0x119b Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- .debug_line    0x00000000000167d3     0x10c1 Output/Robot_v1_1 Debug/Obj/security_manager.o
- .debug_line    0x0000000000017894       0xab Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o
- .debug_line    0x000000000001793f       0xb4 Output/Robot_v1_1 Debug/Obj/ses_nrf52_Vectors.o
- .debug_line    0x00000000000179f3      0x420 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
- .debug_line    0x0000000000017e13      0xb36 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
- .debug_line    0x0000000000018949      0xb8d Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
- .debug_line    0x00000000000194d6      0x825 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
- .debug_line    0x0000000000019cfb      0x1ab ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
- .debug_line    0x0000000000019ea6      0x2c2 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
- .debug_line    0x000000000001a168      0x77e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
- .debug_line    0x000000000001a8e6      0x12e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
- .debug_line    0x000000000001aa14       0x98 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
- .debug_line    0x000000000001aaac      0x67a ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
+ .debug_line    0x000000000000740c     0x1c8e Output/Robot_v1_1 Debug/Obj/main.o
+ .debug_line    0x000000000000909a      0x5dd Output/Robot_v1_1 Debug/Obj/vl6180.o
+ .debug_line    0x0000000000009677      0xc79 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+ .debug_line    0x000000000000a2f0      0xcf7 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+ .debug_line    0x000000000000afe7      0xc74 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+ .debug_line    0x000000000000bc5b      0xad7 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+ .debug_line    0x000000000000c732     0x103d Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+ .debug_line    0x000000000000d76f      0xead Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+ .debug_line    0x000000000000e61c     0x128d Output/Robot_v1_1 Debug/Obj/id_manager.o
+ .debug_line    0x000000000000f8a9      0xc42 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+ .debug_line    0x00000000000104eb     0x1122 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+ .debug_line    0x000000000001160d     0x118c Output/Robot_v1_1 Debug/Obj/peer_database.o
+ .debug_line    0x0000000000012799      0xea2 Output/Robot_v1_1 Debug/Obj/peer_id.o
+ .debug_line    0x000000000001363b     0x14e7 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+ .debug_line    0x0000000000014b22      0x3f8 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+ .debug_line    0x0000000000014f1a      0x734 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+ .debug_line    0x000000000001564e     0x119b Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ .debug_line    0x00000000000167e9     0x10c1 Output/Robot_v1_1 Debug/Obj/security_manager.o
+ .debug_line    0x00000000000178aa       0xab Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o
+ .debug_line    0x0000000000017955       0xb4 Output/Robot_v1_1 Debug/Obj/ses_nrf52_Vectors.o
+ .debug_line    0x0000000000017a09      0x420 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+ .debug_line    0x0000000000017e29      0xb36 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+ .debug_line    0x000000000001895f      0xb8d Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ .debug_line    0x00000000000194ec      0x825 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+ .debug_line    0x0000000000019d11      0x1ab ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
+ .debug_line    0x0000000000019ebc      0x2c2 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
+ .debug_line    0x000000000001a17e      0x77e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+ .debug_line    0x000000000001a8fc      0x12e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+ .debug_line    0x000000000001aa2a       0x98 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
+ .debug_line    0x000000000001aac2      0x67a ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
 
-.debug_info     0x0000000000000000    0x6a7e8
+.debug_info     0x0000000000000000    0x6a7d9
  .debug_info    0x0000000000000000       0xd6 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
  .debug_info    0x00000000000000d6     0x22ae Output/Robot_v1_1 Debug/Obj/app_timer.o
  .debug_info    0x0000000000002384     0x18cd Output/Robot_v1_1 Debug/Obj/app_util_platform.o
@@ -13557,36 +13557,36 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .debug_info    0x000000000000df38     0x167a Output/Robot_v1_1 Debug/Obj/nrf_drv_common.o
  .debug_info    0x000000000000f5b2     0x299b Output/Robot_v1_1 Debug/Obj/nrf_drv_twi.o
  .debug_info    0x0000000000011f4d     0x15b8 Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
- .debug_info    0x0000000000013505     0x8061 Output/Robot_v1_1 Debug/Obj/main.o
- .debug_info    0x000000000001b566     0x164f Output/Robot_v1_1 Debug/Obj/vl6180.o
- .debug_info    0x000000000001cbb5     0x3701 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
- .debug_info    0x00000000000202b6     0x4764 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
- .debug_info    0x0000000000024a1a     0x45fe Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
- .debug_info    0x0000000000029018     0x336e Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
- .debug_info    0x000000000002c386     0x55ff Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
- .debug_info    0x0000000000031985     0x432f Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
- .debug_info    0x0000000000035cb4     0x5d01 Output/Robot_v1_1 Debug/Obj/id_manager.o
- .debug_info    0x000000000003b9b5     0x46c1 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
- .debug_info    0x0000000000040076     0x4a78 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
- .debug_info    0x0000000000044aee     0x4a21 Output/Robot_v1_1 Debug/Obj/peer_database.o
- .debug_info    0x000000000004950f     0x3c0f Output/Robot_v1_1 Debug/Obj/peer_id.o
- .debug_info    0x000000000004d11e     0x5e32 Output/Robot_v1_1 Debug/Obj/peer_manager.o
- .debug_info    0x0000000000052f50      0x774 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
- .debug_info    0x00000000000536c4     0x1325 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
- .debug_info    0x00000000000549e9     0x5b65 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
- .debug_info    0x000000000005a54e     0x56a8 Output/Robot_v1_1 Debug/Obj/security_manager.o
- .debug_info    0x000000000005fbf6       0xdc Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o
- .debug_info    0x000000000005fcd2       0xde Output/Robot_v1_1 Debug/Obj/ses_nrf52_Vectors.o
- .debug_info    0x000000000005fdb0     0x1083 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
- .debug_info    0x0000000000060e33     0x1ec9 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
- .debug_info    0x0000000000062cfc     0x4655 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
- .debug_info    0x0000000000067351     0x13b3 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
- .debug_info    0x0000000000068704      0x4c3 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
- .debug_info    0x0000000000068bc7      0x72d ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
- .debug_info    0x00000000000692f4      0x6b9 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
- .debug_info    0x00000000000699ad      0x99d ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
- .debug_info    0x000000000006a34a       0x85 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
- .debug_info    0x000000000006a3cf      0x419 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
+ .debug_info    0x0000000000013505     0x8052 Output/Robot_v1_1 Debug/Obj/main.o
+ .debug_info    0x000000000001b557     0x164f Output/Robot_v1_1 Debug/Obj/vl6180.o
+ .debug_info    0x000000000001cba6     0x3701 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+ .debug_info    0x00000000000202a7     0x4764 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+ .debug_info    0x0000000000024a0b     0x45fe Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+ .debug_info    0x0000000000029009     0x336e Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+ .debug_info    0x000000000002c377     0x55ff Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+ .debug_info    0x0000000000031976     0x432f Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+ .debug_info    0x0000000000035ca5     0x5d01 Output/Robot_v1_1 Debug/Obj/id_manager.o
+ .debug_info    0x000000000003b9a6     0x46c1 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+ .debug_info    0x0000000000040067     0x4a78 Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+ .debug_info    0x0000000000044adf     0x4a21 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ .debug_info    0x0000000000049500     0x3c0f Output/Robot_v1_1 Debug/Obj/peer_id.o
+ .debug_info    0x000000000004d10f     0x5e32 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+ .debug_info    0x0000000000052f41      0x774 Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+ .debug_info    0x00000000000536b5     0x1325 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+ .debug_info    0x00000000000549da     0x5b65 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ .debug_info    0x000000000005a53f     0x56a8 Output/Robot_v1_1 Debug/Obj/security_manager.o
+ .debug_info    0x000000000005fbe7       0xdc Output/Robot_v1_1 Debug/Obj/ses_nRF_Startup.o
+ .debug_info    0x000000000005fcc3       0xde Output/Robot_v1_1 Debug/Obj/ses_nrf52_Vectors.o
+ .debug_info    0x000000000005fda1     0x1083 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+ .debug_info    0x0000000000060e24     0x1ec9 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+ .debug_info    0x0000000000062ced     0x4655 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ .debug_info    0x0000000000067342     0x13b3 Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+ .debug_info    0x00000000000686f5      0x4c3 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
+ .debug_info    0x0000000000068bb8      0x72d ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
+ .debug_info    0x00000000000692e5      0x6b9 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+ .debug_info    0x000000000006999e      0x99d ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+ .debug_info    0x000000000006a33b       0x85 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_bitreversal2.o)
+ .debug_info    0x000000000006a3c0      0x419 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
 
 .debug_abbrev   0x0000000000000000     0x6e4d
  .debug_abbrev  0x0000000000000000       0x12 Output/Robot_v1_1 Debug/Obj/thumb_crt0.o
@@ -13813,7 +13813,7 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .debug_frame   0x000000000000ecb4       0x94 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
 
 .debug_pubnames
-                0x0000000000000000    0x29685
+                0x0000000000000000    0x29693
  .debug_pubnames
                 0x0000000000000000     0x1167 Output/Robot_v1_1 Debug/Obj/app_timer.o
  .debug_pubnames
@@ -13843,49 +13843,49 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .debug_pubnames
                 0x0000000000007732      0x96a Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
  .debug_pubnames
-                0x000000000000809c     0x313b Output/Robot_v1_1 Debug/Obj/main.o
+                0x000000000000809c     0x3149 Output/Robot_v1_1 Debug/Obj/main.o
  .debug_pubnames
-                0x000000000000b1d7      0x150 Output/Robot_v1_1 Debug/Obj/vl6180.o
+                0x000000000000b1e5      0x150 Output/Robot_v1_1 Debug/Obj/vl6180.o
  .debug_pubnames
-                0x000000000000b327     0x12f1 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+                0x000000000000b335     0x12f1 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
  .debug_pubnames
-                0x000000000000c618     0x1766 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+                0x000000000000c626     0x1766 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
  .debug_pubnames
-                0x000000000000dd7e     0x1a3b Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+                0x000000000000dd8c     0x1a3b Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
  .debug_pubnames
-                0x000000000000f7b9     0x127b Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+                0x000000000000f7c7     0x127b Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
  .debug_pubnames
-                0x0000000000010a34     0x254a Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+                0x0000000000010a42     0x254a Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
  .debug_pubnames
-                0x0000000000012f7e     0x1cad Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+                0x0000000000012f8c     0x1cad Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
  .debug_pubnames
-                0x0000000000014c2b     0x26cd Output/Robot_v1_1 Debug/Obj/id_manager.o
+                0x0000000000014c39     0x26cd Output/Robot_v1_1 Debug/Obj/id_manager.o
  .debug_pubnames
-                0x00000000000172f8     0x1883 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+                0x0000000000017306     0x1883 Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
  .debug_pubnames
-                0x0000000000018b7b     0x22ea Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+                0x0000000000018b89     0x22ea Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
  .debug_pubnames
-                0x000000000001ae65     0x21b4 Output/Robot_v1_1 Debug/Obj/peer_database.o
+                0x000000000001ae73     0x21b4 Output/Robot_v1_1 Debug/Obj/peer_database.o
  .debug_pubnames
-                0x000000000001d019     0x1b08 Output/Robot_v1_1 Debug/Obj/peer_id.o
+                0x000000000001d027     0x1b08 Output/Robot_v1_1 Debug/Obj/peer_id.o
  .debug_pubnames
-                0x000000000001eb21     0x2758 Output/Robot_v1_1 Debug/Obj/peer_manager.o
+                0x000000000001eb2f     0x2758 Output/Robot_v1_1 Debug/Obj/peer_manager.o
  .debug_pubnames
-                0x0000000000021279       0x6d Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+                0x0000000000021287       0x6d Output/Robot_v1_1 Debug/Obj/pm_buffer.o
  .debug_pubnames
-                0x00000000000212e6      0x94d Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+                0x00000000000212f4      0x94d Output/Robot_v1_1 Debug/Obj/pm_mutex.o
  .debug_pubnames
-                0x0000000000021c33     0x2738 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+                0x0000000000021c41     0x2738 Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
  .debug_pubnames
-                0x000000000002436b     0x23bd Output/Robot_v1_1 Debug/Obj/security_manager.o
+                0x0000000000024379     0x23bd Output/Robot_v1_1 Debug/Obj/security_manager.o
  .debug_pubnames
-                0x0000000000026728      0x110 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+                0x0000000000026736      0x110 Output/Robot_v1_1 Debug/Obj/system_nrf52.o
  .debug_pubnames
-                0x0000000000026838     0x11ef Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+                0x0000000000026846     0x11ef Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
  .debug_pubnames
-                0x0000000000027a27     0x1334 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+                0x0000000000027a35     0x1334 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .debug_pubnames
-                0x0000000000028d5b      0x92a Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+                0x0000000000028d69      0x92a Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
 
 .debug_pubtypes
                 0x0000000000000000    0x15773
@@ -14085,7 +14085,7 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
  .debug_macro   0x00000000000076c3       0x30 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
  .debug_macro   0x00000000000076f3      0x1fe Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
 
-.debug_str      0x0000000000000000    0x8298c
+.debug_str      0x0000000000000000    0x82979
  .debug_str     0x0000000000000000    0x66206 Output/Robot_v1_1 Debug/Obj/app_timer.o
                                       0x67053 (size before relaxing)
  .debug_str     0x0000000000066206      0x2ba Output/Robot_v1_1 Debug/Obj/app_util_platform.o
@@ -14114,59 +14114,59 @@ OUTPUT(Output/Debug/Exe/Robot_v1_1.elf elf32-littlearm)
                                       0x6a628 (size before relaxing)
  .debug_str     0x000000000006f7d8      0xa06 Output/Robot_v1_1 Debug/Obj/nrf_drv_pdm.o
                                       0x6818d (size before relaxing)
- .debug_str     0x00000000000701de     0xd62f Output/Robot_v1_1 Debug/Obj/main.o
-                                      0x791ff (size before relaxing)
- .debug_str     0x000000000007d80d      0x171 Output/Robot_v1_1 Debug/Obj/vl6180.o
+ .debug_str     0x00000000000701de     0xd62b Output/Robot_v1_1 Debug/Obj/main.o
+                                      0x791fb (size before relaxing)
+ .debug_str     0x000000000007d809      0x171 Output/Robot_v1_1 Debug/Obj/vl6180.o
                                       0x68222 (size before relaxing)
- .debug_str     0x000000000007d97e      0x2e4 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
+ .debug_str     0x000000000007d97a      0x2e4 Output/Robot_v1_1 Debug/Obj/ble_advdata.o
                                       0x6c95c (size before relaxing)
- .debug_str     0x000000000007dc62      0x2c6 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
+ .debug_str     0x000000000007dc5e      0x2c6 Output/Robot_v1_1 Debug/Obj/ble_conn_params.o
                                       0x6e7e0 (size before relaxing)
- .debug_str     0x000000000007df28      0x734 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
+ .debug_str     0x000000000007df24      0x734 Output/Robot_v1_1 Debug/Obj/ble_conn_state.o
                                       0x6cc7e (size before relaxing)
- .debug_str     0x000000000007e65c      0x2f6 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
+ .debug_str     0x000000000007e658      0x2f6 Output/Robot_v1_1 Debug/Obj/ble_srv_common.o
                                       0x6c36a (size before relaxing)
- .debug_str     0x000000000007e952      0xb50 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
+ .debug_str     0x000000000007e94e      0xb41 Output/Robot_v1_1 Debug/Obj/gatt_cache_manager.o
                                       0x6edbf (size before relaxing)
- .debug_str     0x000000000007f4a2      0x27a Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
+ .debug_str     0x000000000007f48f      0x27a Output/Robot_v1_1 Debug/Obj/gatts_cache_manager.o
                                       0x6dc82 (size before relaxing)
- .debug_str     0x000000000007f71c      0x68e Output/Robot_v1_1 Debug/Obj/id_manager.o
+ .debug_str     0x000000000007f709      0x68e Output/Robot_v1_1 Debug/Obj/id_manager.o
                                       0x6f200 (size before relaxing)
- .debug_str     0x000000000007fdaa      0x24f Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
+ .debug_str     0x000000000007fd97      0x24f Output/Robot_v1_1 Debug/Obj/nrf_ble_gatt.o
                                       0x6de4b (size before relaxing)
- .debug_str     0x000000000007fff9      0x45a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
+ .debug_str     0x000000000007ffe6      0x45a Output/Robot_v1_1 Debug/Obj/peer_data_storage.o
                                       0x6e2c2 (size before relaxing)
- .debug_str     0x0000000000080453      0x650 Output/Robot_v1_1 Debug/Obj/peer_database.o
+ .debug_str     0x0000000000080440      0x650 Output/Robot_v1_1 Debug/Obj/peer_database.o
                                       0x6e327 (size before relaxing)
- .debug_str     0x0000000000080aa3      0x129 Output/Robot_v1_1 Debug/Obj/peer_id.o
+ .debug_str     0x0000000000080a90      0x129 Output/Robot_v1_1 Debug/Obj/peer_id.o
                                       0x6d0bc (size before relaxing)
- .debug_str     0x0000000000080bcc      0x56e Output/Robot_v1_1 Debug/Obj/peer_manager.o
+ .debug_str     0x0000000000080bb9      0x56e Output/Robot_v1_1 Debug/Obj/peer_manager.o
                                       0x6f9f4 (size before relaxing)
- .debug_str     0x000000000008113a      0x14f Output/Robot_v1_1 Debug/Obj/pm_buffer.o
+ .debug_str     0x0000000000081127      0x14f Output/Robot_v1_1 Debug/Obj/pm_buffer.o
                                       0x64a6d (size before relaxing)
- .debug_str     0x0000000000081289       0xe8 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
+ .debug_str     0x0000000000081276       0xe8 Output/Robot_v1_1 Debug/Obj/pm_mutex.o
                                       0x662c4 (size before relaxing)
- .debug_str     0x0000000000081371      0x35e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
+ .debug_str     0x000000000008135e      0x35e Output/Robot_v1_1 Debug/Obj/security_dispatcher.o
                                       0x6ef56 (size before relaxing)
- .debug_str     0x00000000000816cf      0x3cd Output/Robot_v1_1 Debug/Obj/security_manager.o
+ .debug_str     0x00000000000816bc      0x3cd Output/Robot_v1_1 Debug/Obj/security_manager.o
                                       0x6ec62 (size before relaxing)
- .debug_str     0x0000000000081a9c      0x24c Output/Robot_v1_1 Debug/Obj/system_nrf52.o
+ .debug_str     0x0000000000081a89      0x24c Output/Robot_v1_1 Debug/Obj/system_nrf52.o
                                       0x5b38d (size before relaxing)
- .debug_str     0x0000000000081ce8      0x465 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
+ .debug_str     0x0000000000081cd5      0x465 Output/Robot_v1_1 Debug/Obj/nrf_sdh.o
                                       0x6972f (size before relaxing)
- .debug_str     0x000000000008214d      0x366 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
+ .debug_str     0x000000000008213a      0x366 Output/Robot_v1_1 Debug/Obj/nrf_sdh_ble.o
                                       0x6e6c5 (size before relaxing)
- .debug_str     0x00000000000824b3      0x15f Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
+ .debug_str     0x00000000000824a0      0x15f Output/Robot_v1_1 Debug/Obj/nrf_sdh_soc.o
                                       0x68392 (size before relaxing)
- .debug_str     0x0000000000082612      0x16e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
+ .debug_str     0x00000000000825ff      0x16e ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_init_f32.o)
                                         0x517 (size before relaxing)
- .debug_str     0x0000000000082780       0x88 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
+ .debug_str     0x000000000008276d       0x88 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_rfft_fast_f32.o)
                                         0x2f4 (size before relaxing)
- .debug_str     0x0000000000082808      0x109 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
+ .debug_str     0x00000000000827f5      0x109 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_f32.o)
                                         0x35f (size before relaxing)
- .debug_str     0x0000000000082911       0x38 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
+ .debug_str     0x00000000000828fe       0x38 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_common_tables.o)
                                         0x704 (size before relaxing)
- .debug_str     0x0000000000082949       0x43 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
+ .debug_str     0x0000000000082936       0x43 ../../../../../../components/toolchain/cmsis/dsp/GCC/libarm_cortexM4lf_math.a(arm_cfft_radix8_f32.o)
                                         0x256 (size before relaxing)
 
 .debug_loc      0x0000000000000000     0x2a79
