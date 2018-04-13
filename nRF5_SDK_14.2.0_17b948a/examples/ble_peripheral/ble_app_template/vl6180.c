@@ -85,7 +85,7 @@ uint8_t getDistance(void)
 
 float32_t getAmbientLight(uint8_t VL6180X_ALS_GAIN)
 {
-  //First load in Gain we are using, do it everytime incase someone changes it on us.
+  //First load in Gain we are using, do it every time in case someone changes it on us.
   //Note: Upper nibble shoudl be set to 0x4 i.e. for ALS gain of 1.0 write 0x46
   VL6180x_setRegister(VL6180X_SYSALS_ANALOGUE_GAIN, (0x40 | VL6180X_ALS_GAIN)); // Set the ALS gain
 
@@ -99,7 +99,7 @@ float32_t getAmbientLight(uint8_t VL6180X_ALS_GAIN)
   //Retrieve the Raw ALS value from the sensoe
   unsigned int alsRaw = VL6180x_getRegister16bit(VL6180X_RESULT_ALS_VAL);
   
-  //Get Integration Period for calculation, we do this everytime incase someone changes it on us.
+  //Get Integration Period for calculation, we do this every time in case someone changes it on us.
   unsigned int alsIntegrationPeriodRaw = VL6180x_getRegister16bit(VL6180X_SYSALS_INTEGRATION_PERIOD);
   
   float32_t alsIntegrationPeriod = 100.0 / alsIntegrationPeriodRaw ;
@@ -119,7 +119,7 @@ float32_t getAmbientLight(uint8_t VL6180X_ALS_GAIN)
     case GAIN_40: alsGain = 40.0; break;
   }
 
-//Calculate LUX from formula in AppNotes
+  //Calculate LUX from formula in AppNotes
   
   float32_t alsCalculated = (float32_t)0.32 * ((float32_t)alsRaw / alsGain) * alsIntegrationPeriod;
 

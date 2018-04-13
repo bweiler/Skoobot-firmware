@@ -249,9 +249,9 @@ static int32_t p_out_buffer[FFT_TEST_COMP_SAMPLES_LEN/2+1];
 void do_dft(void);
 
 //Microphone
-#define SAMPLE_BUFFER_CNT 8096
-//#define SAMPLE_BUFFER_CNT 1024
+#define SAMPLE_BUFFER_CNT 16*1024
 int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
+uint8_t mic_gain = NRF_PDM_GAIN_DEFAULT;
 volatile bool m_xfer_done = false;
 void configure_microphone(void);
 void audio_handler(nrf_drv_pdm_evt_t const * const evt);                //Just sets xfer_done
@@ -271,14 +271,14 @@ void sendbytes(uint8_t a);
 void TxUART(uint8_t* buf);
 
 //Motors
-uint8_t timer1_enabled_for_motors = 0;
+uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0;;
 uint32_t timer1_counter, timer1_match_value;
-void motors_forward(uint32_t freq);
+void motors_forward();
 void motors_backward(void);
 void motors_right(void);
 void motors_left(void);
 void turn_left_90_degrees(void);
-void pwm_motor_stepping(uint32_t steps_per_second);
+void pwm_motor_stepping(uint32_t steps_per_second, uint32_t number_steps);
 void stop_stepping(void);
 void stepping_mode(uint8_t mode);
 void step_mode_experiment(void);
@@ -303,7 +303,8 @@ void idle_while_charging(void);
  */
 int main(void)
 {
-    float freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
+    float32_t freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
+    float32_t ambient_value;
     static uint8_t range, buf[64];
 
     nrf_gpio_cfg_output(GREEN_LED);
@@ -359,9 +360,9 @@ int main(void)
           {
             switch(cmd_value)
             {
-            case MOTORS_RIGHT:
-              motors_right();           //go right 90 degrees
-              pwm_motor_stepping(50);
+            case MOTORS_RIGHT:          //go right 90 degrees
+              motors_right();           
+              pwm_motor_stepping(100,300);
               motors_wake();
               nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
               stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
@@ -369,15 +370,15 @@ int main(void)
               break;
             case MOTORS_LEFT:
               motors_left();
-              pwm_motor_stepping(50);
+              pwm_motor_stepping(100,10);
               motors_wake();
               nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
               stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
               motors_sleep();
               break;
             case MOTORS_FORWARD:
-              motors_forward(100);
-              pwm_motor_stepping(50);
+              motors_forward();
+              pwm_motor_stepping(100,300);
               motors_wake();
               nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
               stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
@@ -385,7 +386,7 @@ int main(void)
               break;
             case MOTORS_BACKWARD:
               motors_backward();
-              pwm_motor_stepping(50);
+              pwm_motor_stepping(50,20);
               motors_wake();
               nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
               stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
@@ -403,9 +404,11 @@ int main(void)
               step_mode_experiment();
               break;
             case GET_DISTANCE:
-              range = getDistance();
+              data_value = getDistance();
               break;
             case GET_AMBIENT:
+              ambient_value = getAmbientLight(GAIN_5);      //indoors LUX is likely 10-1000
+              data_value = ambient_value;                   //single byte won't cut it
               break;
             case RECORD_SOUND:
               m_xfer_done = false;
@@ -416,8 +419,17 @@ int main(void)
               do_dft(); 
               break;
             case INCREASE_GAIN:
+              mic_gain += 5;
+              if (mic_gain > NRF_PDM_GAIN_MAXIMUM)
+                mic_gain = NRF_PDM_GAIN_MAXIMUM;
+              nrf_pdm_gain_set(mic_gain,mic_gain);
               break;
             case DECREASE_GAIN:
+              if (mic_gain < NRF_PDM_GAIN_MINIMUM+5)
+                  mic_gain = NRF_PDM_GAIN_MINIMUM;
+              else
+                  mic_gain -= 5;
+              nrf_pdm_gain_set(mic_gain,mic_gain);
               break;
            default:
                break;
@@ -426,21 +438,20 @@ int main(void)
       }
       else
       {
-        pwm_buzzer_frequency(2000.0);
+        motors_sleep();
+        stepping_mode(1);
+        motors_wake();
+         //pwm_buzzer_frequency(5000.0);
         led_on();
-        motors_forward(100);      //go forward
-        motors_wake();
-        nrf_delay_ms(2000);
-        led_off();
-        stop_stepping();          
-        motors_sleep();
-        stop_buzzer();
-        motors_right();           //go right 90 degrees
-        pwm_motor_stepping(50);
-        motors_wake();
-        nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
-        stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
-        motors_sleep();
+        motors_forward();
+        pwm_motor_stepping(100,200);    //go forward 
+        while(step_loop_done == 0);       
+        led_off();         
+        //stop_buzzer();
+        motors_left();           
+        pwm_motor_stepping(100,20); //go right 90 degrees
+        while(step_loop_done == 0);       
+        //motors_sleep();
       }
    }  
 }
@@ -448,7 +459,7 @@ int main(void)
 void turn_left_90_degrees(void)
 {
   motors_left();            //turn left
-  pwm_motor_stepping(50);   
+  pwm_motor_stepping(50,10);   
   nrf_delay_ms(100);        //this should be 5 steps each motor for 90 degree turn
   stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
 }
@@ -462,8 +473,8 @@ void configure_microphone(void)
   pdm_config.clock_freq = NRF_PDM_FREQ_1032K;
   pdm_config.mode = NRF_PDM_MODE_MONO;
   pdm_config.edge = NRF_PDM_EDGE_LEFTRISING;
-  pdm_config.gain_l = NRF_PDM_GAIN_DEFAULT;
-  pdm_config.gain_r = NRF_PDM_GAIN_DEFAULT;
+  pdm_config.gain_l = mic_gain;
+  pdm_config.gain_r = mic_gain;
 
   nrf_drv_pdm_init(&pdm_config, audio_handler);
  
@@ -473,43 +484,28 @@ void configure_microphone(void)
 void step_mode_experiment(void)
 {
     uint8_t stepmode, cnt_of_trys;
+    uint32_t freq;
 
     motors_sleep();
-    stepmode = 0;
     for (cnt_of_trys=0;(cnt_of_trys<5);cnt_of_trys++)
     {
-        stepping_mode(stepmode);
-        switch(stepmode)
+        freq = 40;
+        for(stepmode=0;(stepmode<6);stepmode++)
         {
-          case 0:
-            motors_forward(40);     //whole step
-            led_on();               //mark start of test
-            break;
-          case 1:
-            motors_forward(80);     //1/2 step
-            led_off();
-            break;
-          case 2:
-            motors_forward(160);    //1/4 step
-            break;
-          case 3:
-            motors_forward(320);    //1/8 step
-            break;
-          case 4:
-            motors_forward(640);    //1/16 step
-            break;
-          case 5:
-            motors_forward(1280);   //1/32 step
-            break;
+            stepping_mode(stepmode);
+            motors_forward();           
+            pwm_motor_stepping(100,100);
+            if (freq == 40)
+              led_on();                 //mark start of test
+            else
+              led_off();
+            motors_wake();
+            nrf_delay_ms(2000);
+            stop_stepping();
+            motors_sleep();
+            nrf_delay_ms(500);
+            freq *= 2;
         }
-        ++stepmode;
-        if (stepmode == 6)
-            stepmode = 0;
-        motors_wake();
-        nrf_delay_ms(2000);
-        stop_stepping();
-        motors_sleep();
-        nrf_delay_ms(500);
     }
     return;
 }
@@ -541,15 +537,14 @@ void motors_forward_with_timer(uint32_t freq, uint32_t ms)
   timer1_counter = 0;
   timer1_match_value = 125000 / ms;
   timer1_enabled_for_motors = 1;
-  pwm_motor_stepping(freq);
+  //pwm_motor_stepping(freq,100);
   NRF_TIMER1->TASKS_START = 1;
 }
 
-void motors_forward(uint32_t freq)
+void motors_forward()
 {
-  nrf_gpio_pin_set(DIR_R);
   nrf_gpio_pin_clear(DIR_L);
-  pwm_motor_stepping(freq);    
+  nrf_gpio_pin_set(DIR_R);   
 }
 
 void motors_backward(void)
@@ -692,24 +687,51 @@ void audio_handler(nrf_drv_pdm_evt_t const * const evt)
        m_xfer_done = true;
 }
 
-void pwm_motor_stepping(uint32_t steps_per_second)
+//in common mode and refresh mode, number of steps should be even
+//wheels with tires travel approximately 1.67mm per step, so 300 steps is 5cm
+//a 90 degree turn should be 10 steps
+void pwm_motor_stepping(uint32_t steps_per_second, uint32_t number_steps)
 {
+  volatile static uint16_t pwm_duty[2];
+  volatile static uint32_t pwm_top;
 
-  volatile static uint32_t pwm_duty[2], cnt_128k;
+  pwm_top = 125000 / steps_per_second; 
+  if( pwm_top > 0xffff)
+    pwm_top = 0xffff;
+  pwm_duty[0] = pwm_duty[1] = pwm_top / 2;
 
-  cnt_128k = 128000 / steps_per_second;  
-  pwm_duty[0] = pwm_duty[1] = cnt_128k / 2;
-
-  NRF_PWM0->COUNTERTOP = cnt_128k; 
-  NRF_PWM0->SEQ[0].PTR = pwm_duty;
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND0);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND1);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_STOPPED);
+  nrf_pwm_shorts_set(NRF_PWM0, NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK);
+  NRF_PWM0->COUNTERTOP = (uint16_t)pwm_top; 
+  NRF_PWM0->SEQ[0].PTR = (uint32_t)(pwm_duty);
   NRF_PWM0->SEQ[0].CNT = 1;
-  NRF_PWM0->TASKS_SEQSTART[0] = 1;   
+  NRF_PWM0->SEQ[1].PTR = (uint32_t)(pwm_duty);
+  NRF_PWM0->SEQ[1].CNT = 1;
+  NRF_PWM0->LOOP = number_steps / 2;
+  nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
+  step_loop_done = 0;
 }
 
-//125000/freq=    125000/250
-void pwm_buzzer_frequency(float freq)
+void PWM0_IRQHandler(void)
 {
-  float main_freq;
+     if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE))
+     {
+        nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);  
+        if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0)
+        {
+            nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_STOP);
+            while(nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0);
+            step_loop_done = 1;
+        }
+     }
+}
+//125000/freq=    125000/250
+void pwm_buzzer_frequency(float32_t freq)
+{
+  float32_t main_freq;
   volatile static uint16_t pwm_top, pwm_duty[2];
    
   main_freq = 125000.0 / freq;
@@ -717,10 +739,11 @@ void pwm_buzzer_frequency(float freq)
   pwm_top = (uint16_t)main_freq;
   pwm_duty[0] = pwm_duty[1] = (uint16_t)(main_freq / 2.0);
 
-  NRF_PWM1->COUNTERTOP = pwm_top; //1 msec
+  NRF_PWM1->COUNTERTOP = pwm_top;
   NRF_PWM1->SEQ[0].PTR = (uint32_t)(pwm_duty);
   NRF_PWM1->SEQ[0].CNT = 1;
-  NRF_PWM1->TASKS_SEQSTART[0] = 1;   
+  NRF_PWM1->TASKS_SEQSTART[0] = 1;
+  
 }
 
 void cb_test(void)
@@ -820,10 +843,18 @@ void my_configure(void)
   NRF_PWM0->ENABLE = PWM_ENABLE_ENABLE_Enabled;
   NRF_PWM0->MODE = PWM_MODE_UPDOWN_Up;
   NRF_PWM0->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
-  NRF_PWM0->LOOP = PWM_LOOP_CNT_Disabled;
   NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
   NRF_PWM0->SEQ[0].REFRESH = 0;
   NRF_PWM0->SEQ[0].ENDDELAY = 0;
+  NRF_PWM0->SEQ[1].REFRESH = 0;
+  NRF_PWM0->SEQ[1].ENDDELAY = 0;
+  nrf_pwm_shorts_set(NRF_PWM0, 0);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND0);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND1);
+  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_STOPPED);
+  nrf_pwm_int_set(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
+  nrf_drv_common_irq_enable(PWM0_IRQn,APP_IRQ_PRIORITY_LOWEST);
 
   nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
   nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
