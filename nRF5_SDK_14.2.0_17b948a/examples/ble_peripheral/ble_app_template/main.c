@@ -286,8 +286,17 @@ void motors_sleep(void);
 void motors_wake(void);
 
 //Buzzer
-void pwm_buzzer_frequency(float freq);
+uint8_t buzzer_loops_done = 0, song_playing = 0;
+void pwm_buzzer_frequency(float freq, uint32_t loops);
 void stop_buzzer(void);
+struct notes_struct {
+  float32_t freq;
+  uint16_t duration;
+};
+struct song_struct {
+  uint16_t num_notes; 
+  struct notes_struct *notes;
+} song;
 
 //General
 void my_configure(void);
@@ -303,10 +312,12 @@ void idle_while_charging(void);
  */
 int main(void)
 {
-    float32_t freq[8] = { 440.0, 460.0, 470.0, 480.0, 2600, 2300, 2100, 1800 };
     float32_t ambient_value;
     static uint8_t range, buf[64];
-
+    struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
+    song.num_notes = 3;
+    song.notes = basic;
+ 
     nrf_gpio_cfg_output(GREEN_LED);
     led_off();
     my_configure();         //sets gpios and PWM0 for step, PWM1 for buzzer
@@ -345,7 +356,10 @@ int main(void)
     #endif
 
     new_cmd = 0;
-  
+    motors_sleep();
+    stepping_mode(1);
+    motors_wake();
+
     for (;;)
     {
           //Trap here when BLE not connected
@@ -358,47 +372,42 @@ int main(void)
           }
           if (new_cmd == 1)
           {
+            led_on();
             switch(cmd_value)
             {
             case MOTORS_RIGHT:          //go right 90 degrees
               motors_right();           
-              pwm_motor_stepping(100,300);
               motors_wake();
-              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
-              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              pwm_motor_stepping(100,24);
+              while(step_loop_done == 0);       
               motors_sleep();
               break;
             case MOTORS_LEFT:
               motors_left();
-              pwm_motor_stepping(100,10);
               motors_wake();
-              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
-              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              pwm_motor_stepping(100,24);
+              while(step_loop_done == 0);       
               motors_sleep();
               break;
             case MOTORS_FORWARD:
               motors_forward();
-              pwm_motor_stepping(100,300);
               motors_wake();
-              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
-              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              pwm_motor_stepping(100,200);
+              while(step_loop_done == 0);       
               motors_sleep();
               break;
             case MOTORS_BACKWARD:
               motors_backward();
-              pwm_motor_stepping(50,20);
               motors_wake();
-              nrf_delay_ms(500);        //this should be 5 steps each motor for 90 degree turn
-              stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+              pwm_motor_stepping(100,200);
+              while(step_loop_done == 0);       
               motors_sleep();
               break;
             case MOTORS_STOP:
-              stop_stepping();
-              nrf_delay_ms(1000);     
+              motors_sleep();
               break;
             case MOTORS_SLEEP:
               motors_sleep();
-              nrf_delay_ms(1000);       
               break;
             case STEPPING_TEST:
               step_mode_experiment();
@@ -438,22 +447,24 @@ int main(void)
       }
       else
       {
-        motors_sleep();
-        stepping_mode(1);
-        motors_wake();
-         //pwm_buzzer_frequency(5000.0);
-        led_on();
-        motors_forward();
-        pwm_motor_stepping(100,200);    //go forward 
-        while(step_loop_done == 0);       
-        led_off();         
-        //stop_buzzer();
-        motors_left();           
-        pwm_motor_stepping(100,20); //go right 90 degrees
-        while(step_loop_done == 0);       
-        //motors_sleep();
+        led_off();
+        play_song();
       }
    }  
+}
+
+void play_song(void)
+{
+    static uint8_t i = 0;
+
+    if (buzzer_loops_done == 0)
+      return;
+
+    pwm_buzzer_frequency(song.notes[i].freq,song.notes[i].duration);
+    if (i == song.num_notes-1)
+      i = 0;
+    else  
+      ++i;
 }
 
 void turn_left_90_degrees(void)
@@ -717,19 +728,15 @@ void pwm_motor_stepping(uint32_t steps_per_second, uint32_t number_steps)
 
 void PWM0_IRQHandler(void)
 {
-     if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE))
-     {
-        nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);  
-        if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0)
-        {
-            nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_STOP);
-            while(nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0);
-            step_loop_done = 1;
-        }
-     }
+    stop_stepping();
+}
+
+void PWM1_IRQHandler(void)
+{
+    stop_buzzer();
 }
 //125000/freq=    125000/250
-void pwm_buzzer_frequency(float32_t freq)
+void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
 {
   float32_t main_freq;
   volatile static uint16_t pwm_top, pwm_duty[2];
@@ -739,11 +746,19 @@ void pwm_buzzer_frequency(float32_t freq)
   pwm_top = (uint16_t)main_freq;
   pwm_duty[0] = pwm_duty[1] = (uint16_t)(main_freq / 2.0);
 
-  NRF_PWM1->COUNTERTOP = pwm_top;
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_LOOPSDONE);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND0);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND1);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
+  nrf_pwm_shorts_set(NRF_PWM1, NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK);
+  NRF_PWM1->COUNTERTOP = (uint16_t)pwm_top; 
   NRF_PWM1->SEQ[0].PTR = (uint32_t)(pwm_duty);
   NRF_PWM1->SEQ[0].CNT = 1;
-  NRF_PWM1->TASKS_SEQSTART[0] = 1;
-  
+  NRF_PWM1->SEQ[1].PTR = (uint32_t)(pwm_duty);
+  NRF_PWM1->SEQ[1].CNT = 1;
+  NRF_PWM1->LOOP = loops / 2;
+  nrf_pwm_task_trigger(NRF_PWM1, NRF_PWM_TASK_SEQSTART0);
+  buzzer_loops_done = 0;
 }
 
 void cb_test(void)
@@ -805,12 +820,30 @@ void mb_test(void)
 
 void stop_buzzer(void)
 {
-  NRF_PWM1->TASKS_STOP = 1;
+  if (nrf_pwm_event_check(NRF_PWM1, NRF_PWM_EVENT_LOOPSDONE))
+  {
+    nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_LOOPSDONE);  
+    if (nrf_pwm_event_check(NRF_PWM1, NRF_PWM_EVENT_STOPPED) == 0)
+    {
+        nrf_pwm_task_trigger(NRF_PWM1, NRF_PWM_TASK_STOP);
+        while(nrf_pwm_event_check(NRF_PWM1, NRF_PWM_EVENT_STOPPED) == 0);
+        buzzer_loops_done = 1;
+    }
+  }
 }
 
 void stop_stepping(void)
 {
-  NRF_PWM0->TASKS_STOP = 1;
+  if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE))
+  {
+    nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);  
+    if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0)
+    {
+        nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_STOP);
+        while(nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0);
+        step_loop_done = 1;
+    }
+  }
 }
 
 void uart_init(void)
@@ -1383,6 +1416,7 @@ void on_write(ble_evt_t const * p_ble_evt)
 {    
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
 
+    led_on();
     if ((p_evt_write->handle == led_handle.value_handle)
         && (p_evt_write->len == 1))
     {
