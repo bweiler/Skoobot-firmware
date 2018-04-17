@@ -76,7 +76,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="468" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="551" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="31" y="582" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="551" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="479" useTextEdit="1" useBinaryEdit="0" left="0" path="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" debugPath="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" selected="0" top="120" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="240" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh_ble.c" debugPath="../../../../../../components/softdevice/common/nrf_sdh_ble.c" selected="0" top="203" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="184" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" selected="0" top="324" codecName="Default"/>

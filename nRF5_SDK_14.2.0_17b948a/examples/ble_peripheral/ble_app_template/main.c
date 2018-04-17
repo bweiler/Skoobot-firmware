@@ -370,9 +370,21 @@ int main(void)
             motors_sleep();
             nrf_delay_ms(200);
           }
-          if (new_cmd == 1)
+          if (new_cmd == 2)   //Just test code, write to button shouldn't happen
           {
             led_on();
+            nrf_delay_ms(500);
+            led_off();
+            nrf_dealy_ms(500);
+            led_on();
+            nrf_delay_ms(500);
+            led_off();
+            nrf_dealy_ms(500);
+          }
+          if (new_cmd == 1)
+          {
+            if (cmd_value != GET_DISTANCE && cmd_value != GET_AMBIENT)
+              led_on();
             switch(cmd_value)
             {
             case MOTORS_RIGHT:          //go right 90 degrees
@@ -414,10 +426,12 @@ int main(void)
               break;
             case GET_DISTANCE:
               data_value = getDistance();
+              update_remote_byte();
               break;
             case GET_AMBIENT:
               ambient_value = getAmbientLight(GAIN_5);      //indoors LUX is likely 10-1000
               data_value = ambient_value;                   //single byte won't cut it
+              update_remote_byte();
               break;
             case RECORD_SOUND:
               m_xfer_done = false;
@@ -432,6 +446,8 @@ int main(void)
               if (mic_gain > NRF_PDM_GAIN_MAXIMUM)
                 mic_gain = NRF_PDM_GAIN_MAXIMUM;
               nrf_pdm_gain_set(mic_gain,mic_gain);
+              data_value = mic_gain;
+              update_remote_byte();
               break;
             case DECREASE_GAIN:
               if (mic_gain < NRF_PDM_GAIN_MINIMUM+5)
@@ -439,6 +455,8 @@ int main(void)
               else
                   mic_gain -= 5;
               nrf_pdm_gain_set(mic_gain,mic_gain);
+              data_value = mic_gain;
+              update_remote_byte();
               break;
            default:
                break;
@@ -665,7 +683,7 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
     {
         case NRF_DRV_TWI_EVT_DONE:
             if (p_event->xfer_desc.type == NRF_DRV_TWI_XFER_RX)
-            {
+            {             
                 //data_handler(m_sample);
             }
             break;
@@ -1416,12 +1434,10 @@ void on_write(ble_evt_t const * p_ble_evt)
 {    
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
 
-    led_on();
     if ((p_evt_write->handle == led_handle.value_handle)
         && (p_evt_write->len == 1))
     {
          cmd_value = p_evt_write->data[0];
-         
          new_cmd = 1;
     }
     else
@@ -1429,8 +1445,8 @@ void on_write(ble_evt_t const * p_ble_evt)
       if ((p_evt_write->handle == button_handle.value_handle)
           && (p_evt_write->len == 1))
       {
-           data_value = p_evt_write->data[0];
-           new_cmd = 1;
+           //data_value = p_evt_write->data[0];
+           new_cmd = 2;
       }
     }
 
