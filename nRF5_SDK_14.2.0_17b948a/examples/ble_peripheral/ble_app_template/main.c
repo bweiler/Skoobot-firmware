@@ -75,7 +75,8 @@
 #define MOTORS_BACKWARD   0x13
 #define MOTORS_STOP       0x14
 #define MOTORS_SLEEP      0x15
-#define STEPPING_TEST     0x16
+#define INC_STEP_MODE     0x16
+#define PLAY_BUZZER       0x17
 
 #define GET_DISTANCE      0x22
 #define GET_AMBIENT       0x21
@@ -83,6 +84,8 @@
 #define RECORD_SOUND      0x30
 #define INCREASE_GAIN     0x31
 #define DECREASE_GAIN     0x32
+
+#define ROVER_MODE        0x40
 /*
     Conditional compilation
     ========================================================
@@ -305,6 +308,7 @@ void mb_test(void);
 void led_off(void);
 void led_on(void);
 void idle_while_charging(void);
+void rover(void);
 
 /**
  * Motor might be 15 degrees per step, so 24 steps per revolution.
@@ -312,8 +316,10 @@ void idle_while_charging(void);
  */
 int main(void)
 {
+    uint8_t step_mode = 1, counter = 0;
+    uint32_t freq = 100, steps = 200;
     float32_t ambient_value;
-    static uint8_t range, buf[64];
+    static uint8_t range, buf[64], distance, callonce;
     struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
     song.num_notes = 3;
     song.notes = basic;
@@ -358,28 +364,33 @@ int main(void)
     new_cmd = 0;
     motors_sleep();
     stepping_mode(1);
-    motors_wake();
 
     for (;;)
     {
           //Trap here when BLE not connected
+          callonce = 1;
           while (BLE_Connected == 0)
           {
-            stop_buzzer();
-            stop_stepping();
-            motors_sleep();
+            if (callonce == 1)
+            {
+              stop_buzzer();
+              stop_stepping();
+              motors_sleep();
+              callonce = 0;
+            }
             nrf_delay_ms(200);
+            //distance = getDistance();
           }
           if (new_cmd == 2)   //Just test code, write to button shouldn't happen
           {
             led_on();
             nrf_delay_ms(500);
             led_off();
-            nrf_dealy_ms(500);
+            nrf_delay_ms(500);
             led_on();
             nrf_delay_ms(500);
             led_off();
-            nrf_dealy_ms(500);
+            nrf_delay_ms(500);
           }
           if (new_cmd == 1)
           {
@@ -418,11 +429,38 @@ int main(void)
             case MOTORS_STOP:
               motors_sleep();
               break;
+            case ROVER_MODE:
+              rover();
+              break;
             case MOTORS_SLEEP:
               motors_sleep();
               break;
-            case STEPPING_TEST:
-              step_mode_experiment();
+            case PLAY_BUZZER:
+              pwm_buzzer_frequency(1000.0, 50);
+              while(buzzer_loops_done == 0);
+              break;
+            case INC_STEP_MODE:
+              motors_sleep();
+              motors_forward();
+              ++step_mode;
+              if (step_mode == 6)
+              {
+                step_mode = 0;
+                freq = 50;
+                steps = 100;
+              }
+              else
+              {
+                freq = 100 * step_mode;
+                steps = 200 * step_mode;
+              }
+              stepping_mode(step_mode);
+              pwm_motor_stepping(freq,steps);
+              motors_wake();
+              while(step_loop_done == 0);       
+              motors_sleep();
+              data_value = step_mode;
+              update_remote_byte();
               break;
             case GET_DISTANCE:
               data_value = getDistance();
@@ -440,6 +478,9 @@ int main(void)
               while(m_xfer_done == false);
               nrf_drv_pdm_stop();
               do_dft(); 
+              ++counter;
+              data_value = counter;
+              update_remote_byte();
               break;
             case INCREASE_GAIN:
               mic_gain += 5;
@@ -466,9 +507,40 @@ int main(void)
       else
       {
         led_off();
-        play_song();
+        //play_song();
       }
    }  
+}
+
+void rover(void)
+{
+  uint8_t distance;
+
+  motors_sleep();
+  motors_forward();
+  stepping_mode(2);
+  pwm_motor_stepping(100,200);       
+  motors_wake();
+  new_cmd = 0;
+  while(new_cmd == 0)
+  {
+      if (step_loop_done == 1)
+        pwm_motor_stepping(100,200);       
+      distance = getDistance();
+      if (distance < 50)
+      {
+        led_on();
+        motors_left();
+      }
+      else
+      {
+        motors_forward();
+        led_off();
+      }
+      nrf_delay_ms(50);
+  }
+  motors_sleep();
+  return;
 }
 
 void play_song(void)
@@ -699,7 +771,7 @@ void twi_init(void)
     const nrf_drv_twi_config_t twi_VLX6180_config = {
        .scl                = I2C0_SCL,
        .sda                = I2C0_SDA,
-       .frequency          = NRF_TWI_FREQ_100K,
+       .frequency          = NRF_TWI_FREQ_400K,
        .interrupt_priority = APP_IRQ_PRIORITY_HIGH,
        .clear_bus_init     = false
     };
@@ -907,10 +979,10 @@ void my_configure(void)
   nrf_pwm_int_set(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
   nrf_drv_common_irq_enable(PWM0_IRQn,APP_IRQ_PRIORITY_LOWEST);
 
-  nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
-  nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
-  nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
-  nrf_timer_int_enable(NRF_TIMER1,1);
+  //nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
+  //nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
+  //nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
+  //nrf_timer_int_enable(NRF_TIMER1,1);
 
 #if CB_TEST == 0
   nrf_gpio_pin_clear(BUZZER_10MM);
@@ -924,6 +996,15 @@ void my_configure(void)
   NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
   NRF_PWM1->SEQ[0].REFRESH = 0;
   NRF_PWM1->SEQ[0].ENDDELAY = 0;
+  NRF_PWM1->SEQ[1].REFRESH = 0;
+  NRF_PWM1->SEQ[1].ENDDELAY = 0;
+  nrf_pwm_shorts_set(NRF_PWM1, 0);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_LOOPSDONE);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND0);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND1);
+  nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
+  nrf_pwm_int_set(NRF_PWM1, NRF_PWM_INT_LOOPSDONE_MASK);
+  nrf_drv_common_irq_enable(PWM1_IRQn,APP_IRQ_PRIORITY_LOWEST);
 #endif
 }
 
