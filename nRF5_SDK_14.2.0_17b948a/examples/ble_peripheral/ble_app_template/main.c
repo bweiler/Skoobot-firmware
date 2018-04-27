@@ -96,7 +96,7 @@
 */
 #define CB_TEST 0
 #define MB_TEST 0
-#define MICROPHONE 0
+#define MICROPHONE 1
 #define SPARKFUN 0
 #if CB_TEST
 #define SPARKFUN 0
@@ -340,7 +340,7 @@ int main(void)
     #if MB_TEST
       mb_test();
     #endif
-
+/*
     // Initialize.
     timers_init();
     ble_stack_init();
@@ -350,15 +350,19 @@ int main(void)
     advertising_init();
     conn_params_init();
     advertising_start();
-
+*/
     #if MICROPHONE
     //like 6700 samples in p_rx_buffer
     m_xfer_done = false;
     nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
+    nrf_pdm_gain_set(NRF_PDM_GAIN_MAXIMUM,NRF_PDM_GAIN_MAXIMUM);
+    nrf_pdm_event_clear(NRF_PDM_EVENT_END);
     nrf_drv_pdm_start();
-    while(m_xfer_done == false);
+    while( nrf_pdm_event_check(NRF_PDM_EVENT_END) == false );
+    //nrf_pdm_task_trigger(NRF_PDM_TASK_STOP);
     nrf_drv_pdm_stop();
     do_dft();            //do fft, then check m_fft_output_f32 64 bytes
+    while(1) { nrf_delay_ms(100); }
     #endif
 
     new_cmd = 0;
