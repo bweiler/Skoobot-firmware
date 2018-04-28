@@ -96,7 +96,7 @@
 */
 #define CB_TEST 0
 #define MB_TEST 0
-#define MICROPHONE 1
+#define MICROPHONE 0
 #define SPARKFUN 0
 #if CB_TEST
 #define SPARKFUN 0
@@ -317,7 +317,7 @@ void rover(void);
 int main(void)
 {
     uint8_t step_mode = 1, counter = 0;
-    uint32_t freq = 100, steps = 200;
+    uint32_t freq = 100, steps = 200, i;
     float32_t ambient_value;
     static uint8_t range, buf[64], distance, callonce;
     struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
@@ -340,7 +340,7 @@ int main(void)
     #if MB_TEST
       mb_test();
     #endif
-/*
+
     // Initialize.
     timers_init();
     ble_stack_init();
@@ -350,7 +350,7 @@ int main(void)
     advertising_init();
     conn_params_init();
     advertising_start();
-*/
+
     #if MICROPHONE
     //like 6700 samples in p_rx_buffer
     m_xfer_done = false;
@@ -362,7 +362,12 @@ int main(void)
     //nrf_pdm_task_trigger(NRF_PDM_TASK_STOP);
     nrf_drv_pdm_stop();
     do_dft();            //do fft, then check m_fft_output_f32 64 bytes
-    while(1) { nrf_delay_ms(100); }
+    for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
+    { 
+     sprintf(buf,"%d,",p_rx_buffer[i]);
+     TxUART(buf);
+     nrf_delay_ms(5); 
+    }
     #endif
 
     new_cmd = 0;
@@ -440,7 +445,7 @@ int main(void)
               motors_sleep();
               break;
             case PLAY_BUZZER:
-              pwm_buzzer_frequency(1000.0, 50);
+              pwm_buzzer_frequency(1000.0, 100);
               while(buzzer_loops_done == 0);
               break;
             case INC_STEP_MODE:
@@ -478,10 +483,12 @@ int main(void)
             case RECORD_SOUND:
               m_xfer_done = false;
               nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
+              nrf_pdm_gain_set(NRF_PDM_GAIN_MAXIMUM,NRF_PDM_GAIN_MAXIMUM);
+              nrf_pdm_event_clear(NRF_PDM_EVENT_END);
               nrf_drv_pdm_start();
-              while(m_xfer_done == false);
+              while( nrf_pdm_event_check(NRF_PDM_EVENT_END) == false );
               nrf_drv_pdm_stop();
-              do_dft(); 
+              do_dft();            //do fft, then check m_fft_output_f32 64 bytes
               ++counter;
               data_value = counter;
               update_remote_byte();
@@ -1023,6 +1030,7 @@ void idle_while_charging(void)
     }
 }
 
+//expects null terminated string, so use sprintf for buf
 void TxUART(uint8_t* buf)
 {
     uint8_t j;
