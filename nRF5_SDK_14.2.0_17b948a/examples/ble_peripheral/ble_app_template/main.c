@@ -89,18 +89,13 @@
 /*
     Conditional compilation
     ========================================================
-    CB_TEST 1 = companion board tester code
     MB_TEST 1 = mainboard (or frontboard FB) tester
-    SPARKFUN 1 = Sparkfun reference code
+    SPARKFUN 1 = Sparkfun reference used for testing BB
     SPARTFUN 0 = Tiny Robot firmware
 */
-#define CB_TEST 0
 #define MB_TEST 0
 #define MICROPHONE 0
 #define SPARKFUN 0
-#if CB_TEST
-#define SPARKFUN 0
-#endif
 #if MB_TEST
 #define SPARKFUN 0
 #endif
@@ -110,28 +105,8 @@
 #define UART_RX_PIN   26
 #define UART_TX_PIN   27
 
-#define BUZZER_10MM   31
-
-//VLX6180
-//SHDN
-#define GP0       24
-//GPIO
-#define GP1       23
-#define I2C0_SCL  22
-#define I2C0_SDA  20
-
-//microphone
-#define MIC_CLK   16
-#define MIC_DI    17
-#define MIC_SEL   18
-
-//motors
-#define M1        3
-#define M0        12
-#define DIR_L     2
-#define STEP      1
-#define DIR_R     4
-
+#define SLEEP     18
+#define DIR_R     19
 //actually red
 #define GREEN_LED 7
 
@@ -139,6 +114,13 @@
 
 #define UART_RX_PIN   12
 #define UART_TX_PIN   11
+
+#define SLEEP     27
+#define DIR_R     26
+
+#define GREEN_LED 2
+
+#endif
 
 //Buzzer
 #define BUZZER_10MM   8
@@ -158,15 +140,6 @@
 #define M0        23
 #define DIR_L     22
 #define STEP      30
-#define SLEEP     27
-#if CB_TEST
-#define DIR_R     24
-#define GREEN_LED 7
-#else
-#define DIR_R     26
-#define GREEN_LED 2
-#endif
-#endif
 
 //BLE defines, refactored from SDK
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
@@ -275,7 +248,7 @@ void TxUART(uint8_t* buf);
 
 //Motors
 uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0;;
-uint32_t timer1_counter, timer1_match_value;
+uint32_t timer1_counter, timer1_match_value, timer1_toggle_step;
 void motors_forward();
 void motors_backward(void);
 void motors_right(void);
@@ -287,6 +260,8 @@ void stepping_mode(uint8_t mode);
 void step_mode_experiment(void);
 void motors_sleep(void);
 void motors_wake(void);
+void start_stepping_gpio(uint16_t freq);
+void stop_stepping_gpio(void);
 
 //Buzzer
 uint8_t buzzer_loops_done = 0, song_playing = 0;
@@ -303,7 +278,7 @@ struct song_struct {
 
 //General
 void my_configure(void);
-void cb_test(void);
+void bb_test(void);
 void mb_test(void);
 void led_off(void);
 void led_on(void);
@@ -327,18 +302,21 @@ int main(void)
     nrf_gpio_cfg_output(GREEN_LED);
     led_off();
     my_configure();         //sets gpios and PWM0 for step, PWM1 for buzzer
- 
-    #if CB_TEST
-      cb_test();
+    motors_sleep();
+    stepping_mode(1);
+     
+    uart_init();
+    
+    #if MICROPHONE
+      configure_microphone();
+    #endif
+    #if SPARKFUN
+      bb_test();
     #else
       configure_VLX6180();
-      uart_init();
-      #if MICROPHONE
-        configure_microphone();
+      #if MB_TEST
+        mb_test();
       #endif
-    #endif
-    #if MB_TEST
-      mb_test();
     #endif
 
     // Initialize.
@@ -371,9 +349,6 @@ int main(void)
     #endif
 
     new_cmd = 0;
-    motors_sleep();
-    stepping_mode(1);
-
     for (;;)
     {
           //Trap here when BLE not connected
@@ -640,17 +615,7 @@ inline void motors_sleep(void)
 inline void motors_wake(void)
 {
     nrf_gpio_pin_set(SLEEP);
-}
-
-void motors_forward_with_timer(uint32_t freq, uint32_t ms)
-{
-  nrf_gpio_pin_set(DIR_R);
-  nrf_gpio_pin_clear(DIR_L);
-  timer1_counter = 0;
-  timer1_match_value = 125000 / ms;
-  timer1_enabled_for_motors = 1;
-  //pwm_motor_stepping(freq,100);
-  NRF_TIMER1->TASKS_START = 1;
+    nrf_delay_us(1000);       //delay 1ms for DRV to reset
 }
 
 void motors_forward()
@@ -745,7 +710,21 @@ __STATIC_INLINE void data_handler(uint8_t temp)
 
 }
 
-//TIMER1 - this is the motor timer
+void stop_stepping_gpio(void)
+{
+  nrf_timer_task_trigger(NRF_TIMER1,NRF_TIMER_TASK_STOP);
+}
+
+void start_stepping_gpio(uint16_t freq)
+{
+  timer1_toggle_step = 1;
+  timer1_counter = 0;
+  timer1_match_value = 500 / freq;    //does 2 edges, so half of 1s in ms
+  timer1_enabled_for_motors = 1;
+  nrf_timer_task_trigger(NRF_TIMER1,NRF_TIMER_TASK_START);    
+}
+
+//TIMER1 - this is the motor timer, runs at 1ms
 void TIMER1_IRQHandler(void)
 {
   if (timer1_enabled_for_motors == 1)
@@ -753,11 +732,21 @@ void TIMER1_IRQHandler(void)
     ++timer1_counter;
     if (timer1_counter == timer1_match_value)
     {
-      NRF_TIMER1->TASKS_STOP = 1;     //do this first so you don't pop in here again while doing this
-      stop_stepping();
-      timer1_enabled_for_motors = 0;  //this is redundant, but maybe useful later
+       if (timer1_toggle_step == 1)
+       {
+          nrf_gpio_pin_set(STEP);
+          timer1_toggle_step = 0;
+       }
+       else
+       {
+          nrf_gpio_pin_clear(STEP);
+          timer1_toggle_step = 1;
+       }
+       timer1_counter = 0;
     }
   }
+  nrf_timer_event_clear(NRF_TIMER1,NRF_TIMER_EVENT_COMPARE0);
+
 }
 
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
@@ -862,22 +851,19 @@ void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
   buzzer_loops_done = 0;
 }
 
-void cb_test(void)
+void bb_test(void)
 {
-  my_configure();
-
+  motors_forward();
   for(;;)
   {
     led_on();
-    motors_forward(100);
-    wake_motors();
-    nrf_delay_ms(2000);
-    stop_motors();
-    sleep_motors();
+    pwm_motor_stepping(100,300);
+    motors_wake();
+    while(step_loop_done == 0);       
+    motors_sleep();
     led_off();
-    nrf_delay_ms(2000);
+    nrf_delay_ms(500);
   }
-
 }
 
 void mb_test(void)
@@ -990,10 +976,13 @@ void my_configure(void)
   nrf_pwm_int_set(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
   nrf_drv_common_irq_enable(PWM0_IRQn,APP_IRQ_PRIORITY_LOWEST);
 
-  //nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
-  //nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
-  //nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
-  //nrf_timer_int_enable(NRF_TIMER1,1);
+  nrf_timer_event_clear(NRF_TIMER1,NRF_TIMER_EVENT_COMPARE0);
+  nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
+  nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
+  nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
+  nrf_timer_cc_write(NRF_TIMER1,NRF_TIMER_CC_CHANNEL0,125);
+  nrf_timer_int_enable(NRF_TIMER1,NRF_TIMER_INT_COMPARE0_MASK);
+
 
 #if CB_TEST == 0
   nrf_gpio_pin_clear(BUZZER_10MM);

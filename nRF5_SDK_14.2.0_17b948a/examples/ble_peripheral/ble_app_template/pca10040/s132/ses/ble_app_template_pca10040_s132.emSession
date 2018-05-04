@@ -4,15 +4,16 @@
  <Breakpoints groups="Breakpoints" active_group="Breakpoints">
   <BreakpointListItem trigger="" line="142" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="55" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/ble/common/ble_srv_common.h" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="231" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="758" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
-  <BreakpointListItem trigger="" line="911" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="204" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="733" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
+  <BreakpointListItem trigger="" line="883" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../main.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="60" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="478" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/drivers_nrf/hal/nrf_i2s.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="123" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="66" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../../../../components/boards/pca10040.h" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="1" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="vl6180.c" useHWbreakpoint="false"/>
   <BreakpointListItem trigger="" line="108" counter="0" hardwareBreakpoint="" isFunctionBreakpoint="false" action="" expression="" group="Breakpoints" type="Breakpoint" state="4" filename="../../../vl6180.c" useHWbreakpoint="false"/>
+  <Exceptions set="MemManage;UsageFault_Coprocessor;UsageFault_CheckingError;UsageFault_StateError;BusFault;ExceptionEntryReturnFault;HardFault"/>
  </Breakpoints>
  <ExecutionProfileWindow/>
  <FrameBufferWindow>
@@ -77,7 +78,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="20" y="98" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="77" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="848" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" debugPath="../../../main.c" selected="1" top="827" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="479" useTextEdit="1" useBinaryEdit="0" left="0" path="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" debugPath="C:/Users/billb/OneDrive/Desktop/JBot/nRF5_SDK_14.2.0_17b948a/examples/ble_peripheral/ble_app_blinky/main.c" selected="0" top="120" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="240" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/common/nrf_sdh_ble.c" debugPath="../../../../../../components/softdevice/common/nrf_sdh_ble.c" selected="0" top="203" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="142" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" debugPath="../../../../../../components/drivers_nrf/pdm/nrf_drv_pdm.c" selected="0" top="128" codecName="Default"/>
