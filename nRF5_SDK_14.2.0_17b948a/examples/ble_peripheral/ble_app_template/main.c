@@ -65,7 +65,7 @@
 #include "nrf_gpio.h"
 #include "nrf_pwm.h"
 #include "nrf_timer.h"
-#include "nrf_uart.h"
+#include "nrf_uarte.h"    
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
@@ -99,6 +99,7 @@
 #define MICROPHONE 0
 #define SPARKFUN 0
 #define ADHOC_TEST  1
+#define MOTORS_STEPPING_PWM 0
 #if MB_TEST
 #define SPARKFUN 0
 #endif
@@ -365,7 +366,7 @@ int main(void)
             if (callonce == 1)
             {
               stop_buzzer();
-              stop_stepping();
+              stop_stepping_gpio();
               motors_sleep();
               callonce = 0;
             }
@@ -392,32 +393,25 @@ int main(void)
             case MOTORS_RIGHT:          //go right 90 degrees
               motors_right();           
               motors_wake();
-              pwm_motor_stepping(100,24);
-              while(step_loop_done == 0);       
-              motors_sleep();
+              start_stepping_gpio(100);     
               break;
             case MOTORS_LEFT:
               motors_left();
               motors_wake();
-              pwm_motor_stepping(100,24);
-              while(step_loop_done == 0);       
-              motors_sleep();
+              start_stepping_gpio(100);     
               break;
             case MOTORS_FORWARD:
               motors_forward();
               motors_wake();
-              pwm_motor_stepping(100,200);
-              while(step_loop_done == 0);       
-              motors_sleep();
+              start_stepping_gpio(100);     
               break;
             case MOTORS_BACKWARD:
               motors_backward();
               motors_wake();
-              pwm_motor_stepping(100,200);
-              while(step_loop_done == 0);       
-              motors_sleep();
+              start_stepping_gpio(100);     
               break;
             case MOTORS_STOP:
+              stop_stepping_gpio();
               motors_sleep();
               break;
             case ROVER_MODE:
@@ -427,8 +421,8 @@ int main(void)
               motors_sleep();
               break;
             case PLAY_BUZZER:
-              pwm_buzzer_frequency(1000.0, 100);
-              while(buzzer_loops_done == 0);
+              pwm_buzzer_frequency(1000.0, 300);
+              //while(buzzer_loops_done == 0);
               break;
             case INC_STEP_MODE:
               motors_sleep();
@@ -446,9 +440,10 @@ int main(void)
                 steps = 200 * step_mode;
               }
               stepping_mode(step_mode);
-              pwm_motor_stepping(freq,steps);
               motors_wake();
-              while(step_loop_done == 0);       
+              start_stepping_gpio(freq);     
+              nrf_delay_ms(5000);
+              stop_stepping_gpio();
               motors_sleep();
               data_value = step_mode;
               update_remote_byte();
@@ -548,13 +543,11 @@ void rover(void)
   motors_sleep();
   motors_forward();
   stepping_mode(2);
-  pwm_motor_stepping(100,200);       
   motors_wake();
+  start_stepping_gpio(100);       
   new_cmd = 0;
   while(new_cmd == 0)
   {
-      if (step_loop_done == 1)
-        pwm_motor_stepping(100,200);       
       distance = getDistance();
       if (distance < 50)
       {
@@ -586,12 +579,15 @@ void play_song(void)
       ++i;
 }
 
+//orphaned function
 void turn_left_90_degrees(void)
 {
   motors_left();            //turn left
-  pwm_motor_stepping(50,10);   
+  motors_wake();
+  start_stepping_gpio(50);   
   nrf_delay_ms(100);        //this should be 5 steps each motor for 90 degree turn
-  stop_stepping();          //if it doesn't work I'll try doing 5 steps manually
+  stop_stepping_gpio();          //if it doesn't work I'll try doing 5 steps manually
+  motors_sleep();
 }
 
 //Left channel configured by default
@@ -624,14 +620,14 @@ void step_mode_experiment(void)
         {
             stepping_mode(stepmode);
             motors_forward();           
-            pwm_motor_stepping(100,100);
+            start_stepping_gpio(100);
             if (freq == 40)
               led_on();                 //mark start of test
             else
               led_off();
             motors_wake();
             nrf_delay_ms(2000);
-            stop_stepping();
+            stop_stepping_gpio();
             motors_sleep();
             nrf_delay_ms(500);
             freq *= 2;
@@ -760,11 +756,6 @@ void stop_stepping_gpio(void)
 
 void start_stepping_gpio(uint16_t freq)
 {
-  NRF_PWM0->PSEL.OUT[0] = 0;
-
-  nrf_pwm_disable(NRF_PWM0);
-  nrf_pwm_int_disable(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
-  NVIC_DisableIRQ(PWM0_IRQn);
   nrf_gpio_cfg_output(STEP);
 
   timer1_toggle_step = 1;
@@ -838,6 +829,7 @@ void audio_handler(nrf_drv_pdm_evt_t const * const evt)
        m_xfer_done = true;
 }
 
+#if MOTORS_STEPPING_PWM
 //in common mode and refresh mode, number of steps should be even
 //wheels with tires travel approximately 1.67mm per step, so 300 steps is 5cm
 //a 90 degree turn should be 10 steps
@@ -856,12 +848,12 @@ void pwm_motor_stepping(uint32_t steps_per_second, uint32_t number_steps)
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND1);
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_shorts_set(NRF_PWM0, NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK);
-  NRF_PWM0->COUNTERTOP = (uint16_t)pwm_top; 
-  NRF_PWM0->SEQ[0].PTR = (uint32_t)(pwm_duty);
-  NRF_PWM0->SEQ[0].CNT = 1;
-  NRF_PWM0->SEQ[1].PTR = (uint32_t)(pwm_duty);
-  NRF_PWM0->SEQ[1].CNT = 1;
-  NRF_PWM0->LOOP = number_steps / 2;
+  nrf_pwm_configure(NRF_PWM0,PWM_PRESCALER_PRESCALER_DIV_128,PWM_MODE_UPDOWN_Up,pwm_top);
+  nrf_pwm_seq_ptr_set(NRF_PWM0,0,pwm_duty);
+  nrf_pwm_seq_cnt_set(NRF_PWM0,0,1);
+  nrf_pwm_seq_ptr_set(NRF_PWM0,1,pwm_duty);
+  nrf_pwm_seq_cnt_set(NRF_PWM0,1,1);
+  nrf_pwm_loop_set(NRF_PWM0,number_steps / 2);
   nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
   step_loop_done = 0;
 }
@@ -870,6 +862,21 @@ void PWM0_IRQHandler(void)
 {
     stop_stepping();
 }
+
+void stop_stepping(void)
+{
+  if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE))
+  {
+    nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);  
+    if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0)
+    {
+        nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_STOP);
+        while(nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0);
+        step_loop_done = 1;
+    }
+  }
+}
+#endif
 
 void PWM1_IRQHandler(void)
 {
@@ -891,7 +898,7 @@ void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND1);
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_shorts_set(NRF_PWM1, NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK);
-  NRF_PWM1->COUNTERTOP = (uint16_t)pwm_top; 
+  nrf_pwm_configure(NRF_PWM1,PWM_PRESCALER_PRESCALER_DIV_128,PWM_MODE_UPDOWN_Up,pwm_top);
   nrf_pwm_seq_ptr_set(NRF_PWM1,0,pwm_duty);
   nrf_pwm_seq_cnt_set(NRF_PWM1,0,1);
   nrf_pwm_seq_ptr_set(NRF_PWM1,1,pwm_duty);
@@ -969,30 +976,14 @@ void stop_buzzer(void)
   }
 }
 
-void stop_stepping(void)
-{
-  if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE))
-  {
-    nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);  
-    if (nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0)
-    {
-        nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_STOP);
-        while(nrf_pwm_event_check(NRF_PWM0, NRF_PWM_EVENT_STOPPED) == 0);
-        step_loop_done = 1;
-    }
-  }
-}
-
 void uart_init(void)
 {
-  nrf_uart_baudrate_set(NRF_UARTE0,0x00275000); //9600bps
-  nrf_uart_txrx_pins_set(NRF_UARTE0,UART_TX_PIN,UART_RX_PIN);
-  NRF_UARTE0->TXD.PTR = sendbuffer;
-  NRF_UARTE0->RXD.PTR = recvbuffer;
-  NRF_UARTE0->TXD.MAXCNT = 20;
-  NRF_UARTE0->RXD.MAXCNT = 20;
-  NRF_UARTE0->CONFIG = 0;  //Enable  stop bit, no parity
-  NRF_UARTE0->ENABLE = 8;
+  nrf_uarte_baudrate_set(NRF_UARTE0,NRF_UARTE_BAUDRATE_115200); 
+  nrf_uarte_txrx_pins_set(NRF_UARTE0,UART_TX_PIN,UART_RX_PIN);
+  nrf_uarte_configure(NRF_UARTE0,NRF_UARTE_PARITY_EXCLUDED,NRF_UARTE_HWFC_DISABLED);  //no parity, no hw flow control
+  nrf_uarte_rx_buffer_set(NRF_UARTE0,recvbuffer,20);
+  nrf_uarte_tx_buffer_set(NRF_UARTE0,sendbuffer,20);
+  nrf_uarte_enable(NRF_UARTE0);
 }
 
 void my_configure(void)
@@ -1007,16 +998,18 @@ void my_configure(void)
 
   nrf_gpio_pin_clear(STEP);
   nrf_gpio_cfg_output(STEP);
+
+#if MOTORS_STEPPING_PWM
   NRF_PWM0->PSEL.OUT[0] = STEP;
 
-  NRF_PWM0->ENABLE = PWM_ENABLE_ENABLE_Enabled;
-  NRF_PWM0->MODE = PWM_MODE_UPDOWN_Up;
-  NRF_PWM0->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
-  NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-  NRF_PWM0->SEQ[0].REFRESH = 0;
-  NRF_PWM0->SEQ[0].ENDDELAY = 0;
-  NRF_PWM0->SEQ[1].REFRESH = 0;
-  NRF_PWM0->SEQ[1].ENDDELAY = 0;
+  nrf_pwm_enable(NRF_PWM0);
+  nrf_pwm_configure(NRF_PWM0,PWM_PRESCALER_PRESCALER_DIV_128,PWM_MODE_UPDOWN_Up,1000);
+  nrf_pwm_loop_set(NRF_PWM0,0);
+  nrf_pwm_decoder_set(NRF_PWM0,PWM_DECODER_LOAD_Common,PWM_DECODER_MODE_RefreshCount);
+  nrf_pwm_seq_refresh_set(NRF_PWM0,0,0);
+  nrf_pwm_seq_end_delay_set(NRF_PWM0,0,0);
+  nrf_pwm_seq_refresh_set(NRF_PWM0,1,0);
+  nrf_pwm_seq_end_delay_set(NRF_PWM0,1,0);
   nrf_pwm_shorts_set(NRF_PWM0, 0);
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_LOOPSDONE);
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND0);
@@ -1024,7 +1017,8 @@ void my_configure(void)
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_int_set(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
   nrf_drv_common_irq_enable(PWM0_IRQn,APP_IRQ_PRIORITY_LOWEST);
-
+#else
+  //use gpio STEP and timer1
   nrf_timer_event_clear(NRF_TIMER1,NRF_TIMER_EVENT_COMPARE0);
   nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
   nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
@@ -1032,22 +1026,20 @@ void my_configure(void)
   nrf_timer_cc_write(NRF_TIMER1,NRF_TIMER_CC_CHANNEL0,125);
   nrf_timer_int_enable(NRF_TIMER1,NRF_TIMER_INT_COMPARE0_MASK);
   nrf_drv_common_irq_enable(TIMER1_IRQn,APP_IRQ_PRIORITY_LOWEST);
+#endif
 
-
-#if CB_TEST == 0
   nrf_gpio_pin_clear(BUZZER_10MM);
   nrf_gpio_cfg_output(BUZZER_10MM);
   NRF_PWM1->PSEL.OUT[0] = BUZZER_10MM;
 
-  NRF_PWM1->ENABLE = PWM_ENABLE_ENABLE_Enabled;
-  NRF_PWM1->MODE = PWM_MODE_UPDOWN_Up;
-  NRF_PWM1->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_128;
-  NRF_PWM1->LOOP = PWM_LOOP_CNT_Disabled;
-  NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-  NRF_PWM1->SEQ[0].REFRESH = 0;
-  NRF_PWM1->SEQ[0].ENDDELAY = 0;
-  NRF_PWM1->SEQ[1].REFRESH = 0;
-  NRF_PWM1->SEQ[1].ENDDELAY = 0;
+  nrf_pwm_enable(NRF_PWM1);
+  nrf_pwm_configure(NRF_PWM1,PWM_PRESCALER_PRESCALER_DIV_128,PWM_MODE_UPDOWN_Up,1000);
+  nrf_pwm_loop_set(NRF_PWM1,0);
+  nrf_pwm_decoder_set(NRF_PWM1,PWM_DECODER_LOAD_Common,PWM_DECODER_MODE_RefreshCount);
+  nrf_pwm_seq_refresh_set(NRF_PWM1,0,0);
+  nrf_pwm_seq_end_delay_set(NRF_PWM1,0,0);
+  nrf_pwm_seq_refresh_set(NRF_PWM1,1,0);
+  nrf_pwm_seq_end_delay_set(NRF_PWM1,1,0);
   nrf_pwm_shorts_set(NRF_PWM1, 0);
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_LOOPSDONE);
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_SEQEND0);
@@ -1055,7 +1047,6 @@ void my_configure(void)
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_int_set(NRF_PWM1, NRF_PWM_INT_LOOPSDONE_MASK);
   nrf_drv_common_irq_enable(PWM1_IRQn,APP_IRQ_PRIORITY_LOWEST);
-#endif
 }
 
 void idle_while_charging(void)
@@ -1085,14 +1076,11 @@ void TxUART(uint8_t* buf)
           break;
         }
     }
-    NRF_UARTE0->TXD.MAXCNT = j;
-    NRF_UARTE0->TASKS_STARTTX = 1;
-
-    //NRF_UARTE0->RXD.MAXCNT = 1;
-    //NRF_UARTE0->TASKS_STARTRX = 1;
-    nrf_delay_ms(20);
-    while(NRF_UARTE0->EVENTS_ENDTX != 1);
-    //while(NRF_UARTE0->EVENTS_ENDRX != 1);
+    nrf_uarte_tx_buffer_set(NRF_UARTE0,sendbuffer,j);
+    nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
+    nrf_uarte_task_trigger(NRF_UARTE0,NRF_UARTE_TASK_STARTTX);
+    while( nrf_uarte_event_check(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX) == 0);   //This blocks on transmit, maybe fix for parallelism
+    nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
 }
 
 void sendbytes(uint8_t which)
@@ -1125,12 +1113,14 @@ void sendbytes(uint8_t which)
         sprintf(buf,"%d,",actual_value);
         TxUART(buf);
      }
-   }
-   sendbuffer[0] = 13;
-   sendbuffer[1] = 10;
-   NRF_UARTE0->TXD.MAXCNT = 2;
-   NRF_UARTE0->TASKS_STARTTX = 1;
-
+  }
+  sendbuffer[0] = 13;   //send carriage return and linefeed
+  sendbuffer[1] = 10;
+  nrf_uarte_tx_buffer_set(NRF_UARTE0,sendbuffer,2);
+  nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
+  nrf_uarte_task_trigger(NRF_UARTE0,NRF_UARTE_TASK_STARTTX);
+  while( nrf_uarte_event_check(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX) == 0);   //This blocks on transmit, maybe fix for parallelism
+  nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
 }
 
 void do_dft(void)
