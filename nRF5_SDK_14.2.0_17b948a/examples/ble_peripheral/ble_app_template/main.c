@@ -1,40 +1,50 @@
 /*
-      Tiny Robot Code, v0.2
+      Tiny Robot Code, v0.5
       by Bill Weiler
 
       Segger Embedded Studio - full version is free for Nordic chips, using ARM M version v3.34
+      Segger J-Link EDU or Adafruit J-Link - okay for learning
       Nordic nRF5 SDK v14.2
-      Nordic SDK BLE_Peripheral_Template example used as starting point 
+      Nordic SDK BLE_Peripheral_Template and nRF Blinky example used as starting point 
       CMSIS DSP Library
       Nordic chip: nRF52832 QFN48 AA
       nRF52832 runs at 64Mhz, has 512k flash and 64k SRAM, and hardware single precision floating point
-      Nordic BLE Stack called Softdevice, is S132 v5.0.0, linked a hex file
+      Nordic BLE Stack is called Softdevice and only comes in hex form, I'm using S132 v5.0.0
 
-      Targets for this code are Tiny Robot and Sparkfun nRF52832 reference design
+      Targets for this code are Tiny Robot and Sparkfun nRF52832 reference design used for test rigs
       Tiny Robot has these features:
       1. VLX6180 distance sensor through i2c
-      2. 2 motors, left and right, driven through 2 TI DRV8834 driven by uC gpio's, plus the PWM0 peripheral for stepping
-      3. Microphone through PDM peripheral
+      2. 2 motors, left and right, driven through 2 TI DRV8834. The DRV's are driven by gpio's
+      3. Microphone through PDM peripheral that outputs PCM signed 16bit mono audio
       4. Buzzer through PWM1 peripheral
       5. 1 LED through gpio, active low (clearing it (0) turns led on)
       6. BLE antenna, s132 supports central and peripheral, observer and broadcaster, total 20 connections (that's 19 robots and a cellphone!)
 
-      There is no crystal LF oscillator in Tiny Robot, the softdevice uses the internal RC oscillator, there is a 32Mhz crystal HF oscillator for CPU
-
-      GCC is not always smart enough, use idioms or intrinsics for floating point, or just check disassembly to make sure FPU instructions were generated.
+      There is no crystal LF oscillator in Tiny Robot, the softdevice uses the internal RC oscillator, 
+      there is a 32Mhz crystal HF oscillator for the CPU
 
       Watch out modifying code, the BLE stack takes peripherals and scheduling. Notably it takes Timer0, some flash and ram, and a lot of cpu cycles. If you
       have problems, use their API for scheduling time slots. Check the Softdevice documentation for blocked peripherals.
 
-      Read this stuff:
+      Motors are bi-polar steppers. The datasheet says they don't like microstepping. I see mode 1 and 2 work okay.
+      Also a step is 18 degrees, about 1.67mm of travel. Microstepping is weird, so not linear going from 1/4 to 1/8.
+      Just doubling steps might not work.
+
+      For true hardware floating point, GCC is not always smart enough, you can use idioms or intrinsics, 
+      or just check disassembly to make sure FPU instructions were used.
+
+      For understanding firmware to master it, read this stuff:
       1. nRF52832 datasheet, watch out for old versions, like on Sparkfun, I am using v1.4
-      2. Softdevice Specification
-      3. Errata
-      4. Softdevice API - online only
+      2. Nordic Softdevice Specification
+      3. Nordic Errata (skim, too boring)
+      4. Nordic Softdevice API - online only
       5. Nordic devzone forums
-      6. Compatability list (really boring but useful)
-      7. VLX6180 datasheet
-      8. Microphone - stuff about PDM and PCM, can play raw audio you grab out of IDE in Audacity (free download)
+      6. Nordic Compatability list (really boring but skim)
+      7. ST VLX6180 datasheet (some tricks you can do)
+      8. Knowles Microphone datasheet - The datasheet is minimally useful, it just has specs. I would read stuff about PDM and PCM. 
+         You can trigger microphone recording and grab the raw PCM audio out of the Segger IDE memory view and then export to your PC. 
+         You can then play it in Audacity (Audacity is free).
+         Audacity gotcha is, the file extension must be .wav, not the .bin Segger writes by default.
 */
 #include <stdbool.h>
 #include <stdint.h>
