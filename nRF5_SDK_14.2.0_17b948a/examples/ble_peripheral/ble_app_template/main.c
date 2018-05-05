@@ -65,6 +65,7 @@
 #include "nrf_gpio.h"
 #include "nrf_pwm.h"
 #include "nrf_timer.h"
+#include "nrf_uart.h"
 #include "vl6180.h"
 #include "nrf_drv_pdm.h"
 
@@ -92,10 +93,12 @@
     MB_TEST 1 = mainboard (or frontboard FB) tester
     SPARKFUN 1 = Sparkfun reference used for testing BB
     SPARTFUN 0 = Tiny Robot firmware
+    ADHOC_TEST 1 = ad hoc test - targeted for debugging a specific thing
 */
 #define MB_TEST 0
 #define MICROPHONE 0
 #define SPARKFUN 0
+#define ADHOC_TEST  1
 #if MB_TEST
 #define SPARKFUN 0
 #endif
@@ -279,6 +282,7 @@ struct song_struct {
 //General
 void my_configure(void);
 void bb_test(void);
+void adhoc_robot_test(void);
 void mb_test(void);
 void led_off(void);
 void led_on(void);
@@ -346,6 +350,9 @@ int main(void)
      TxUART(buf);
      nrf_delay_ms(5); 
     }
+    #endif
+    #if ADHOC_TEST
+      adhoc_robot_test();
     #endif
 
     new_cmd = 0;
@@ -496,6 +503,42 @@ int main(void)
         //play_song();
       }
    }  
+}
+
+void adhoc_robot_test(void)
+{
+    motors_backward();
+    motors_wake();
+    start_stepping_gpio(100);
+    while(1) 
+    {
+       if (new_cmd == 1)
+       {
+          switch(cmd_value)
+          {
+            case MOTORS_FORWARD:
+              motors_forward();
+              break;
+            case MOTORS_BACKWARD:
+              motors_backward();
+              break;
+            case MOTORS_STOP:
+              stop_stepping_gpio();
+              motors_sleep();
+              break;
+            default:
+              motors_wake();
+              stop_stepping_gpio();     //make sure stopped before re-starting
+              start_stepping_gpio(100);
+              break;
+          }
+          new_cmd = 0;
+      }
+      nrf_delay_ms(500);
+      led_on();
+      nrf_delay_ms(500);
+      led_off();
+    }
 }
 
 void rover(void)
@@ -717,10 +760,18 @@ void stop_stepping_gpio(void)
 
 void start_stepping_gpio(uint16_t freq)
 {
+  NRF_PWM0->PSEL.OUT[0] = 0;
+
+  nrf_pwm_disable(NRF_PWM0);
+  nrf_pwm_int_disable(NRF_PWM0, NRF_PWM_INT_LOOPSDONE_MASK);
+  NVIC_DisableIRQ(PWM0_IRQn);
+  nrf_gpio_cfg_output(STEP);
+
   timer1_toggle_step = 1;
   timer1_counter = 0;
   timer1_match_value = 500 / freq;    //does 2 edges, so half of 1s in ms
   timer1_enabled_for_motors = 1;
+  nrf_timer_shorts_enable(NRF_TIMER1,NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK);
   nrf_timer_task_trigger(NRF_TIMER1,NRF_TIMER_TASK_START);    
 }
 
@@ -746,7 +797,6 @@ void TIMER1_IRQHandler(void)
     }
   }
   nrf_timer_event_clear(NRF_TIMER1,NRF_TIMER_EVENT_COMPARE0);
-
 }
 
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
@@ -842,11 +892,11 @@ void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_shorts_set(NRF_PWM1, NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK);
   NRF_PWM1->COUNTERTOP = (uint16_t)pwm_top; 
-  NRF_PWM1->SEQ[0].PTR = (uint32_t)(pwm_duty);
-  NRF_PWM1->SEQ[0].CNT = 1;
-  NRF_PWM1->SEQ[1].PTR = (uint32_t)(pwm_duty);
-  NRF_PWM1->SEQ[1].CNT = 1;
-  NRF_PWM1->LOOP = loops / 2;
+  nrf_pwm_seq_ptr_set(NRF_PWM1,0,pwm_duty);
+  nrf_pwm_seq_cnt_set(NRF_PWM1,0,1);
+  nrf_pwm_seq_ptr_set(NRF_PWM1,1,pwm_duty);
+  nrf_pwm_seq_cnt_set(NRF_PWM1,1,1);
+  nrf_pwm_loop_set(NRF_PWM1,loops / 2);
   nrf_pwm_task_trigger(NRF_PWM1, NRF_PWM_TASK_SEQSTART0);
   buzzer_loops_done = 0;
 }
@@ -935,9 +985,8 @@ void stop_stepping(void)
 
 void uart_init(void)
 {
-  NRF_UARTE0->BAUDRATE = 0x00275000; //9600bps
-  NRF_UARTE0->PSEL.RXD = UART_RX_PIN;
-  NRF_UARTE0->PSEL.TXD = UART_TX_PIN;
+  nrf_uart_baudrate_set(NRF_UARTE0,0x00275000); //9600bps
+  nrf_uart_txrx_pins_set(NRF_UARTE0,UART_TX_PIN,UART_RX_PIN);
   NRF_UARTE0->TXD.PTR = sendbuffer;
   NRF_UARTE0->RXD.PTR = recvbuffer;
   NRF_UARTE0->TXD.MAXCNT = 20;
@@ -982,6 +1031,7 @@ void my_configure(void)
   nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
   nrf_timer_cc_write(NRF_TIMER1,NRF_TIMER_CC_CHANNEL0,125);
   nrf_timer_int_enable(NRF_TIMER1,NRF_TIMER_INT_COMPARE0_MASK);
+  nrf_drv_common_irq_enable(TIMER1_IRQn,APP_IRQ_PRIORITY_LOWEST);
 
 
 #if CB_TEST == 0
