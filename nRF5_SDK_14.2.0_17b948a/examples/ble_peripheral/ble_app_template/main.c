@@ -90,10 +90,11 @@
 /*
     Conditional compilation
     ========================================================
-    MB_TEST 1 = mainboard (or frontboard FB) tester
-    SPARKFUN 1 = Sparkfun reference used for testing BB
+    MB_TEST = mainboard (also called FB) tester
+    SPARKFUN 1 = Sparkfun reference used for testing daugtherboard (also called BB)
     SPARTFUN 0 = Tiny Robot firmware
-    ADHOC_TEST 1 = ad hoc test - targeted for debugging a specific thing
+    ADHOC_TEST = ad hoc test - targeted for debugging a specific thing
+    MOTORS_STEPPING_PWM = enables PWM functions for use in stepping, you must disable gpio/timer1
 */
 #define MB_TEST 0
 #define MICROPHONE 0
@@ -165,32 +166,31 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(5000)                   /**< Time between each call to sd_ble_gap_conn_param_update after the first call (5 seconds). */
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                                       /**< Number of attempts before giving up the connection parameter negotiation. */
 
-#define BUTTON_DETECTION_DELAY          APP_TIMER_TICKS(50)                     /**< Delay from a GPIOTE event until a button is reported as pushed (in number of timer ticks). */
-
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
-void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
-#define BLE_BILL_DEF(_name)                                                 \
+void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+#define BLE_SKOOBOT_DEF(_name)                                                 \
 static uint8_t _name;                                                       \
 NRF_SDH_BLE_OBSERVER(_name ## _obs,                                         \
                      2,                                                     \
-                     ble_bill_on_ble_evt, &_name)
+                     ble_skoobot_on_ble_evt, &_name)
 
+//stole these from Nordic Blinky app
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
                               0xDE, 0xEF, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00}
 #define LBS_UUID_SERVICE     0x1523
 #define LBS_UUID_DATA_CHAR   0x1524
 #define LBS_UUID_CMD_CHAR    0x1525
 
-BLE_BILL_DEF(m_bill);
+BLE_SKOOBOT_DEF(m_skoobot);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 
 // BLE Data, declare and Initialize
-//using these names, button, led for now to help me with refactored SDK code, but led will becomes command from phone to robot, button will become robot to phone logging
+//cmd is from phone to robot, data is from robot to phone
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 uint8_t g_inbyte = 0;
 uint16_t svc_handle;
-ble_gatts_char_handles_t button_handle, led_handle;
+ble_gatts_char_handles_t data_handle, cmd_handle;
 uint8_t uuid_type;
 uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;  
 //BLE prototype functions
@@ -205,8 +205,8 @@ static void conn_params_init(void);
 static void advertising_start(void);
 static uint32_t add_cmd_characteristic(void);
 static uint32_t add_data_characteristic(void);
-uint32_t update_remote_byte(void);    //sends button_value
-void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+uint32_t update_remote_byte(void);    //sends uint8_t data_value
+void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 
 //FFT defines
 #define GRAPH_WINDOW_HEIGHT              20                              //!< Graph window height used in draw function.
@@ -290,10 +290,7 @@ void led_on(void);
 void idle_while_charging(void);
 void rover(void);
 
-/**
- * Motor might be 15 degrees per step, so 24 steps per revolution.
- * 83.3rpm = 15ms * 2 = 30ms period, 33Hz/24*60s
- */
+//Entry point of firmware
 int main(void)
 {
     uint8_t step_mode = 1, counter = 0;
@@ -373,7 +370,7 @@ int main(void)
             nrf_delay_ms(200);
             //distance = getDistance();
           }
-          if (new_cmd == 2)   //Just test code, write to button shouldn't happen
+          if (new_cmd == 2)   //Just test code, write to data_value shouldn't happen
           {
             led_on();
             nrf_delay_ms(500);
@@ -421,8 +418,8 @@ int main(void)
               motors_sleep();
               break;
             case PLAY_BUZZER:
-              pwm_buzzer_frequency(1000.0, 300);
-              //while(buzzer_loops_done == 0);
+              if(buzzer_loops_done == 0)
+                pwm_buzzer_frequency(1000.0, 300);              
               break;
             case INC_STEP_MODE:
               motors_sleep();
@@ -757,7 +754,8 @@ void stop_stepping_gpio(void)
 void start_stepping_gpio(uint16_t freq)
 {
   nrf_gpio_cfg_output(STEP);
-
+  nrf_gpio_pin_clear(STEP);
+ 
   timer1_toggle_step = 1;
   timer1_counter = 0;
   timer1_match_value = 500 / freq;    //does 2 edges, so half of 1s in ms
@@ -1273,7 +1271,7 @@ static uint32_t add_cmd_characteristic(void)
     return sd_ble_gatts_characteristic_add(svc_handle,
                                            &char_md,
                                            &attr_char_value,
-                                           &led_handle);
+                                           &cmd_handle);
 
 }
 
@@ -1326,7 +1324,7 @@ static uint32_t add_data_characteristic(void)
     err_code = sd_ble_gatts_characteristic_add(svc_handle,
                                            &char_md,
                                            &attr_char_value,
-                                           &button_handle);   
+                                           &data_handle);   
     VERIFY_SUCCESS(err_code);
 }
 /**@brief Function for initializing services that will be used by the application.
@@ -1363,7 +1361,7 @@ uint32_t update_remote_byte(void)
 
     memset(&params, 0, sizeof(params));
     params.type   = BLE_GATT_HVX_NOTIFICATION;
-    params.handle = button_handle.value_handle;
+    params.handle = data_handle.value_handle;
     params.p_data = &data_value;
     params.p_len  = &len;
 
@@ -1556,7 +1554,7 @@ void on_write(ble_evt_t const * p_ble_evt)
 {    
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
 
-    if ((p_evt_write->handle == led_handle.value_handle)
+    if ((p_evt_write->handle == cmd_handle.value_handle)
         && (p_evt_write->len == 1))
     {
          cmd_value = p_evt_write->data[0];
@@ -1564,7 +1562,7 @@ void on_write(ble_evt_t const * p_ble_evt)
     }
     else
     {
-      if ((p_evt_write->handle == button_handle.value_handle)
+      if ((p_evt_write->handle == data_handle.value_handle)
           && (p_evt_write->len == 1))
       {
            //data_value = p_evt_write->data[0];
@@ -1574,7 +1572,7 @@ void on_write(ble_evt_t const * p_ble_evt)
 
 }
 
-void ble_bill_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
+void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
 {
 
     switch (p_ble_evt->header.evt_id)
