@@ -29,6 +29,8 @@
       Motors are bi-polar steppers. The datasheet says they don't like microstepping. I see mode 1 and 2 work okay.
       Also a step is 18 degrees, about 1.67mm of travel. Microstepping is weird, so not linear going from 1/4 to 1/8.
       Just doubling steps might not work.
+      Minimum freq for full-step seems to be 200
+      Maxmimum frew full-step for starting is 800
 
       For true hardware floating point, GCC is not always smart enough, you can use idioms or intrinsics, 
       or just check disassembly to make sure FPU instructions were used.
@@ -87,6 +89,8 @@
 #define MOTORS_STOP       0x14
 #define MOTORS_SLEEP      0x15
 #define INC_STEP_MODE     0x16
+//DEC not in Android yet
+#define DEC_STEP_MODE     0x18
 #define PLAY_BUZZER       0x17
 
 #define GET_DISTANCE      0x22
@@ -109,7 +113,8 @@
 #define MB_TEST 0
 #define MICROPHONE 0
 #define SPARKFUN 0
-#define ADHOC_TEST  1
+
+#define ADHOC_TEST  0
 #define MOTORS_STEPPING_PWM 0
 #if MB_TEST
 #define SPARKFUN 0
@@ -120,10 +125,10 @@
 #define UART_RX_PIN   26
 #define UART_TX_PIN   27
 
-#define SLEEP     18
-#define DIR_R     19
+#define SLEEP         18
+#define DIR_R         19
 //actually red
-#define GREEN_LED 7
+#define GREEN_LED     7
 
 #else
 
@@ -155,6 +160,14 @@
 #define M0        23
 #define DIR_L     22
 #define STEP      30
+
+//stepping modes
+#define FULL_STEP     0
+#define HALF_STEP     1
+#define QUARTER_STEP  2
+#define n8_STEP       3
+#define n16_STEP      4
+#define n32_STEP      5
 
 //BLE defines, refactored from SDK
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
@@ -278,9 +291,10 @@ void start_stepping_gpio(uint16_t freq);
 void stop_stepping_gpio(void);
 
 //Buzzer
-uint8_t buzzer_loops_done = 0, song_playing = 0;
+uint8_t buzzer_loops_done = 1, song_playing = 0;
 void pwm_buzzer_frequency(float freq, uint32_t loops);
 void stop_buzzer(void);
+//This song feature isn't done
 struct notes_struct {
   float32_t freq;
   uint16_t duration;
@@ -298,12 +312,12 @@ void mb_test(void);
 void led_off(void);
 void led_on(void);
 void idle_while_charging(void);
-void rover(void);
+void rover(uint32_t freq);        //inherits freq and stepping mode from main()
 
 //Entry point of firmware
 int main(void)
 {
-    uint8_t step_mode = 1, counter = 0;
+    uint8_t step_mode = HALF_STEP, counter = 0;
     uint32_t freq = 100, steps = 200, i;
     float32_t ambient_value;
     static uint8_t range, buf[64], distance, callonce;
@@ -313,18 +327,16 @@ int main(void)
  
     nrf_gpio_cfg_output(GREEN_LED);
     led_off();
-    my_configure();         //sets gpios and PWM0 for step, PWM1 for buzzer
+    my_configure();           //sets gpios and PWM0 for step, PWM1 for buzzer
     motors_sleep();
-    stepping_mode(1);
+    stepping_mode(step_mode); //start at step mode 1
      
     uart_init();
     
     #if MICROPHONE
       configure_microphone();
     #endif
-    #if SPARKFUN
-      bb_test();
-    #else
+    #if SPARKFUN == 0
       configure_VLX6180();
       #if MB_TEST
         mb_test();
@@ -362,6 +374,20 @@ int main(void)
     #if ADHOC_TEST
       adhoc_robot_test();
     #endif
+    #if 0
+    //SPARKFUN
+      bb_test();
+    #endif
+
+    //Show user robot is indeed on and ready
+    led_on();                         
+    pwm_buzzer_frequency(4000.0, 400);    //higher frequencies are louder with this buzzer          
+    while(buzzer_loops_done == 0);
+    pwm_buzzer_frequency(5000.0, 400);              
+    while(buzzer_loops_done == 0);
+    pwm_buzzer_frequency(6000.0, 400);              
+    while(buzzer_loops_done == 0);
+    led_off();
 
     new_cmd = 0;
     for (;;)
@@ -377,8 +403,10 @@ int main(void)
               motors_sleep();
               callonce = 0;
             }
+            nrf_delay_ms(200);      //BLE not connected robot heartbeat
+            led_on();
             nrf_delay_ms(200);
-            //distance = getDistance();
+            led_off();
           }
           if (new_cmd == 2)   //Just test code, write to data_value shouldn't happen
           {
@@ -400,58 +428,97 @@ int main(void)
             case MOTORS_RIGHT:          //go right 90 degrees
               motors_right();           
               motors_wake();
-              start_stepping_gpio(100);     
+              start_stepping_gpio(freq);     
               break;
             case MOTORS_LEFT:
               motors_left();
               motors_wake();
-              start_stepping_gpio(100);     
+              start_stepping_gpio(freq);     
               break;
             case MOTORS_FORWARD:
               motors_forward();
               motors_wake();
-              start_stepping_gpio(100);     
+              start_stepping_gpio(freq);     
               break;
             case MOTORS_BACKWARD:
               motors_backward();
               motors_wake();
-              start_stepping_gpio(100);     
+              start_stepping_gpio(freq);     
               break;
             case MOTORS_STOP:
               stop_stepping_gpio();
               motors_sleep();
               break;
             case ROVER_MODE:
-              rover();
+              rover(freq);
               break;
             case MOTORS_SLEEP:
               motors_sleep();
               break;
             case PLAY_BUZZER:
-              if(buzzer_loops_done == 0)
-                pwm_buzzer_frequency(1000.0, 300);              
+              if(buzzer_loops_done == 1)
+                pwm_buzzer_frequency(4000.0, 500);              
               break;
             case INC_STEP_MODE:
               motors_sleep();
-              motors_forward();
               ++step_mode;
               if (step_mode == 6)
               {
                 step_mode = 0;
-                freq = 50;
-                steps = 100;
               }
-              else
+              switch(step_mode)
               {
-                freq = 100 * step_mode;
-                steps = 200 * step_mode;
+                case FULL_STEP:
+                  freq = 100;
+                  break;
+                case HALF_STEP:
+                  freq = 200;
+                  break;
+                case QUARTER_STEP:
+                  freq = 300;
+                  break;
+                case n8_STEP:
+                  freq = 400;
+                  break;
+                case n16_STEP:
+                  freq = 800;   //max
+                  break;
+                case n32_STEP:
+                  freq = 1600;
+                  break;
               }
               stepping_mode(step_mode);
-              motors_wake();
-              start_stepping_gpio(freq);     
-              nrf_delay_ms(5000);
-              stop_stepping_gpio();
+              data_value = step_mode;
+              update_remote_byte();
+              break;
+            case DEC_STEP_MODE:
               motors_sleep();
+              if (step_mode != 0)
+              {
+                --step_mode;
+              }
+              switch(step_mode)
+              {
+                case FULL_STEP:
+                  freq = 100;
+                  break;
+                case HALF_STEP:
+                  freq = 200;
+                  break;
+                case QUARTER_STEP:
+                  freq = 300;
+                  break;
+                case n8_STEP:
+                  freq = 400;
+                  break;
+                case n16_STEP:
+                  freq = 800;   //max
+                  break;
+                case n32_STEP:
+                  freq = 1600;
+                  break;
+              }
+              stepping_mode(step_mode);
               data_value = step_mode;
               update_remote_byte();
               break;
@@ -543,15 +610,50 @@ void adhoc_robot_test(void)
     }
 }
 
-void rover(void)
+void bb_test(void)
+{
+    motors_backward();
+    motors_wake();
+    start_stepping_gpio(100);
+    while(1) 
+    {
+       if (new_cmd == 1)
+       {
+          switch(cmd_value)
+          {
+            case MOTORS_FORWARD:
+              motors_forward();
+              break;
+            case MOTORS_BACKWARD:
+              motors_backward();
+              break;
+            case MOTORS_STOP:
+              stop_stepping_gpio();
+              motors_sleep();
+              break;
+            default:
+              motors_wake();
+              stop_stepping_gpio();     //make sure stopped before re-starting
+              start_stepping_gpio(100);
+              break;
+          }
+          new_cmd = 0;
+      }
+      nrf_delay_ms(500);
+      led_on();
+      nrf_delay_ms(500);
+      led_off();
+    }
+}
+
+//Inherits stepping mode and freq from main()
+void rover(uint32_t freq)
 {
   uint8_t distance;
 
-  motors_sleep();
   motors_forward();
-  stepping_mode(2);
   motors_wake();
-  start_stepping_gpio(100);       
+  start_stepping_gpio(freq);       
   new_cmd = 0;
   while(new_cmd == 0)
   {
@@ -568,10 +670,13 @@ void rover(void)
       }
       nrf_delay_ms(50);
   }
+  stop_stepping_gpio();
   motors_sleep();
+  motors_forward();
   return;
 }
 
+//This isn't done
 void play_song(void)
 {
     static uint8_t i = 0;
@@ -597,7 +702,7 @@ void turn_left_90_degrees(void)
   motors_sleep();
 }
 
-//Left channel configured by default
+//Left channel mono configured, continuous int16, no alternating right channel
 void configure_microphone(void)
 {
 
@@ -692,41 +797,41 @@ void stepping_mode(uint8_t mode)
 {
     switch(mode)
     {
-        case 0:     //full step
+        case FULL_STEP:     //full step
           nrf_gpio_cfg_output(M0);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_clear(M0);
           nrf_gpio_pin_clear(M1);
           break;
-        case 1:     //1/2 step
+        case HALF_STEP:     //1/2 step
           nrf_gpio_cfg_output(M0);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_set(M0);
           nrf_gpio_pin_clear(M1);
           break;
-        case 2:     //1/4 step
+        case QUARTER_STEP:     //1/4 step
           nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_clear(M1);
           break;
-        case 3:     //8 microsteps
+        case n8_STEP:     //8 microsteps
           nrf_gpio_cfg_output(M0);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_clear(M0);
           nrf_gpio_pin_set(M1);
           break;
-       case 4:     //16 microsteps
+       case n16_STEP:     //16 microsteps
           nrf_gpio_cfg_output(M0);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_set(M0);
           nrf_gpio_pin_set(M1);
           break;
-       case 5:     //32 microsteps
+       case n32_STEP:     //32 microsteps
           nrf_gpio_cfg_input(M0,NRF_GPIO_PIN_NOPULL);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_set(M1);
           break;
-      default:      //full step
+      default:            //full step
           nrf_gpio_cfg_output(M0);
           nrf_gpio_cfg_output(M1);
           nrf_gpio_pin_clear(M0);
@@ -768,13 +873,13 @@ void start_stepping_gpio(uint16_t freq)
  
   timer1_toggle_step = 1;
   timer1_counter = 0;
-  timer1_match_value = 500 / freq;    //does 2 edges, so half of 1s in ms
+  timer1_match_value = 2500 / freq;    //does 2 edges, so 5000/2 per sec
   timer1_enabled_for_motors = 1;
   nrf_timer_shorts_enable(NRF_TIMER1,NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK);
   nrf_timer_task_trigger(NRF_TIMER1,NRF_TIMER_TASK_START);    
 }
 
-//TIMER1 - this is the motor timer, runs at 1ms
+//TIMER1 - this is the motor timer, runs at 200us or 5kHz
 void TIMER1_IRQHandler(void)
 {
   if (timer1_enabled_for_motors == 1)
@@ -916,21 +1021,7 @@ void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
   buzzer_loops_done = 0;
 }
 
-void bb_test(void)
-{
-  motors_forward();
-  for(;;)
-  {
-    led_on();
-    pwm_motor_stepping(100,300);
-    motors_wake();
-    while(step_loop_done == 0);       
-    motors_sleep();
-    led_off();
-    nrf_delay_ms(500);
-  }
-}
-
+//just toggles gpios for now
 void mb_test(void)
 {
   static uint8_t range, buf[64];
@@ -1031,7 +1122,7 @@ void my_configure(void)
   nrf_timer_mode_set(NRF_TIMER1,NRF_TIMER_MODE_TIMER);
   nrf_timer_bit_width_set(NRF_TIMER1,NRF_TIMER_BIT_WIDTH_32);
   nrf_timer_frequency_set(NRF_TIMER1,NRF_TIMER_FREQ_125kHz);
-  nrf_timer_cc_write(NRF_TIMER1,NRF_TIMER_CC_CHANNEL0,125);
+  nrf_timer_cc_write(NRF_TIMER1,NRF_TIMER_CC_CHANNEL0,25);        // 200us per interrupt
   nrf_timer_int_enable(NRF_TIMER1,NRF_TIMER_INT_COMPARE0_MASK);
   nrf_drv_common_irq_enable(TIMER1_IRQn,APP_IRQ_PRIORITY_LOWEST);
 #endif
