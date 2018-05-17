@@ -110,9 +110,9 @@
     ADHOC_TEST = ad hoc test - targeted for debugging a specific thing
     MOTORS_STEPPING_PWM = enables PWM functions for use in stepping, you must disable gpio/timer1
 */
-#define MB_TEST 0
-#define MICROPHONE 0
-#define SPARKFUN 0
+#define MB_TEST     0
+#define MICROPHONE  0
+#define SPARKFUN    0
 
 #define ADHOC_TEST  0
 #define MOTORS_STEPPING_PWM 0
@@ -124,7 +124,6 @@
 
 #define UART_RX_PIN   26
 #define UART_TX_PIN   27
-
 #define SLEEP         18
 #define DIR_R         19
 //actually red
@@ -134,11 +133,9 @@
 
 #define UART_RX_PIN   12
 #define UART_TX_PIN   11
-
-#define SLEEP     27
-#define DIR_R     26
-
-#define GREEN_LED 2
+#define SLEEP         27
+#define DIR_R         26
+#define GREEN_LED     2
 
 #endif
 
@@ -146,20 +143,20 @@
 #define BUZZER_10MM   8
 
 //microphone
-#define MIC_CLK   28
-#define MIC_DI    29
+#define MIC_CLK       28
+#define MIC_DI        29
 
 //VLX6180
-#define GP0       14
-#define GP1       13
-#define I2C0_SCL  15
-#define I2C0_SDA  16
+#define GP0           14
+#define GP1           13
+#define I2C0_SCL      15
+#define I2C0_SDA      16
 
 //motors
-#define M1        25
-#define M0        23
-#define DIR_L     22
-#define STEP      30
+#define M1            25
+#define M0            23
+#define DIR_L         22
+#define STEP          30
 
 //stepping modes
 #define FULL_STEP     0
@@ -311,7 +308,6 @@ void adhoc_robot_test(void);
 void mb_test(void);
 void led_off(void);
 void led_on(void);
-void idle_while_charging(void);
 void rover(uint32_t freq);        //inherits freq and stepping mode from main()
 
 //Entry point of firmware
@@ -574,6 +570,7 @@ int main(void)
    }  
 }
 
+//This is bug specific, please ignore
 void adhoc_robot_test(void)
 {
     motors_backward();
@@ -691,7 +688,7 @@ void play_song(void)
       ++i;
 }
 
-//orphaned function
+//orphaned function, obsolete
 void turn_left_90_degrees(void)
 {
   motors_left();            //turn left
@@ -719,6 +716,7 @@ void configure_microphone(void)
   return; 
 }
 
+//This is obsolete
 void step_mode_experiment(void)
 {
     uint8_t stepmode, cnt_of_trys;
@@ -1058,7 +1056,6 @@ void mb_test(void)
 
     nrf_delay_ms(500);
   }
-
 }
 
 void stop_buzzer(void)
@@ -1090,10 +1087,9 @@ void my_configure(void)
   nrf_gpio_cfg_output(DIR_L);
   nrf_gpio_cfg_output(DIR_R);
   nrf_gpio_cfg_output(SLEEP);
-  motors_sleep();                 //sleep motors
-  nrf_gpio_pin_set(DIR_L);        //set direction forward
-  nrf_gpio_pin_clear(DIR_R);
-  stepping_mode(1);               //initial mode 1, 1/2 stepping
+  motors_sleep();               
+  motors_forward();
+  stepping_mode(HALF_STEP);         
 
   nrf_gpio_pin_clear(STEP);
   nrf_gpio_cfg_output(STEP);
@@ -1146,17 +1142,6 @@ void my_configure(void)
   nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_STOPPED);
   nrf_pwm_int_set(NRF_PWM1, NRF_PWM_INT_LOOPSDONE_MASK);
   nrf_drv_common_irq_enable(PWM1_IRQn,APP_IRQ_PRIORITY_LOWEST);
-}
-
-void idle_while_charging(void)
-{
-    for (;;)
-    {
-        led_off();
-        nrf_delay_ms(500);
-        led_on();
-        nrf_delay_ms(500);
-    }
 }
 
 //expects null terminated string, so use sprintf for buf
