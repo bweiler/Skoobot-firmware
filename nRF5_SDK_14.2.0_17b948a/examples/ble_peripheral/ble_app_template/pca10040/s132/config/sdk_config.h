@@ -5278,14 +5278,14 @@
 #define NRF_SDH_BLE_GAP_EVENT_LENGTH 3
 #endif
 
-// <o> NRF_SDH_BLE_GATT_MAX_MTU_SIZE - Static maximum MTU size. 
+// <o> NRF_SDH_BLE_GATT_MAX_MTU_SIZE - Static maximum MTU size. 23
 #ifndef NRF_SDH_BLE_GATT_MAX_MTU_SIZE
 #define NRF_SDH_BLE_GATT_MAX_MTU_SIZE 23
 #endif
 
 // <o> NRF_SDH_BLE_GATTS_ATTR_TAB_SIZE - Attribute Table size in bytes. The size must be a multiple of 4. 
 #ifndef NRF_SDH_BLE_GATTS_ATTR_TAB_SIZE
-#define NRF_SDH_BLE_GATTS_ATTR_TAB_SIZE 1312
+#define NRF_SDH_BLE_GATTS_ATTR_TAB_SIZE 1200
 #endif
 
 // <o> NRF_SDH_BLE_VS_UUID_COUNT - The number of vendor-specific UUIDs. 

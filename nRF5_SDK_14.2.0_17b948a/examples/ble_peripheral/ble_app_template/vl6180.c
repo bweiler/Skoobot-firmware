@@ -96,13 +96,13 @@ float32_t getAmbientLight(uint8_t VL6180X_ALS_GAIN)
 
   VL6180x_setRegister(VL6180X_SYSTEM_INTERRUPT_CLEAR, 0x07);
 
-  //Retrieve the Raw ALS value from the sensoe
-  unsigned int alsRaw = VL6180x_getRegister16bit(VL6180X_RESULT_ALS_VAL);
+  //Retrieve the Raw ALS value from the sensor
+  uint16_t alsRaw = VL6180x_getRegister16bit(VL6180X_RESULT_ALS_VAL);
   
   //Get Integration Period for calculation, we do this every time in case someone changes it on us.
-  unsigned int alsIntegrationPeriodRaw = VL6180x_getRegister16bit(VL6180X_SYSALS_INTEGRATION_PERIOD);
+  uint16_t alsIntegrationPeriodRaw = VL6180x_getRegister16bit(VL6180X_SYSALS_INTEGRATION_PERIOD);
   
-  float32_t alsIntegrationPeriod = 100.0 / alsIntegrationPeriodRaw ;
+  float32_t alsIntegrationPeriod = 100.0 / alsIntegrationPeriodRaw;
 
   //Calculate actual LUX from Appnotes
 
@@ -182,19 +182,19 @@ uint8_t VL6180x_getRegister(uint16_t registerAddr)
 uint16_t VL6180x_getRegister16bit(uint16_t registerAddr)
 {
     uint8_t wrdata[2], rddata[2];
-    uint16_t ret_value;
-    ret_code_t err_code;
+    ret_code_t ret;
 
     wrdata[0] = (registerAddr>>8)&0xff;
     wrdata[1] = registerAddr&0xff;
 
 
-    nrf_drv_twi_xfer_desc_t xfer = NRF_DRV_TWI_XFER_DESC_TXRX(VL6180X_ADDRESS, wrdata, 2, rddata, 2);
-    // Reading register
-    err_code = nrf_drv_twi_xfer(&m_twi, &xfer, NRF_DRV_TWI_FLAG_TX_NO_STOP);
+    ret = nrf_drv_twi_tx(&m_twi, VL6180X_ADDRESS, wrdata, 2, true);
+    if (NRF_SUCCESS != ret)
+    {
+       return 0;
+    }
+    ret = nrf_drv_twi_rx(&m_twi, VL6180X_ADDRESS, rddata, 2);
 
-    ret_value = (rddata[1]<<8)|rddata[0];
-
-    return ret_value;
+    return ((rddata[1]<<8)|rddata[0]);
 
 }

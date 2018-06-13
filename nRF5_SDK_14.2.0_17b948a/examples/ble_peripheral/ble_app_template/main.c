@@ -47,6 +47,16 @@
          You can trigger microphone recording and grab the raw PCM audio out of the Segger IDE memory view and then export to your PC. 
          You can then play it in Audacity (Audacity is free).
          Audacity gotcha is, the file extension must be .wav, not the .bin Segger writes by default.
+
+      To enable 128byte notifications, I changed this line in ble_app_template_pca10040_s132.emProject
+       
+       before: RAM_START=0x200020e0;RAM_SIZE=0xdf20"
+       after:  RAM_START=0x20002400;RAM_SIZE=0xdc00"
+
+      This increased reserved ram from 0x20e0 to 0x2400. You have to change NRF_SDH_BLE_GATT_MAX_MTU_SIZE from 23 to 128.
+      I am using 23 for my Moto E4. If I set it to 128, My Moto E4 rejects the larger MTU request and won't connect.
+      128 MTU plus a 20ms connection interval can transfer 32k in 5s
+      23 MTU plus a 10ms connection interval takes 15s
 */
 #include <stdbool.h>
 #include <stdint.h>
@@ -113,7 +123,6 @@
 #define MB_TEST     0
 #define MICROPHONE  0
 #define SPARKFUN    0
-
 #define ADHOC_TEST  0
 #define MOTORS_STEPPING_PWM 0
 #if MB_TEST
@@ -177,8 +186,8 @@
 #define APP_ADV_INTERVAL                64                                      /**< The advertising interval (in units of 0.625 ms; this value corresponds to 40 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED   /**< The advertising time-out (in units of seconds). When set to 0, we will never time out. */
 
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(100, UNIT_1_25_MS)        /**< Minimum acceptable connection interval (0.5 seconds). */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(200, UNIT_1_25_MS)        /**< Maximum acceptable connection interval (1 second). */
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)        /**< Minimum acceptable connection interval 50Hz*/
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(40, UNIT_1_25_MS)        /**< Maximum acceptable connection interval 25Hz*/
 #define SLAVE_LATENCY                   0                                       /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)         /**< Connection supervisory time-out (4 seconds). */
 
@@ -189,10 +198,10 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
-#define BLE_SKOOBOT_DEF(_name)                                                 \
-static uint8_t _name;                                                       \
-NRF_SDH_BLE_OBSERVER(_name ## _obs,                                         \
-                     2,                                                     \
+#define BLE_SKOOBOT_DEF(_name)                                                \
+static uint8_t _name;                                                         \
+NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
+                     2,                                                       \
                      ble_skoobot_on_ble_evt, &_name)
 
 //stole these from Nordic Blinky app
@@ -201,18 +210,22 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                         \
 #define LBS_UUID_SERVICE     0x1523
 #define LBS_UUID_DATA_CHAR   0x1524
 #define LBS_UUID_CMD_CHAR    0x1525
+#define LBS_UUID_BYTE2_CHAR  0x1526
+#define LBS_UUID_BYTE128_CHAR 0x1527
+#define LBS_UUID_BYTE4_CHAR  0x1528
 
 BLE_SKOOBOT_DEF(m_skoobot);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 
 // BLE Data, declare and Initialize
-//cmd is from phone to robot, data is from robot to phone
-static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
+uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 uint8_t g_inbyte = 0;
 uint16_t svc_handle;
 ble_gatts_char_handles_t data_handle, cmd_handle;
+ble_gatts_char_handles_t data_2byte_handle, data_4byte_handle, data_128byte_handle;
 uint8_t uuid_type;
-uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;  
+uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;
+uint8_t data_2byte_val[2], data_4byte_val[4];
 //BLE prototype functions
 static void timers_init(void);
 static void log_init(void);
@@ -225,8 +238,16 @@ static void conn_params_init(void);
 static void advertising_start(void);
 static uint32_t add_cmd_characteristic(void);
 static uint32_t add_data_characteristic(void);
-uint32_t update_remote_byte(void);    //sends uint8_t data_value
-void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+static uint32_t add_data2_characteristic(void);
+static uint32_t add_mult_data_characteristics(void);
+static uint32_t add_cmd4_characteristic(void);
+static uint32_t update_remote_byte(void);    //sends uint8_t data_value
+static uint32_t update_remote_2byte(void);    //sends 2 uint8_t or unit16_t data2_value
+//len = 128 supported by BLE 4.1 and 4.2, 5.0 (my iPhone6)
+//len = 20 supported by BLE 4.0 (my Moto E4)
+#define MULTI_LEN 20
+uint8_t data_128byte_val[MULTI_LEN];
+static uint32_t update_remote_multi_byte(uint32_t i);  
 
 //FFT defines
 #define GRAPH_WINDOW_HEIGHT              20                              //!< Graph window height used in draw function.
@@ -258,6 +279,7 @@ void audio_handler(nrf_drv_pdm_evt_t const * const evt);                //Just s
 
 //Distance sensor
 #define TWI_INSTANCE_ID 0
+uint16_t data2_value;
 const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
 void configure_VLX6180(void);
 void VLX6180_init(void);
@@ -309,15 +331,16 @@ void mb_test(void);
 void led_off(void);
 void led_on(void);
 void rover(uint32_t freq);        //inherits freq and stepping mode from main()
+static uint8_t range, buf[64], distance, callonce;
+struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
 
 //Entry point of firmware
 int main(void)
 {
-    uint8_t step_mode = HALF_STEP, counter = 0;
-    uint32_t freq = 100, steps = 200, i;
+    uint8_t step_mode = n32_STEP, counter = 0, recording_flag, last_cmd;
+    uint32_t freq = 1600, steps = 200, i, ms_cnt;
     float32_t ambient_value;
-    static uint8_t range, buf[64], distance, callonce;
-    struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
+    ret_code_t err_code;
     song.num_notes = 3;
     song.notes = basic;
  
@@ -329,9 +352,8 @@ int main(void)
      
     uart_init();
     
-    #if MICROPHONE
-      configure_microphone();
-    #endif
+    configure_microphone();
+
     #if SPARKFUN == 0
       configure_VLX6180();
       #if MB_TEST
@@ -349,24 +371,6 @@ int main(void)
     conn_params_init();
     advertising_start();
 
-    #if MICROPHONE
-    //like 6700 samples in p_rx_buffer
-    m_xfer_done = false;
-    nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
-    nrf_pdm_gain_set(NRF_PDM_GAIN_MAXIMUM,NRF_PDM_GAIN_MAXIMUM);
-    nrf_pdm_event_clear(NRF_PDM_EVENT_END);
-    nrf_drv_pdm_start();
-    while( nrf_pdm_event_check(NRF_PDM_EVENT_END) == false );
-    //nrf_pdm_task_trigger(NRF_PDM_TASK_STOP);
-    nrf_drv_pdm_stop();
-    do_dft();            //do fft, then check m_fft_output_f32 64 bytes
-    for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
-    { 
-     sprintf(buf,"%d,",p_rx_buffer[i]);
-     TxUART(buf);
-     nrf_delay_ms(5); 
-    }
-    #endif
     #if ADHOC_TEST
       adhoc_robot_test();
     #endif
@@ -385,7 +389,9 @@ int main(void)
     while(buzzer_loops_done == 0);
     led_off();
 
+    recording_flag = 0;
     new_cmd = 0;
+    last_cmd = 0;
     for (;;)
     {
           //Trap here when BLE not connected
@@ -404,16 +410,41 @@ int main(void)
             nrf_delay_ms(200);
             led_off();
           }
-          if (new_cmd == 2)   //Just test code, write to data_value shouldn't happen
+          if (recording_flag == 1)
           {
-            led_on();
-            nrf_delay_ms(500);
-            led_off();
-            nrf_delay_ms(500);
-            led_on();
-            nrf_delay_ms(500);
-            led_off();
-            nrf_delay_ms(500);
+            if (nrf_pdm_event_check(NRF_PDM_EVENT_END) == true)
+            {
+              led_off();
+              recording_flag = 0;
+              nrf_drv_pdm_stop();
+              //do_dft();             //do fft, then check m_fft_output_f32 64 bytes
+              data_value = 255;       //kind of a not good flag
+              update_remote_byte();
+              ms_cnt = 0;
+              i=0;
+              while(i<SAMPLE_BUFFER_CNT)    //this is tricky, int16_t == 2 bytes * 10 = 20 bytes
+              {
+                  //This tough, assume 50Hz or every 20ms. It will take 5s to transfer 32k, if perfect
+                  err_code = update_remote_multi_byte(i);
+                  if (err_code == NRF_ERROR_RESOURCES || err_code == NRF_ERROR_BUSY)
+                  {
+                    nrf_delay_ms(2);  //extra delay
+                    continue;
+                  }
+                  else
+                  {
+                    i+=MULTI_LEN/2;            //only increment is successful (assume)
+                  }
+                  nrf_delay_ms(19);   //cause slight overrun
+                  ++ms_cnt;
+                  if (!(ms_cnt % 20))
+                    led_off();
+                  if (!(ms_cnt % 40))
+                    led_on();
+               }
+               data_value = 127;       //kind of a not good flag
+               update_remote_byte();
+            }
           }
           if (new_cmd == 1)
           {
@@ -422,24 +453,36 @@ int main(void)
             switch(cmd_value)
             {
             case MOTORS_RIGHT:          //go right 90 degrees
-              motors_right();           
-              motors_wake();
-              start_stepping_gpio(freq);     
+              if (last_cmd != cmd_value)
+              {
+                motors_right();           
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
               break;
             case MOTORS_LEFT:
-              motors_left();
-              motors_wake();
-              start_stepping_gpio(freq);     
+              if (last_cmd != cmd_value)
+              {
+                motors_left();
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
               break;
             case MOTORS_FORWARD:
-              motors_forward();
-              motors_wake();
-              start_stepping_gpio(freq);     
+              if (last_cmd != cmd_value)
+              {
+                motors_forward();
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
               break;
             case MOTORS_BACKWARD:
-              motors_backward();
-              motors_wake();
-              start_stepping_gpio(freq);     
+              if (last_cmd != cmd_value)
+              {
+                motors_backward();
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
               break;
             case MOTORS_STOP:
               stop_stepping_gpio();
@@ -453,7 +496,7 @@ int main(void)
               break;
             case PLAY_BUZZER:
               if(buzzer_loops_done == 1)
-                pwm_buzzer_frequency(4000.0, 500);              
+                pwm_buzzer_frequency(4000.0, 1000);              
               break;
             case INC_STEP_MODE:
               motors_sleep();
@@ -471,7 +514,7 @@ int main(void)
                   freq = 200;
                   break;
                 case QUARTER_STEP:
-                  freq = 300;
+                  freq = 400;
                   break;
                 case n8_STEP:
                   freq = 400;
@@ -523,22 +566,22 @@ int main(void)
               update_remote_byte();
               break;
             case GET_AMBIENT:
-              ambient_value = getAmbientLight(GAIN_5);      //indoors LUX is likely 10-1000
-              data_value = ambient_value;                   //single byte won't cut it
-              update_remote_byte();
+              ambient_value = getAmbientLight(GAIN_1);      //indoors LUX is likely 10-1000
+              data2_value = (uint16_t)ambient_value;            
+              update_remote_2byte();
               break;
             case RECORD_SOUND:
+              data_value = 0;       //kind of a not good flag
+              update_remote_byte();
               m_xfer_done = false;
+              for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
+                p_rx_buffer[i] = 0;
               nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
               nrf_pdm_gain_set(NRF_PDM_GAIN_MAXIMUM,NRF_PDM_GAIN_MAXIMUM);
               nrf_pdm_event_clear(NRF_PDM_EVENT_END);
+              led_on();
               nrf_drv_pdm_start();
-              while( nrf_pdm_event_check(NRF_PDM_EVENT_END) == false );
-              nrf_drv_pdm_stop();
-              do_dft();            //do fft, then check m_fft_output_f32 64 bytes
-              ++counter;
-              data_value = counter;
-              update_remote_byte();
+              recording_flag = 1;
               break;
             case INCREASE_GAIN:
               mic_gain += 5;
@@ -561,10 +604,14 @@ int main(void)
                break;
           }
           new_cmd = 0;
+          last_cmd = cmd_value;
       }
       else
       {
-        led_off();
+        if (recording_flag == 0)
+        {
+          led_off();
+        }
         //play_song();
       }
    }  
@@ -852,11 +899,6 @@ void VLX6180_init(void)
   
     VL6180xInit();
     VL6180xDefautSettings();
-}
-
-__STATIC_INLINE void data_handler(uint8_t temp)
-{
-
 }
 
 void stop_stepping_gpio(void)
@@ -1315,7 +1357,6 @@ static void advertising_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-
 static uint32_t add_cmd_characteristic(void)
 {
     ble_gatts_char_md_t char_md;          //server characteristic metadata
@@ -1359,6 +1400,105 @@ static uint32_t add_cmd_characteristic(void)
                                            &attr_char_value,
                                            &cmd_handle);
 
+}
+
+static uint32_t add_cmd4_characteristic(void)
+{
+    ble_gatts_char_md_t char_md;          //server characteristic metadata
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read  = 1;
+    char_md.char_props.write = 1;
+    char_md.p_char_user_desc = NULL;
+    char_md.p_char_pf        = NULL;
+    char_md.p_user_desc_md   = NULL;
+    char_md.p_cccd_md        = NULL;
+    char_md.p_sccd_md        = NULL;
+
+    ble_uuid.type = uuid_type;
+    ble_uuid.uuid = LBS_UUID_BYTE4_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 0;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = 4;
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = 4;
+    attr_char_value.p_value   = NULL;
+
+    return sd_ble_gatts_characteristic_add(svc_handle,
+                                           &char_md,
+                                           &attr_char_value,
+                                           &data_4byte_handle);
+
+}
+
+//Have 3 characteristics to do, just doing 20 byte for sound pcm file transfer
+static uint32_t add_mult_data_characteristics(void)
+{
+    ret_code_t     err_code;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;          //client characteristic metadata
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+       
+    memset(&cccd_md, 0, sizeof(cccd_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read   = 1;
+    char_md.char_props.write  = 1;
+    char_md.char_props.notify = 1;
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md;
+    char_md.p_sccd_md         = NULL;
+
+    ble_uuid.type = uuid_type;
+    ble_uuid.uuid = LBS_UUID_BYTE128_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 0;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = MULTI_LEN;
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = MULTI_LEN;
+    attr_char_value.p_value   = NULL;
+
+    return sd_ble_gatts_characteristic_add(svc_handle,
+                                           &char_md,
+                                           &attr_char_value,
+                                           &data_128byte_handle);   
 }
 
 static uint32_t add_data_characteristic(void)
@@ -1407,11 +1547,62 @@ static uint32_t add_data_characteristic(void)
     attr_char_value.max_len   = sizeof(uint8_t);
     attr_char_value.p_value   = NULL;
 
-    err_code = sd_ble_gatts_characteristic_add(svc_handle,
+    return sd_ble_gatts_characteristic_add(svc_handle,
                                            &char_md,
                                            &attr_char_value,
                                            &data_handle);   
-    VERIFY_SUCCESS(err_code);
+}
+
+static uint32_t add_data2_characteristic(void)
+{
+    ret_code_t     err_code;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;          //client characteristic metadata
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+       
+    memset(&cccd_md, 0, sizeof(cccd_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read   = 1;
+    char_md.char_props.notify = 1;
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md;
+    char_md.p_sccd_md         = NULL;
+
+    ble_uuid.type = uuid_type;
+    ble_uuid.uuid = LBS_UUID_BYTE2_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 0;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = 2;
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = 2;
+    attr_char_value.p_value   = NULL;
+
+    return sd_ble_gatts_characteristic_add(svc_handle,
+                                           &char_md,
+                                           &attr_char_value,
+                                           &data_2byte_handle);   
 }
 /**@brief Function for initializing services that will be used by the application.
  */
@@ -1423,24 +1614,31 @@ static void services_init(void)
   // Add service.
     ble_uuid128_t base_uuid = {LBS_UUID_BASE};
     err_code = sd_ble_uuid_vs_add(&base_uuid, &uuid_type);
-    VERIFY_SUCCESS(err_code);
+    APP_ERROR_CHECK(err_code);
 
     ble_uuid.uuid = LBS_UUID_SERVICE;
     ble_uuid.type = uuid_type;
 
     err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &svc_handle);
-    VERIFY_SUCCESS(err_code);
+    APP_ERROR_CHECK(err_code);
        
     err_code = add_cmd_characteristic();
-    VERIFY_SUCCESS(err_code);
+    APP_ERROR_CHECK(err_code);
     
     err_code = add_data_characteristic();
-    VERIFY_SUCCESS(err_code);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = add_data2_characteristic();
+    APP_ERROR_CHECK(err_code);
     
+    err_code = add_cmd4_characteristic();
+    APP_ERROR_CHECK(err_code);
+ 
+    err_code = add_mult_data_characteristics();
     APP_ERROR_CHECK(err_code);
 }
 
-uint32_t update_remote_byte(void)
+static uint32_t update_remote_byte(void)
 {
     ble_gatts_hvx_params_t params;
     uint16_t len = 1;
@@ -1449,6 +1647,48 @@ uint32_t update_remote_byte(void)
     params.type   = BLE_GATT_HVX_NOTIFICATION;
     params.handle = data_handle.value_handle;
     params.p_data = &data_value;
+    params.p_len  = &len;
+
+    return sd_ble_gatts_hvx(m_conn_handle, &params);
+}
+
+static uint32_t update_remote_2byte(void)
+{
+    ble_gatts_hvx_params_t params;
+    uint16_t len = 2;
+
+    data_2byte_val[0] = (uint8_t)(data2_value>>8)&0x00ff;
+    data_2byte_val[1] = (uint8_t)(data2_value&0x00ff);
+
+    memset(&params, 0, sizeof(params));
+    params.type   = BLE_GATT_HVX_NOTIFICATION;
+    params.handle = data_2byte_handle.value_handle;
+    params.p_data = data_2byte_val;
+    params.p_len  = &len;
+
+    return sd_ble_gatts_hvx(m_conn_handle, &params);
+}
+
+//Connection interval set to 50Hz, higher needs better signal strength
+//Each 20ms period, we send 128 bytes, it takes .02s*(32k/128)=5.12s
+static uint32_t update_remote_multi_byte(uint32_t index)
+{
+    ble_gatts_hvx_params_t params;
+    uint16_t len = MULTI_LEN;
+    uint16_t i, j;
+
+    i = j = 0;
+    while(i<len)
+    {
+      data_128byte_val[i+1] = (uint8_t)((p_rx_buffer[index+j]>>8)&0x00ff);
+      data_128byte_val[i] = (uint8_t)(p_rx_buffer[index+j]&0x00ff);
+      i+=2;
+      ++j;
+    }
+    memset(&params, 0, sizeof(params));
+    params.type   = BLE_GATT_HVX_NOTIFICATION;
+    params.handle = data_128byte_handle.value_handle;
+    params.p_data = data_128byte_val;
     params.p_len  = &len;
 
     return sd_ble_gatts_hvx(m_conn_handle, &params);
@@ -1465,7 +1705,7 @@ uint32_t update_remote_byte(void)
  *
  * @param[in] p_evt  Event received from the Connection Parameters Module.
  */
-static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
+void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 {
     ret_code_t err_code;
 
@@ -1481,7 +1721,7 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
  *
  * @param[in] nrf_error  Error code containing information about what went wrong.
  */
-static void conn_params_error_handler(uint32_t nrf_error)
+void conn_params_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
@@ -1537,7 +1777,7 @@ static void advertising_start(void)
  * @param[in]   p_ble_evt   Bluetooth stack event.
  * @param[in]   p_context   Unused.
  */
-static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
+void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
     ret_code_t err_code;
 
@@ -1698,7 +1938,7 @@ static void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-static void log_init(void)
+void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
@@ -1708,7 +1948,7 @@ static void log_init(void)
 /*
 *@brief Function for the Power Manager.
  */
-static void power_manage(void)
+void power_manage(void)
 {
     ret_code_t err_code = sd_app_evt_wait();
     APP_ERROR_CHECK(err_code);
@@ -1717,7 +1957,7 @@ static void power_manage(void)
 /*
 *@brief Function for the Timer initialization.
  */
-static void timers_init(void)
+void timers_init(void)
 {
     // Initialize timer module, making it use the scheduler
     ret_code_t err_code = app_timer_init();
