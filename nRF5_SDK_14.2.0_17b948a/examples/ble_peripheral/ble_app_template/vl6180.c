@@ -3,6 +3,7 @@
 
 extern volatile bool m_xfer_done;
 extern const nrf_drv_twi_t m_twi;
+extern volatile ret_code_t vl6180_err_code;
 
 void VL6180xInit(void)
 {
@@ -138,6 +139,8 @@ void VL6180x_setRegister(uint16_t registerAddr, uint8_t data)
    // Writing to register
     err_code = nrf_drv_twi_tx(&m_twi, VL6180X_ADDRESS, wrdata, 3, false);
  
+    vl6180_err_code = err_code;
+
     return;
 }
 
@@ -154,6 +157,8 @@ void VL6180x_setRegister16bit(uint16_t registerAddr, uint16_t data)
 
    // Writing to register
     err_code = nrf_drv_twi_tx(&m_twi, VL6180X_ADDRESS, wrdata, 4, false);
+
+    vl6180_err_code = err_code;
  
     return;
 }
@@ -168,12 +173,20 @@ uint8_t VL6180x_getRegister(uint16_t registerAddr)
     wrdata[0] = (registerAddr>>8)&0xff;
     wrdata[1] = registerAddr&0xff;
 
+    vl6180_err_code = 0;
+
     ret = nrf_drv_twi_tx(&m_twi, VL6180X_ADDRESS, wrdata, 2, true);
     if (NRF_SUCCESS != ret)
     {
+       vl6180_err_code = ret;
        return 0;
     }
     ret = nrf_drv_twi_rx(&m_twi, VL6180X_ADDRESS, rddata, 1);
+    if (NRF_SUCCESS != ret)
+    {
+       vl6180_err_code = ret;
+       return 0;
+    }
 
     return rddata[0];
 
@@ -191,9 +204,15 @@ uint16_t VL6180x_getRegister16bit(uint16_t registerAddr)
     ret = nrf_drv_twi_tx(&m_twi, VL6180X_ADDRESS, wrdata, 2, true);
     if (NRF_SUCCESS != ret)
     {
+       vl6180_err_code = ret;
        return 0;
     }
     ret = nrf_drv_twi_rx(&m_twi, VL6180X_ADDRESS, rddata, 2);
+    if (NRF_SUCCESS != ret)
+    {
+       vl6180_err_code = ret;
+       return 0;
+    }
 
     return ((rddata[1]<<8)|rddata[0]);
 

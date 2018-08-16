@@ -1,5 +1,5 @@
 /*
-      Tiny Robot Code, v0.5
+      Tiny Robot Code, v0.7
       by Bill Weiler
 
       Segger Embedded Studio - full version is free for Nordic chips, using ARM M version v3.34
@@ -97,8 +97,9 @@
 #define MOTORS_FORWARD    0x12
 #define MOTORS_BACKWARD   0x13
 #define MOTORS_STOP       0x14
-#define MOTORS_SLEEP      0x15
-#define INC_STEP_MODE     0x16
+#define STOP_TURNING      0x15
+#define MOTORS_SLEEP      0x16
+#define INC_STEP_MODE     0x19
 //DEC not in Android yet
 #define DEC_STEP_MODE     0x18
 #define PLAY_BUZZER       0x17
@@ -107,10 +108,13 @@
 #define GET_AMBIENT       0x21
 
 #define RECORD_SOUND      0x30
+#define RECORD_SOUND_PI   0x33
 #define INCREASE_GAIN     0x31
 #define DECREASE_GAIN     0x32
 
 #define ROVER_MODE        0x40
+#define ROVER_MODE_REV    0x42
+#define FOTOV_MODE        0x41
 /*
     Conditional compilation
     ========================================================
@@ -226,6 +230,8 @@ ble_gatts_char_handles_t data_2byte_handle, data_4byte_handle, data_128byte_hand
 uint8_t uuid_type;
 uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;
 uint8_t data_2byte_val[2], data_4byte_val[4];
+ble_gatts_value_t sound_value, sound_flag, data4_value;    //for Raspberry Pi
+uint8_t pi_reads_active = 0;
 //BLE prototype functions
 static void timers_init(void);
 static void log_init(void);
@@ -271,8 +277,9 @@ void do_dft(void);
 
 //Microphone
 #define SAMPLE_BUFFER_CNT 16*1024
-int16_t p_rx_buffer[SAMPLE_BUFFER_CNT];
+int16_t p_rx_buffer[SAMPLE_BUFFER_CNT+6];    //+6 makes it 16,380/20=1638 20 byte packets
 uint8_t mic_gain = NRF_PDM_GAIN_DEFAULT;
+uint32_t load_buffer_offset = 0;
 volatile bool m_xfer_done = false;
 void configure_microphone(void);
 void audio_handler(nrf_drv_pdm_evt_t const * const evt);                //Just sets xfer_done
@@ -284,6 +291,7 @@ const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
 void configure_VLX6180(void);
 void VLX6180_init(void);
 void twi_init(void);
+volatile ret_code_t vl6180_err_code;
 
 //UART
 uint8_t sendbuffer[64];
@@ -291,10 +299,11 @@ uint8_t recvbuffer[64];
 void uart_init(void);
 void sendbytes(uint8_t a);
 void TxUART(uint8_t* buf);
+static uint8_t teststr[2] = { 'A',0 };
 
 //Motors
-uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0;;
-uint32_t timer1_counter, timer1_match_value, timer1_toggle_step;
+uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0, turn_flag = 0, motor_state;
+uint32_t timer1_counter, timer1_match_value, timer1_toggle_step, timer_turn_step_count, timer_turn_match;
 void motors_forward();
 void motors_backward(void);
 void motors_right(void);
@@ -330,14 +339,16 @@ void adhoc_robot_test(void);
 void mb_test(void);
 void led_off(void);
 void led_on(void);
-void rover(uint32_t freq);        //inherits freq and stepping mode from main()
+void rover(uint32_t freq, uint8_t dirmode);        //does current step mode
 static uint8_t range, buf[64], distance, callonce;
 struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
 
 //Entry point of firmware
 int main(void)
 {
-    uint8_t step_mode = n32_STEP, counter = 0, recording_flag, last_cmd;
+    uint8_t step_mode = n32_STEP, counter = 0, recording_flag=0, last_cmd=0;
+    uint8_t photovore_mode=0, recording_flag_pi = 0;
+    uint16_t lux_threshold;
     uint32_t freq = 1600, steps = 200, i, ms_cnt;
     float32_t ambient_value;
     ret_code_t err_code;
@@ -348,7 +359,7 @@ int main(void)
     led_off();
     my_configure();           //sets gpios and PWM0 for step, PWM1 for buzzer
     motors_sleep();
-    stepping_mode(step_mode); //start at step mode 1
+    stepping_mode(step_mode); //step mode at 32
      
     uart_init();
     
@@ -390,8 +401,12 @@ int main(void)
     led_off();
 
     recording_flag = 0;
+    recording_flag_pi = 0;
+    pi_reads_active = 0;
     new_cmd = 0;
     last_cmd = 0;
+    motor_state = MOTORS_SLEEP;
+    turn_flag = 0;
     for (;;)
     {
           //Trap here when BLE not connected
@@ -409,6 +424,7 @@ int main(void)
             led_on();
             nrf_delay_ms(200);
             led_off();
+            TxUART(teststr);
           }
           if (recording_flag == 1)
           {
@@ -446,22 +462,75 @@ int main(void)
                update_remote_byte();
             }
           }
+          if (pi_reads_active == 1)
+          {
+              if (load_buffer_offset >= SAMPLE_BUFFER_CNT-1)  //end of 10 uint16_t chunks of buffer
+              {
+                sound_flag.len = 1;
+                data_value = 127;                 //reading done flag, tell Pi
+                sound_flag.p_value = &data_value;
+                sound_flag.offset = 0;
+                sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
+                pi_reads_active = 0;
+                load_buffer_offset = 0;
+              }
+          }
+          if (recording_flag_pi == 1)
+          {
+            if (nrf_pdm_event_check(NRF_PDM_EVENT_END) == true)
+            {
+              led_off();
+              nrf_drv_pdm_stop();
+              load_buffer_offset = 0;
+              recording_flag_pi = 0;
+              //do_dft();           
+              sound_flag.len = 1;                           //sound flag is a 1byte characteristic struct
+              data_value = 255;                             //recording done flag, tell Pi to start reading
+              sound_flag.p_value = &data_value;
+              sound_flag.offset = 0;
+              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag); //signal pi to start reading
+              pi_reads_active = 1;
+            }
+          }
+          if (photovore_mode == 1)
+          {
+              ambient_value = getAmbientLight(GAIN_1);      //indoors LUX is likely 10-1000
+              data2_value = (uint16_t)ambient_value;            
+              if (data2_value > lux_threshold+4)
+              {
+                motors_wake();
+              }
+              else
+              {
+                motors_sleep();
+              }
+              update_remote_2byte();
+          }
           if (new_cmd == 1)
           {
             if (cmd_value != GET_DISTANCE && cmd_value != GET_AMBIENT)
               led_on();
+            photovore_mode = 0;   //any new command cancels mode
             switch(cmd_value)
             {
-            case MOTORS_RIGHT:          //go right 90 degrees
-              if (last_cmd != cmd_value)
+            case MOTORS_RIGHT:          //go right 30 degrees
+              if (motor_state == MOTORS_FORWARD || motor_state == MOTORS_BACKWARD)
               {
-                motors_right();           
+                motors_right();
+              }
+              else
+              {
+                motors_right();
                 motors_wake();
                 start_stepping_gpio(freq);     
               }
               break;
-            case MOTORS_LEFT:
-              if (last_cmd != cmd_value)
+            case MOTORS_LEFT:           //go left 30 degrees
+              if (motor_state == MOTORS_FORWARD || motor_state == MOTORS_BACKWARD)
+              {
+                motors_left();
+              }
+              else
               {
                 motors_left();
                 motors_wake();
@@ -469,29 +538,70 @@ int main(void)
               }
               break;
             case MOTORS_FORWARD:
-              if (last_cmd != cmd_value)
+              if (motor_state != MOTORS_FORWARD && motor_state != MOTORS_BACKWARD)
               {
+                motor_state = MOTORS_FORWARD;
                 motors_forward();
                 motors_wake();
                 start_stepping_gpio(freq);     
               }
+              else
+              {
+                motor_state = MOTORS_FORWARD;
+                motors_forward();
+              }
               break;
             case MOTORS_BACKWARD:
-              if (last_cmd != cmd_value)
+              if (motor_state != MOTORS_FORWARD && motor_state != MOTORS_BACKWARD)
               {
+                motor_state = MOTORS_BACKWARD;
                 motors_backward();
                 motors_wake();
                 start_stepping_gpio(freq);     
               }
+              else
+              {
+                motor_state = MOTORS_BACKWARD;
+                motors_backward();
+              }
+              break;
+            case STOP_TURNING:
+              switch(motor_state)
+              {
+                case MOTORS_FORWARD: 
+                  motors_forward();
+                  break;
+                case MOTORS_BACKWARD:
+                  motors_backward();
+                  break;
+                default:
+                  break;
+              }
               break;
             case MOTORS_STOP:
+              motor_state = MOTORS_STOP;
               stop_stepping_gpio();
               motors_sleep();
               break;
             case ROVER_MODE:
-              rover(freq);
+              rover(freq,0);
+              motor_state = MOTORS_STOP;
+              break;
+            case ROVER_MODE_REV:
+              rover(freq,1);
+              motor_state = MOTORS_STOP;
+              break;
+            case FOTOV_MODE:
+              motor_state = MOTORS_STOP;
+              photovore_mode = 1;
+              motors_forward();
+              start_stepping_gpio(freq);
+              ambient_value = getAmbientLight(GAIN_1);      //indoors LUX is likely 10-1000
+              ambient_value = getAmbientLight(GAIN_1);      
+              lux_threshold = (uint16_t)ambient_value;            
               break;
             case MOTORS_SLEEP:
+              motor_state = MOTORS_SLEEP;
               motors_sleep();
               break;
             case PLAY_BUZZER:
@@ -562,16 +672,17 @@ int main(void)
               update_remote_byte();
               break;
             case GET_DISTANCE:
-              data_value = getDistance();
+              data_value = getDistance();                   //if this returns 0, step through and get error code
               update_remote_byte();
               break;
-            case GET_AMBIENT:
-              ambient_value = getAmbientLight(GAIN_1);      //indoors LUX is likely 10-1000
+            case GET_AMBIENT:                               //I see Ambient LUX 34-65
+              ambient_value = getAmbientLight(GAIN_1);      //if this returns 0, step through and get error code
+              ambient_value = getAmbientLight(GAIN_1);      //first values returns 0
               data2_value = (uint16_t)ambient_value;            
               update_remote_2byte();
               break;
             case RECORD_SOUND:
-              data_value = 0;       //kind of a not good flag
+              data_value = 0;       //using data_value this way is not a good use for a flag
               update_remote_byte();
               m_xfer_done = false;
               for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
@@ -582,6 +693,22 @@ int main(void)
               led_on();
               nrf_drv_pdm_start();
               recording_flag = 1;
+              break;
+            case RECORD_SOUND_PI:
+              sound_flag.len = 1;
+              data_value = 0;                   //tell Pi recording, not ready to read yet
+              sound_flag.p_value = &data_value;
+              sound_flag.offset = 0;
+              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
+              m_xfer_done = false;
+              for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
+                p_rx_buffer[i] = 0;
+              nrf_drv_pdm_buffer_set(p_rx_buffer, SAMPLE_BUFFER_CNT);
+              nrf_pdm_gain_set(NRF_PDM_GAIN_MAXIMUM,NRF_PDM_GAIN_MAXIMUM);
+              nrf_pdm_event_clear(NRF_PDM_EVENT_END);
+              led_on();
+              nrf_drv_pdm_start();
+              recording_flag_pi = 1;
               break;
             case INCREASE_GAIN:
               mic_gain += 5;
@@ -608,7 +735,7 @@ int main(void)
       }
       else
       {
-        if (recording_flag == 0)
+        if (recording_flag == 0 && recording_flag_pi == 0)
         {
           led_off();
         }
@@ -620,37 +747,48 @@ int main(void)
 //This is bug specific, please ignore
 void adhoc_robot_test(void)
 {
+    uint8_t val;
+
+    stepping_mode(FULL_STEP);
     motors_backward();
     motors_wake();
     start_stepping_gpio(100);
+    val = 0;
     while(1) 
     {
-       if (new_cmd == 1)
-       {
-          switch(cmd_value)
-          {
-            case MOTORS_FORWARD:
-              motors_forward();
-              break;
-            case MOTORS_BACKWARD:
-              motors_backward();
-              break;
-            case MOTORS_STOP:
-              stop_stepping_gpio();
-              motors_sleep();
-              break;
-            default:
-              motors_wake();
-              stop_stepping_gpio();     //make sure stopped before re-starting
-              start_stepping_gpio(100);
-              break;
-          }
-          new_cmd = 0;
-      }
-      nrf_delay_ms(500);
-      led_on();
-      nrf_delay_ms(500);
-      led_off();
+        switch(val)
+        {
+          case 0:
+            led_on();
+            motors_forward();
+            motors_wake();
+            break;
+          case 1:
+            led_off();
+            motors_sleep();
+            break;
+          case 2:
+            led_on();
+            motors_backward();
+            motors_wake();
+            break;
+          case 3:
+            led_off();
+            motors_sleep();
+            break;
+          default:
+            motors_wake();
+            stop_stepping_gpio();     //make sure stopped before re-starting
+            start_stepping_gpio(100);
+            break;
+        }
+        ++val;
+
+
+        if (val == 4)
+        if (val == 4)
+          val = 0;
+        nrf_delay_ms(2000);
     }
 }
 
@@ -691,11 +829,14 @@ void bb_test(void)
 }
 
 //Inherits stepping mode and freq from main()
-void rover(uint32_t freq)
+void rover(uint32_t freq, uint8_t rover_dir)
 {
   uint8_t distance;
 
-  motors_forward();
+  if (rover_dir == 0)
+    motors_forward();
+  else
+    motors_backward();
   motors_wake();
   start_stepping_gpio(freq);       
   new_cmd = 0;
@@ -709,14 +850,16 @@ void rover(uint32_t freq)
       }
       else
       {
-        motors_forward();
+        if (rover_dir == 0)
+          motors_forward();
+        else
+          motors_backward();
         led_off();
       }
       nrf_delay_ms(50);
   }
   stop_stepping_gpio();
   motors_sleep();
-  motors_forward();
   return;
 }
 
@@ -931,6 +1074,23 @@ void TIMER1_IRQHandler(void)
        {
           nrf_gpio_pin_set(STEP);
           timer1_toggle_step = 0;
+          /*if (turn_flag == 1)
+          {
+            ++timer_turn_step_count;
+            if (timer_turn_step_count >= timer_turn_match)
+            {
+              turn_flag = 0;
+              switch(motor_state)
+              { 
+               case MOTORS_FORWARD:
+                  motors_forward();
+                  break;
+               case MOTORS_BACKWARD:
+                  motors_backward();
+                  break;
+              }
+            }
+          }*/
        }
        else
        {
@@ -1408,6 +1568,7 @@ static uint32_t add_cmd4_characteristic(void)
     ble_gatts_attr_t    attr_char_value;
     ble_uuid_t          ble_uuid;
     ble_gatts_attr_md_t attr_md;
+    uint8_t i;
 
     memset(&char_md, 0, sizeof(char_md));
 
@@ -1482,7 +1643,7 @@ static uint32_t add_mult_data_characteristics(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
     attr_md.vloc    = BLE_GATTS_VLOC_STACK;
-    attr_md.rd_auth = 0;
+    attr_md.rd_auth = 1;                      //Have to set this to get an authorize event
     attr_md.wr_auth = 0;
     attr_md.vlen    = 0;
 
@@ -1780,6 +1941,7 @@ static void advertising_start(void)
 void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
     ret_code_t err_code;
+    uint16_t i, j;
 
     switch (p_ble_evt->header.evt_id)
     {
@@ -1843,11 +2005,55 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
         {
-            ble_gatts_evt_rw_authorize_request_t  req;
-            ble_gatts_rw_authorize_reply_params_t auth_reply;
+            static ble_gatts_evt_rw_authorize_request_t  req;
+            static ble_gatts_rw_authorize_reply_params_t auth_reply;
 
             req = p_ble_evt->evt.gatts_evt.params.authorize_request;
 
+            if (req.type == BLE_GATTS_AUTHORIZE_TYPE_READ && req.request.read.handle == data_128byte_handle.value_handle)
+            {
+              if (pi_reads_active == 1)
+              {
+                  //This is a little tricky, i increments by 2 and goes to 20, j increments by 1 and goes to 10
+                  i = j = 0;
+                  while(i<MULTI_LEN)
+                  {
+                    data_128byte_val[i+1] = (uint8_t)((p_rx_buffer[load_buffer_offset+j]>>8)&0x00ff);
+                    data_128byte_val[i] = (uint8_t)(p_rx_buffer[load_buffer_offset+j]&0x00ff);
+                    i+=2;
+                    ++j;
+                  }
+                  //sound_value.offset = 0;
+                  //sound_value.len = 20;
+                  //sound_value.p_value = data_128byte_val;
+                  //sd_ble_gatts_value_set(m_conn_handle,data_128byte_handle.value_handle,&sound_value);
+                  
+                  load_buffer_offset += MULTI_LEN/2; //increment by 10
+  
+                  auth_reply.type = BLE_GATTS_AUTHORIZE_TYPE_READ;
+                  auth_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+                  auth_reply.params.read.update = 1;
+                  auth_reply.params.read.len = MULTI_LEN;
+                  auth_reply.params.read.offset = 0;
+                  auth_reply.params.read.p_data = data_128byte_val;
+                  err_code = sd_ble_gatts_rw_authorize_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+                                                               &auth_reply);
+                  if (err_code != NRF_SUCCESS)
+                  {
+                    load_buffer_offset -= MULTI_LEN/2;    //decrement for retry, does NRF do retry after failure?
+                  }                 
+                  return;
+              }
+              else  //if it gets here, it is a startup or discovery read, must be authorized.
+              {
+                  memset(&auth_reply,0,sizeof(ble_gatts_rw_authorize_reply_params_t));
+                  auth_reply.type = BLE_GATTS_AUTHORIZE_TYPE_READ;
+                  auth_reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+                  err_code = sd_ble_gatts_rw_authorize_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+                                                               &auth_reply);
+                  return; 
+              }
+            }
             if (req.type != BLE_GATTS_AUTHORIZE_TYPE_INVALID)
             {
                 if ((req.request.write.op == BLE_GATTS_OP_PREP_WRITE_REQ)     ||
@@ -1865,14 +2071,15 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
                     auth_reply.params.write.gatt_status = APP_FEATURE_NOT_SUPPORTED;
                     err_code = sd_ble_gatts_rw_authorize_reply(p_ble_evt->evt.gatts_evt.conn_handle,
                                                                &auth_reply);
-                    APP_ERROR_CHECK(err_code);
+                    return;
                 }
             }
-        } break; // BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST
+        }
+        break; // BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST
 
-        default:
-            // No implementation needed.
-            break;
+      default:
+        // No implementation needed.
+        break;
     }
 }
 
