@@ -2,8 +2,9 @@
       Tiny Robot Code, v0.7
       by Bill Weiler
 
+      These are the current versions of the tools. As time goes by, I'll have to upgrade.
       Segger Embedded Studio - full version is free for Nordic chips, using ARM M version v3.34
-      Segger J-Link EDU or Adafruit J-Link - okay for learning
+      Segger J-Link EDU or Adafruit J-Link - this is a cheaper programmer for learning
       Nordic nRF5 SDK v14.2
       Nordic SDK BLE_Peripheral_Template and nRF Blinky example used as starting point 
       CMSIS DSP Library
@@ -11,31 +12,32 @@
       nRF52832 runs at 64Mhz, has 512k flash and 64k SRAM, and hardware single precision floating point
       Nordic BLE Stack is called Softdevice and only comes in hex form, I'm using S132 v5.0.0
 
-      Targets for this code are Tiny Robot and Sparkfun nRF52832 reference design used for test rigs
+      Targets for this code are Tiny Robot and the Sparkfun nRF52832 design I use for my test rigs.
       Tiny Robot has these features:
-      1. VLX6180 distance sensor through i2c
+      1. ST VLX6180 distance sensor controlled through i2c
       2. 2 motors, left and right, driven through 2 TI DRV8834. The DRV's are driven by gpio's
-      3. Microphone through PDM peripheral that outputs PCM signed 16bit mono audio
-      4. Buzzer through PWM1 peripheral
-      5. 1 LED through gpio, active low (clearing it (0) turns led on)
-      6. BLE antenna, s132 supports central and peripheral, observer and broadcaster, total 20 connections (that's 19 robots and a cellphone!)
+      3. Microphone into microcontroller PDM peripheral that outputs PCM signed 16bit mono audio
+      4. Buzzer out of microcontroller PWM1 peripheral
+      5. 1 LED out from a gpio, active low (clearing it (setting it to 0) turns led on)
+      6. BLE, the s132 softdevice supports central and peripheral, observer and broadcaster, total 20 connections (that's 19 robots and a cellphone!)
 
-      There is no crystal LF oscillator in Tiny Robot, the softdevice uses the internal RC oscillator, 
-      there is a 32Mhz crystal HF oscillator for the CPU
+      There is no physical crystal LF oscillator in Tiny Robot, the softdevice uses the internal RC oscillator, 
+      there is however, a physical 32Mhz crystal HF oscillator for the CPU
 
-      Watch out modifying code, the BLE stack takes peripherals and scheduling. Notably it takes Timer0, some flash and ram, and a lot of cpu cycles. If you
-      have problems, use their API for scheduling time slots. Check the Softdevice documentation for blocked peripherals.
+      Something to watch out for: the BLE s132 stack uses peripherals and needs scheduling. Notably it takes Timer0, 
+      some flash and ram, and a lot of cpu cycles. If you have problems, use their API for scheduling time slots. 
+      Check the Softdevice documentation for occasional blocking of peripherals.
 
-      Motors are bi-polar steppers. The datasheet says they don't like microstepping. I see mode 1 and 2 work okay.
-      Also a step is 18 degrees, about 1.67mm of travel. Microstepping is weird, so not linear going from 1/4 to 1/8.
-      Just doubling steps might not work.
+      Motors are bi-polar stepping motors. The manufacturer says they don't like microstepping, but it seems fine. 
+      Some specs are a step is 18 degrees, about 1.67mm of wheel travel. Microstepping is weirdly non-linear, so
+      going from 1/4 to 1/8 just doubling steps doesn't result in the same speed.
       Minimum freq for full-step seems to be 200
-      Maxmimum frew full-step for starting is 800
+      Maxmimum freq full-step for starting rotation is 800
 
       For true hardware floating point, GCC is not always smart enough, you can use idioms or intrinsics, 
       or just check disassembly to make sure FPU instructions were used.
 
-      For understanding firmware to master it, read this stuff:
+      For understanding firmware to master it, read this stuff (it's a big amount):
       1. nRF52832 datasheet, watch out for old versions, like on Sparkfun, I am using v1.4
       2. Nordic Softdevice Specification
       3. Nordic Errata (skim, too boring)
@@ -43,18 +45,21 @@
       5. Nordic devzone forums
       6. Nordic Compatability list (really boring but skim)
       7. ST VLX6180 datasheet (some tricks you can do)
-      8. Knowles Microphone datasheet - The datasheet is minimally useful, it just has specs. I would read stuff about PDM and PCM. 
-         You can trigger microphone recording and grab the raw PCM audio out of the Segger IDE memory view and then export to your PC. 
-         You can then play it in Audacity (Audacity is free).
-         Audacity gotcha is, the file extension must be .wav, not the .bin Segger writes by default.
+      8. Knowles Microphone datasheet - The datasheet is minimally useful, it just has audio specs. I would read stuff 
+         about PDM and PCM. You can download the audio to your PC and play it with Audacity (Audacity is free).
+         Audacity gotcha is, the file extension must be .wav, not the .bin Segger IDE captures and writes by default.
 
-      To enable 128byte notifications, I changed this line in ble_app_template_pca10040_s132.emProject
+      I tried to get faster uploading of the sound file by using larger BLE packets sizes. Cheap phones don't support larger
+      sizes however, I went back to 20 bytes from trying 128 bytes.
+      One arcane thing I did change for greater than 20byte transfers from the default project:
+      I changed this line in ble_app_template_pca10040_s132.emProject
        
        before: RAM_START=0x200020e0;RAM_SIZE=0xdf20"
        after:  RAM_START=0x20002400;RAM_SIZE=0xdc00"
 
-      This increased reserved ram from 0x20e0 to 0x2400. You have to change NRF_SDH_BLE_GATT_MAX_MTU_SIZE from 23 to 128.
-      I am using 23 for my Moto E4. If I set it to 128, My Moto E4 rejects the larger MTU request and won't connect.
+      This increased reserved ram from 0x20e0 to 0x2400. I increased NRF_SDH_BLE_GATT_MAX_MTU_SIZE from 23 to 128.
+      I went back to and am using 23 for my Moto E4. If I set it to 128, My Moto E4 rejects the larger MTU request 
+      and won't even connect.
       128 MTU plus a 20ms connection interval can transfer 32k in 5s
       23 MTU plus a 10ms connection interval takes 15s
 */
@@ -230,7 +235,7 @@ ble_gatts_char_handles_t data_2byte_handle, data_4byte_handle, data_128byte_hand
 uint8_t uuid_type;
 uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;
 uint8_t data_2byte_val[2], data_4byte_val[4];
-ble_gatts_value_t sound_value, sound_flag, data4_value;    //for Raspberry Pi
+ble_gatts_value_t sound_value, sound_flag, data4_value, data_val;    //for Raspberry Pi and Samsung phone
 uint8_t pi_reads_active = 0;
 //BLE prototype functions
 static void timers_init(void);
@@ -275,7 +280,7 @@ static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< F
 static int32_t p_out_buffer[FFT_TEST_COMP_SAMPLES_LEN/2+1];
 void do_dft(void);
 
-//Microphone
+//Microphone, 16k is 1s of audio
 #define SAMPLE_BUFFER_CNT 16*1024
 int16_t p_rx_buffer[SAMPLE_BUFFER_CNT+6];    //+6 makes it 16,380/20=1638 20 byte packets
 uint8_t mic_gain = NRF_PDM_GAIN_DEFAULT;
@@ -349,7 +354,7 @@ int main(void)
     uint8_t step_mode = n32_STEP, counter = 0, recording_flag=0, last_cmd=0;
     uint8_t photovore_mode=0, recording_flag_pi = 0;
     uint16_t lux_threshold;
-    uint32_t freq = 1600, steps = 200, i, ms_cnt;
+    uint32_t freq = 1000, steps = 200, i, ms_cnt;
     float32_t ambient_value;
     ret_code_t err_code;
     song.num_notes = 3;
@@ -462,19 +467,6 @@ int main(void)
                update_remote_byte();
             }
           }
-          if (pi_reads_active == 1)
-          {
-              if (load_buffer_offset >= SAMPLE_BUFFER_CNT-1)  //end of 10 uint16_t chunks of buffer
-              {
-                sound_flag.len = 1;
-                data_value = 127;                 //reading done flag, tell Pi
-                sound_flag.p_value = &data_value;
-                sound_flag.offset = 0;
-                sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
-                pi_reads_active = 0;
-                load_buffer_offset = 0;
-              }
-          }
           if (recording_flag_pi == 1)
           {
             if (nrf_pdm_event_check(NRF_PDM_EVENT_END) == true)
@@ -491,6 +483,19 @@ int main(void)
               sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag); //signal pi to start reading
               pi_reads_active = 1;
             }
+          }
+          if (pi_reads_active == 1)
+          {
+              if (load_buffer_offset >= SAMPLE_BUFFER_CNT-1)  //end of 10 uint16_t chunks of buffer
+              {
+                sound_flag.len = 1;
+                data_value = 127;                 //reading done flag, tell Pi
+                sound_flag.p_value = &data_value;
+                sound_flag.offset = 0;
+                sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
+                pi_reads_active = 0;
+                load_buffer_offset = 0;
+              }
           }
           if (photovore_mode == 1)
           {
@@ -630,10 +635,10 @@ int main(void)
                   freq = 400;
                   break;
                 case n16_STEP:
-                  freq = 800;   //max
+                  freq = 500;  
                   break;
                 case n32_STEP:
-                  freq = 1600;
+                  freq = 1000;
                   break;
               }
               stepping_mode(step_mode);
@@ -661,10 +666,10 @@ int main(void)
                   freq = 400;
                   break;
                 case n16_STEP:
-                  freq = 800;   //max
+                  freq = 500;  
                   break;
                 case n32_STEP:
-                  freq = 1600;
+                  freq = 1000;
                   break;
               }
               stepping_mode(step_mode);
@@ -672,13 +677,21 @@ int main(void)
               update_remote_byte();
               break;
             case GET_DISTANCE:
-              data_value = getDistance();                   //if this returns 0, step through and get error code
+              data_value = getDistance();                   //first set characteristic for host reads
+              data_val.len = 1;                             //also send for notification
+              data_val.p_value = &data_value;
+              data_val.offset = 0;
+              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&data_val);
               update_remote_byte();
               break;
             case GET_AMBIENT:                               //I see Ambient LUX 34-65
               ambient_value = getAmbientLight(GAIN_1);      //if this returns 0, step through and get error code
               ambient_value = getAmbientLight(GAIN_1);      //first values returns 0
               data2_value = (uint16_t)ambient_value;            
+              data_val.len = 2;                             //set for host reads, then notify
+              data_val.p_value = &data2_value;
+              data_val.offset = 0;
+              sd_ble_gatts_value_set(m_conn_handle,data_2byte_handle.value_handle,&data_val);
               update_remote_2byte();
               break;
             case RECORD_SOUND:
@@ -959,23 +972,23 @@ inline void motors_wake(void)
 
 void motors_forward()
 {
-  nrf_gpio_pin_clear(DIR_L);
-  nrf_gpio_pin_set(DIR_R);   
+  nrf_gpio_pin_set(DIR_L);
+  nrf_gpio_pin_clear(DIR_R);   
 }
 
 void motors_backward(void)
 {
-   nrf_gpio_pin_set(DIR_L);
-   nrf_gpio_pin_clear(DIR_R);
+   nrf_gpio_pin_clear(DIR_L);
+   nrf_gpio_pin_set(DIR_R);
 }
 
-void motors_right(void)
+void motors_left(void)
 {
    nrf_gpio_pin_clear(DIR_L);
    nrf_gpio_pin_clear(DIR_R);
 }
 
-void motors_left(void)
+void motors_right(void)
 {
    nrf_gpio_pin_set(DIR_L);
    nrf_gpio_pin_set(DIR_R);
@@ -1929,7 +1942,6 @@ static void advertising_start(void)
 
     err_code = sd_ble_gap_adv_start(&adv_params, APP_BLE_CONN_CFG_TAG);
     APP_ERROR_CHECK(err_code);
-
 }
 
 
