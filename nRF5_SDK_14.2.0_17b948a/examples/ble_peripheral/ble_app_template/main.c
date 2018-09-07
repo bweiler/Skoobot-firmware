@@ -83,6 +83,7 @@
 #include "peer_manager.h"
 #include "ble_conn_state.h"
 #include "nrf_ble_gatt.h"
+#include "ble_db_discovery.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
@@ -97,29 +98,29 @@
 #include "nrf_drv_pdm.h"
 
 //COMMAND SET FOR BLE
-#define MOTORS_RIGHT      0x10
-#define MOTORS_LEFT       0x11
-#define MOTORS_FORWARD    0x12
-#define MOTORS_BACKWARD   0x13
-#define MOTORS_STOP       0x14
-#define STOP_TURNING      0x15
-#define MOTORS_SLEEP      0x16
-#define INC_STEP_MODE     0x19
-//DEC not in Android yet
-#define DEC_STEP_MODE     0x18
-#define PLAY_BUZZER       0x17
-
-#define GET_DISTANCE      0x22
-#define GET_AMBIENT       0x21
-
-#define RECORD_SOUND      0x30
-#define RECORD_SOUND_PI   0x33
-#define INCREASE_GAIN     0x31
-#define DECREASE_GAIN     0x32
-
-#define ROVER_MODE        0x40
-#define ROVER_MODE_REV    0x42
-#define FOTOV_MODE        0x41
+#define MOTORS_RIGHT_30     0x08
+#define MOTORS_LEFT_30      0x09
+#define MOTORS_RIGHT        0x10
+#define MOTORS_LEFT         0x11
+#define MOTORS_FORWARD      0x12
+#define MOTORS_BACKWARD     0x13
+#define MOTORS_STOP         0x14
+#define STOP_TURNING        0x15
+#define MOTORS_SLEEP        0x16
+#define PLAY_BUZZER         0x17
+//The next two in Android yet
+#define DEC_STEP_MODE       0x18
+#define INC_STEP_MODE       0x19
+#define GET_AMBIENT         0x21
+#define GET_DISTANCE        0x22
+#define CONNECT_DISCONNECT  0x23
+#define RECORD_SOUND        0x30
+#define INCREASE_GAIN       0x31
+#define DECREASE_GAIN       0x32
+#define RECORD_SOUND_PI     0x33
+#define ROVER_MODE          0x40
+#define FOTOV_MODE          0x41
+#define ROVER_MODE_REV      0x42
 /*
     Conditional compilation
     ========================================================
@@ -192,6 +193,14 @@
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
+#define SCAN_INTERVAL                   0x00A0                              /**< Determines scan interval in units of 0.625 millisecond. */
+#define SCAN_WINDOW                     0x0050                              /**< Determines scan window in units of 0.625 millisecond. */
+#define SCAN_TIMEOUT                    0x0000                              /**< Timout when scanning. 0x0000 disables timeout. */
+#define MIN_CONNECTION_INTERVAL         MSEC_TO_UNITS(7.5, UNIT_1_25_MS)    /**< Determines minimum connection interval in milliseconds. */
+#define MAX_CONNECTION_INTERVAL         MSEC_TO_UNITS(30, UNIT_1_25_MS)     /**< Determines maximum connection interval in milliseconds. */
+#define SUPERVISION_TIMEOUT             MSEC_TO_UNITS(4000, UNIT_10_MS)     /**< Determines supervision time-out in units of 10 milliseconds. */
+#define UUID16_SIZE                     2                                   /**< Size of a UUID, in bytes. */
+
 #define APP_ADV_INTERVAL                64                                      /**< The advertising interval (in units of 0.625 ms; this value corresponds to 40 ms). */
 #define APP_ADV_TIMEOUT_IN_SECONDS      BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED   /**< The advertising time-out (in units of seconds). When set to 0, we will never time out. */
 
@@ -206,12 +215,47 @@
 
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
-void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+static uint8_t m_gap_role     = BLE_GAP_ROLE_INVALID;                           /**< BLE role for this connection, see @ref BLE_GAP_ROLES */
+static char const m_target_periph_name[] = "Skoobot";                           /**< Name of the device we try to connect to. This name is searched in the scan report data*/
+static void on_ble_gap_evt_connected(ble_gap_evt_t const * p_gap_evt);
+static void db_disc_handler(ble_db_discovery_evt_t * p_evt);
+BLE_DB_DISCOVERY_DEF(m_db_disc);                                                /**< DB discovery module instance. */
+/**@brief Parameters used when scanning. */
+static ble_gap_scan_params_t const m_scan_params =
+{
+    .active   = 1,
+    .interval = SCAN_INTERVAL,
+    .window   = SCAN_WINDOW,
+    .timeout  = SCAN_TIMEOUT,
+    #if (NRF_SD_BLE_API_VERSION <= 2)
+        .selective   = 0,
+        .p_whitelist = NULL,
+    #endif
+    #if (NRF_SD_BLE_API_VERSION >= 3)
+        .use_whitelist = 0,
+    #endif
+};
+/**@brief Connection parameters requested for connection. */
+static ble_gap_conn_params_t const m_connection_param =
+{
+    (uint16_t)MIN_CONNECTION_INTERVAL,
+    (uint16_t)MAX_CONNECTION_INTERVAL,
+    (uint16_t)SLAVE_LATENCY,
+    (uint16_t)SUPERVISION_TIMEOUT
+};
+/**@brief Variable length data encapsulation in terms of length and pointer to data. */
+typedef struct
+{
+    uint8_t * p_data;   /**< Pointer to data. */
+    uint16_t  data_len; /**< Length of data. */
+} data_t;
+
+void ble_skoobot_p_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 #define BLE_SKOOBOT_DEF(_name)                                                \
 static uint8_t _name;                                                         \
 NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
                      2,                                                       \
-                     ble_skoobot_on_ble_evt, &_name)
+                     ble_skoobot_p_on_ble_evt, &_name)
 
 //stole these from Nordic Blinky app
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
@@ -223,20 +267,23 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
 #define LBS_UUID_BYTE128_CHAR 0x1527
 #define LBS_UUID_BYTE4_CHAR  0x1528
 
-BLE_SKOOBOT_DEF(m_skoobot);
+BLE_SKOOBOT_DEF(m_skoobot_p);
+BLE_SKOOBOT_DEF(m_skoobot_c);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 
 // BLE Data, declare and Initialize
-uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
+ble_uuid_t ble_uuid_svc;
+uint16_t m_conn_p_handle = BLE_CONN_HANDLE_INVALID;                      
+uint16_t m_conn_c_handle = BLE_CONN_HANDLE_INVALID;                      
 uint8_t g_inbyte = 0;
 uint16_t svc_handle;
-ble_gatts_char_handles_t data_handle, cmd_handle;
+ble_gatts_char_handles_t data_handle, cmd_handle, remote_cmd_handle;
 ble_gatts_char_handles_t data_2byte_handle, data_4byte_handle, data_128byte_handle;
 uint8_t uuid_type;
-uint8_t cmd_value = 0, data_value = 0, BLE_Connected = 0, new_cmd = 0;
+uint8_t cmd_value = 0, data_value = 0, BLE_P_Connected = 0, BLE_C_Connected = 0, new_cmd = 0;
 uint8_t data_2byte_val[2], data_4byte_val[4];
 ble_gatts_value_t sound_value, sound_flag, data4_value, data_val;    //for Raspberry Pi and Samsung phone
-uint8_t pi_reads_active = 0;
+uint8_t pi_reads_active = 0, found_skoobot = 0;
 //BLE prototype functions
 static void timers_init(void);
 static void log_init(void);
@@ -254,6 +301,9 @@ static uint32_t add_mult_data_characteristics(void);
 static uint32_t add_cmd4_characteristic(void);
 static uint32_t update_remote_byte(void);    //sends uint8_t data_value
 static uint32_t update_remote_2byte(void);    //sends 2 uint8_t or unit16_t data2_value
+static void db_disc_handler(ble_db_discovery_evt_t * p_evt);
+static void db_discovery_init(void);
+static void scan_start(void);
 //len = 128 supported by BLE 4.1 and 4.2, 5.0 (my iPhone6)
 //len = 20 supported by BLE 4.0 (my Moto E4)
 #define MULTI_LEN 20
@@ -309,6 +359,7 @@ static uint8_t teststr[2] = { 'A',0 };
 //Motors
 uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0, turn_flag = 0, motor_state;
 uint32_t timer1_counter, timer1_match_value, timer1_toggle_step, timer_turn_step_count, timer_turn_match;
+uint16_t timer1_turn_count = 0;
 void motors_forward();
 void motors_backward(void);
 void motors_right(void);
@@ -385,6 +436,7 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
+    db_discovery_init();
     advertising_start();
 
     #if ADHOC_TEST
@@ -416,7 +468,7 @@ int main(void)
     {
           //Trap here when BLE not connected
           callonce = 1;
-          while (BLE_Connected == 0)
+          while (BLE_P_Connected == 0)
           {
             if (callonce == 1)
             {
@@ -480,7 +532,7 @@ int main(void)
               data_value = 255;                             //recording done flag, tell Pi to start reading
               sound_flag.p_value = &data_value;
               sound_flag.offset = 0;
-              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag); //signal pi to start reading
+              sd_ble_gatts_value_set(m_conn_p_handle,data_handle.value_handle,&sound_flag); //signal pi to start reading
               pi_reads_active = 1;
             }
           }
@@ -492,7 +544,7 @@ int main(void)
                 data_value = 127;                 //reading done flag, tell Pi
                 sound_flag.p_value = &data_value;
                 sound_flag.offset = 0;
-                sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
+                sd_ble_gatts_value_set(m_conn_p_handle,data_handle.value_handle,&sound_flag);
                 pi_reads_active = 0;
                 load_buffer_offset = 0;
               }
@@ -534,6 +586,42 @@ int main(void)
               if (motor_state == MOTORS_FORWARD || motor_state == MOTORS_BACKWARD)
               {
                 motors_left();
+              }
+              else
+              {
+                motors_left();
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
+              break;
+            case MOTORS_RIGHT_30:          //go right 30 degrees
+              if (motor_state == MOTORS_FORWARD || motor_state == MOTORS_BACKWARD)
+              {
+                timer1_turn_count = 0;
+                motors_right();
+                while (timer1_turn_count < (step_mode+1)*24);
+                if (motor_state == MOTORS_FORWARD)
+                  motors_forward();
+                else
+                  motors_backward();
+              }
+              else
+              {
+                motors_right();
+                motors_wake();
+                start_stepping_gpio(freq);     
+              }
+              break;
+            case MOTORS_LEFT_30:           //go left 30 degrees
+              if (motor_state == MOTORS_FORWARD || motor_state == MOTORS_BACKWARD)
+              {
+                timer1_turn_count = 0;
+                motors_left();
+                while (timer1_turn_count < (step_mode+1)*24);
+                if (motor_state == MOTORS_FORWARD)
+                  motors_forward();
+                else
+                  motors_backward();
               }
               else
               {
@@ -611,7 +699,7 @@ int main(void)
               break;
             case PLAY_BUZZER:
               if(buzzer_loops_done == 1)
-                pwm_buzzer_frequency(4000.0, 1000);              
+                pwm_buzzer_frequency(4000.0, 1000); 
               break;
             case INC_STEP_MODE:
               motors_sleep();
@@ -681,18 +769,21 @@ int main(void)
               data_val.len = 1;                             //also send for notification
               data_val.p_value = &data_value;
               data_val.offset = 0;
-              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&data_val);
+              sd_ble_gatts_value_set(m_conn_p_handle,data_handle.value_handle,&data_val);
               update_remote_byte();
+              sprintf(buf,"%u\r\n",data_value);
+              TxUART(buf);
               break;
             case GET_AMBIENT:                               //I see Ambient LUX 34-65
               ambient_value = getAmbientLight(GAIN_1);      //if this returns 0, step through and get error code
-              ambient_value = getAmbientLight(GAIN_1);      //first values returns 0
               data2_value = (uint16_t)ambient_value;            
               data_val.len = 2;                             //set for host reads, then notify
               data_val.p_value = &data2_value;
               data_val.offset = 0;
-              sd_ble_gatts_value_set(m_conn_handle,data_2byte_handle.value_handle,&data_val);
+              sd_ble_gatts_value_set(m_conn_p_handle,data_2byte_handle.value_handle,&data_val);
               update_remote_2byte();
+              sprintf(buf,"%u\r\n",data2_value);
+              TxUART(buf);
               break;
             case RECORD_SOUND:
               data_value = 0;       //using data_value this way is not a good use for a flag
@@ -712,7 +803,7 @@ int main(void)
               data_value = 0;                   //tell Pi recording, not ready to read yet
               sound_flag.p_value = &data_value;
               sound_flag.offset = 0;
-              sd_ble_gatts_value_set(m_conn_handle,data_handle.value_handle,&sound_flag);
+              sd_ble_gatts_value_set(m_conn_p_handle,data_handle.value_handle,&sound_flag);
               m_xfer_done = false;
               for(i=0;(i<SAMPLE_BUFFER_CNT);i++)
                 p_rx_buffer[i] = 0;
@@ -740,8 +831,26 @@ int main(void)
               data_value = mic_gain;
               update_remote_byte();
               break;
+           case CONNECT_DISCONNECT:
+              if (BLE_C_Connected == 0)
+                scan_start();
+              else
+                err_code = sd_ble_gap_disconnect(m_conn_c_handle,BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+              break;
            default:
                break;
+          }
+          if (BLE_C_Connected == 1)       //if connected forward command
+          {
+              data_value = cmd_value;
+              ble_gattc_write_params_t params;
+              params.write_op = BLE_GATT_OP_WRITE_CMD;
+              params.flags = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE;
+              params.handle = remote_cmd_handle.value_handle;
+              params.offset = 0;
+              params.p_value = &data_value;
+              params.len = 1;
+              err_code = sd_ble_gattc_write(m_conn_c_handle,&params);	
           }
           new_cmd = 0;
           last_cmd = cmd_value;
@@ -1087,23 +1196,7 @@ void TIMER1_IRQHandler(void)
        {
           nrf_gpio_pin_set(STEP);
           timer1_toggle_step = 0;
-          /*if (turn_flag == 1)
-          {
-            ++timer_turn_step_count;
-            if (timer_turn_step_count >= timer_turn_match)
-            {
-              turn_flag = 0;
-              switch(motor_state)
-              { 
-               case MOTORS_FORWARD:
-                  motors_forward();
-                  break;
-               case MOTORS_BACKWARD:
-                  motors_backward();
-                  break;
-              }
-            }
-          }*/
+          ++timer1_turn_count;
        }
        else
        {
@@ -1461,7 +1554,161 @@ void do_dft(void)
 
 }
 
+// BLE CENTRAL CODE
+/**
+ * @brief Parses advertisement data, providing length and location of the field in case
+ *        matching data is found.
+ *
+ * @param[in]  type       Type of data to be looked for in advertisement data.
+ * @param[in]  p_advdata  Advertisement report length and pointer to report.
+ * @param[out] p_typedata If data type requested is found in the data report, type data length and
+ *                        pointer to data will be populated here.
+ *
+ * @retval NRF_SUCCESS if the data type is found in the report.
+ * @retval NRF_ERROR_NOT_FOUND if the data type could not be found.
+ */
+static uint32_t adv_report_parse(uint8_t type, data_t * p_advdata, data_t * p_typedata)
+{
+    uint32_t  index = 0;
+    uint8_t * p_data;
 
+    p_data = p_advdata->p_data;
+
+    while (index < p_advdata->data_len)
+    {
+        uint8_t field_length = p_data[index];
+        uint8_t field_type   = p_data[index + 1];
+
+        if (field_type == type)
+        {
+            p_typedata->p_data   = &p_data[index + 2];
+            p_typedata->data_len = field_length - 1;
+            return NRF_SUCCESS;
+        }
+        index += field_length + 1;
+    }
+    return NRF_ERROR_NOT_FOUND;
+}
+/**@brief Function for handling database discovery events.
+ *
+ * @details This function is callback function to handle events from the database discovery module.
+ *          Depending on the UUIDs that are discovered, this function should forward the events
+ *          to their respective services.
+ *
+ * @param[in] p_event  Pointer to the database discovery event.
+ */
+static void db_disc_handler(ble_db_discovery_evt_t * p_evt)
+{
+  uint8_t i,j;
+
+  if (p_evt->evt_type == BLE_DB_DISCOVERY_COMPLETE)
+  {
+    j = p_evt->params.discovered_db.char_count;
+    for(i=0;(i<j);i++)
+    {
+        if(p_evt->params.discovered_db.charateristics[i].characteristic.uuid.uuid == LBS_UUID_CMD_CHAR)
+        {
+            remote_cmd_handle.value_handle = p_evt->params.discovered_db.charateristics[i].characteristic.handle_value;
+            remote_cmd_handle.cccd_handle =  p_evt->params.discovered_db.charateristics[i].cccd_handle;
+            TxUART("Got the handle\r\n");
+            return;
+        }
+    }
+  }
+}
+
+/**@brief Database discovery initialization.
+ */
+static void db_discovery_init(void)
+{
+    ret_code_t err_code = ble_db_discovery_init(db_disc_handler);
+    APP_ERROR_CHECK(err_code);
+    ble_db_discovery_evt_register(&ble_uuid_svc);
+}
+
+/**@brief Function to start scanning.
+ */
+static void scan_start(void)
+{
+    ret_code_t err_code;
+
+    (void) sd_ble_gap_scan_stop();
+
+    err_code = sd_ble_gap_scan_start(&m_scan_params);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for handling the advertising report BLE event.
+ *
+ * @param[in] p_ble_evt  Bluetooth stack event.
+ */
+static void on_adv_report(const ble_evt_t * const p_ble_evt)
+{
+    ret_code_t err_code;
+    data_t     adv_data;
+    data_t     dev_name;
+    bool       do_connect = false;
+    uint8_t    buf[32];
+
+    // For readibility.
+    ble_gap_evt_t  const * p_gap_evt  = &p_ble_evt->evt.gap_evt;
+    ble_gap_addr_t const * peer_addr  = &p_gap_evt->params.adv_report.peer_addr;
+
+    // Initialize advertisement report for parsing
+    adv_data.p_data   = (uint8_t *)p_gap_evt->params.adv_report.data;
+    adv_data.data_len = p_gap_evt->params.adv_report.dlen;
+
+    // Search for advertising names.
+    bool name_found = false;
+    err_code = adv_report_parse(BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, &adv_data, &dev_name);
+
+    if (err_code != NRF_SUCCESS)
+    {
+        // Look for the short local name if it was not found as complete.
+        err_code = adv_report_parse(BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME, &adv_data, &dev_name);
+        if (err_code != NRF_SUCCESS)
+        {
+            // If we can't parse the data, then exit
+            TxUART("Cant parse\r\n");
+            return;
+        }
+        else
+        {
+            name_found = true;
+        }
+    }
+    else
+    {
+        name_found = true;
+    }
+
+    if (name_found)
+    {
+        if (strlen(m_target_periph_name) != 0)
+        {
+            if (memcmp(m_target_periph_name, dev_name.p_data, dev_name.data_len )== 0)
+            {
+                found_skoobot = 1;
+                do_connect = true;
+            }
+        }
+    }
+
+    if (do_connect)
+    {
+        (void) sd_ble_gap_scan_stop();
+        TxUART("Try to connect\r\n");
+        // Initiate connection.
+        err_code = sd_ble_gap_connect(peer_addr,
+                                      &m_scan_params,
+                                      &m_connection_param,
+                                      APP_BLE_CONN_CFG_TAG);
+        APP_ERROR_CHECK(err_code);
+
+    }
+}
+
+//BLE_PERIPHERHAL CODE
 /**@brief Function for the GAP initialization.
  *
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
@@ -1783,17 +2030,16 @@ static uint32_t add_data2_characteristic(void)
 static void services_init(void)
 {
     ret_code_t     err_code;
-    ble_uuid_t ble_uuid;
   
   // Add service.
     ble_uuid128_t base_uuid = {LBS_UUID_BASE};
     err_code = sd_ble_uuid_vs_add(&base_uuid, &uuid_type);
     APP_ERROR_CHECK(err_code);
 
-    ble_uuid.uuid = LBS_UUID_SERVICE;
-    ble_uuid.type = uuid_type;
+    ble_uuid_svc.uuid = LBS_UUID_SERVICE;
+    ble_uuid_svc.type = uuid_type;
 
-    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &svc_handle);
+    err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid_svc, &svc_handle);
     APP_ERROR_CHECK(err_code);
        
     err_code = add_cmd_characteristic();
@@ -1823,7 +2069,7 @@ static uint32_t update_remote_byte(void)
     params.p_data = &data_value;
     params.p_len  = &len;
 
-    return sd_ble_gatts_hvx(m_conn_handle, &params);
+    return sd_ble_gatts_hvx(m_conn_p_handle, &params);
 }
 
 static uint32_t update_remote_2byte(void)
@@ -1840,7 +2086,7 @@ static uint32_t update_remote_2byte(void)
     params.p_data = data_2byte_val;
     params.p_len  = &len;
 
-    return sd_ble_gatts_hvx(m_conn_handle, &params);
+    return sd_ble_gatts_hvx(m_conn_p_handle, &params);
 }
 
 //Connection interval set to 50Hz, higher needs better signal strength
@@ -1865,7 +2111,7 @@ static uint32_t update_remote_multi_byte(uint32_t index)
     params.p_data = data_128byte_val;
     params.p_len  = &len;
 
-    return sd_ble_gatts_hvx(m_conn_handle, &params);
+    return sd_ble_gatts_hvx(m_conn_p_handle, &params);
 }
 
 /**@brief Function for handling the Connection Parameters Module.
@@ -1885,7 +2131,7 @@ void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
-        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
+        err_code = sd_ble_gap_disconnect(m_conn_p_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
         APP_ERROR_CHECK(err_code);
     }
 }
@@ -1944,7 +2190,16 @@ static void advertising_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for handling BLE_GAP_EVT_CONNECTED events.
+ * Save the connection handle and GAP role, then discover the peer DB.
 
+static void on_ble_gap_evt_connected(ble_gap_evt_t const * p_gap_evt)
+{
+    ret_code_t err_code;
+
+ 
+}
+*/
 /**@brief Function for handling BLE events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
@@ -1954,23 +2209,81 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
     ret_code_t err_code;
     uint16_t i, j;
+    uint8_t buf[128];
+
+    ble_gap_evt_t const * p_gap_evt = &p_ble_evt->evt.gap_evt;
+    m_gap_role = p_gap_evt->params.connected.role;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-            BLE_Connected = 1;
+        {
+            if (m_gap_role == BLE_GAP_ROLE_PERIPH)
+            {
+              (void) sd_ble_gap_adv_stop();
+              m_conn_p_handle = p_gap_evt->conn_handle;
+              TxUART("Connected Peripheral\r\n");
+              BLE_P_Connected = 1;
+            }
+            else
+            {
+              if (m_gap_role == BLE_GAP_ROLE_CENTRAL)
+              {
+                m_conn_c_handle = p_gap_evt->conn_handle;
+                err_code = ble_db_discovery_start(&m_db_disc, p_gap_evt->conn_handle);
+                APP_ERROR_CHECK(err_code);
+                BLE_C_Connected = 1;
+                TxUART("Connect Central\n");
+              }
+            }
+        }
             break;
-
+        
         case BLE_GAP_EVT_DISCONNECTED:
-            m_conn_handle = BLE_CONN_HANDLE_INVALID;
-            BLE_Connected  = 0;
-            advertising_start();
+        {
+            if (p_gap_evt->conn_handle == m_conn_p_handle)
+            {
+              TxUART("Disconnected peripheral\r\n");
+              m_conn_p_handle = BLE_CONN_HANDLE_INVALID;
+              BLE_P_Connected = 0;
+              advertising_start();
+            }
+            else
+            {
+              if (p_gap_evt->conn_handle == m_conn_c_handle)
+              {
+                TxUART("Disconnected central\r\n");
+                m_conn_c_handle = BLE_CONN_HANDLE_INVALID;
+                BLE_C_Connected = 0;
+              }
+            }
+       }
+            break;
+       case BLE_GAP_EVT_ADV_REPORT:
+            
+            on_adv_report(p_ble_evt);
             break;
 
+        case BLE_GAP_EVT_TIMEOUT:
+            // We have not specified a timeout for scanning, so only connection attemps can timeout.
+            if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_CONN)
+            {
+                TxUART("Connection request timed out.");
+            }
+            break;
+
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+        
+            // Accept parameters requested by peer.
+            err_code = sd_ble_gap_conn_param_update(p_gap_evt->conn_handle,
+                                        &p_gap_evt->params.conn_param_update_request.conn_params);
+            APP_ERROR_CHECK(err_code);
+            break;
+        
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             // Pairing not supported
-            err_code = sd_ble_gap_sec_params_reply(m_conn_handle,
+
+            err_code = sd_ble_gap_sec_params_reply(p_ble_evt->evt.gap_evt.conn_handle,
                                                    BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
                                                    NULL,
                                                    NULL);
@@ -1992,7 +2305,7 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             // No system attributes have been stored.
-            err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0, 0);
+            err_code = sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gap_evt.conn_handle, NULL, 0, 0);
             APP_ERROR_CHECK(err_code);
             break;
 
@@ -2117,7 +2430,7 @@ void on_write(ble_evt_t const * p_ble_evt)
 
 }
 
-void ble_skoobot_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
+void ble_skoobot_p_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
 {
 
     switch (p_ble_evt->header.evt_id)

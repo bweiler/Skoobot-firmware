@@ -52,6 +52,7 @@ NRF_LOG_MODULE_REGISTER();
 #define DB_DISCOVERY_MAX_USERS BLE_DB_DISCOVERY_MAX_SRV  /**< The maximum number of users/registrations allowed by this module. */
 #define MODULE_INITIALIZED (m_initialized == true)       /**< Macro designating whether the module has been initialized properly. */
 
+extern void TxUART(uint8_t* buf);
 
 /**@brief Array of structures containing information about the registered application modules. */
 static ble_uuid_t m_registered_handlers[DB_DISCOVERY_MAX_USERS];
@@ -888,6 +889,8 @@ static uint32_t discovery_start(ble_db_discovery_t * const p_db_discovery, uint1
     NRF_LOG_DEBUG("Starting discovery of service with UUID 0x%x on connection handle 0x%x.",
                   p_srv_being_discovered->srv_uuid.uuid, conn_handle);
 
+    TxUART("Place 0\r\n");
+    
     err_code = sd_ble_gattc_primary_services_discover(conn_handle,
                                                       SRV_DISC_START_HANDLE,
                                                       &(p_srv_being_discovered->srv_uuid));
@@ -911,7 +914,7 @@ uint32_t ble_db_discovery_start(ble_db_discovery_t * const p_db_discovery, uint1
 {
     VERIFY_PARAM_NOT_NULL(p_db_discovery);
     VERIFY_MODULE_INITIALIZED();
-
+ 
     if (m_num_of_handlers_reg == 0)
     {
         // No user modules were registered. There are no services to discover.
