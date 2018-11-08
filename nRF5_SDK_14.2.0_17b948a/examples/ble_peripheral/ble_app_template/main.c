@@ -107,6 +107,8 @@
 #define MOTORS_STOP         0x14
 #define STOP_TURNING        0x15
 #define MOTORS_SLEEP        0x16
+#define MOTORS_SPEED        0x50
+#define DO_DFT              0x51
 #define PLAY_BUZZER         0x17
 //The next two in Android yet
 #define DEC_STEP_MODE       0x18
@@ -251,11 +253,17 @@ typedef struct
 } data_t;
 
 void ble_skoobot_p_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
-#define BLE_SKOOBOT_DEF(_name)                                                \
+void ble_skoobot_c_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
+#define BLE_SKOOBOT_DEF_P(_name)                                                \
 static uint8_t _name;                                                         \
 NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
                      2,                                                       \
                      ble_skoobot_p_on_ble_evt, &_name)
+#define BLE_SKOOBOT_DEF_C(_name)                                                \
+static uint8_t _name;                                                         \
+NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
+                     2,                                                       \
+                     ble_skoobot_c_on_ble_evt, &_name)
 
 //stole these from Nordic Blinky app
 #define LBS_UUID_BASE        {0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15, \
@@ -267,8 +275,8 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                           \
 #define LBS_UUID_BYTE128_CHAR 0x1527
 #define LBS_UUID_BYTE4_CHAR  0x1528
 
-BLE_SKOOBOT_DEF(m_skoobot_p);
-BLE_SKOOBOT_DEF(m_skoobot_c);
+BLE_SKOOBOT_DEF_P(m_skoobot_p);
+BLE_SKOOBOT_DEF_C(m_skoobot_c);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 
 // BLE Data, declare and Initialize
@@ -309,26 +317,7 @@ static void scan_start(void);
 #define MULTI_LEN 20
 uint8_t data_128byte_val[MULTI_LEN];
 static uint32_t update_remote_multi_byte(uint32_t i);  
-
-//FFT defines
-#define GRAPH_WINDOW_HEIGHT              20                              //!< Graph window height used in draw function.
-#define FPU_EXCEPTION_MASK               0x0000009F                      //!< FPU exception mask used to clear exceptions in FPSCR register.
-#define FPU_FPSCR_REG_STACK_OFF          0x40                            //!< Offset of FPSCR register stacked during interrupt handling in FPU part stack.
-// We want to use 44100 Hz sampling rate to reach 22050Hz band. 128 (64 pairs) samples are used
-// in FFT calculation with result contains 64 bins (22050Hz/64bins -> ~344,5Hz per bin).
-#define FFT_TEST_SAMPLE_FREQ_HZ          44100.0f                        //!< Frequency of complex input samples.
-#define FFT_TEST_COMP_SAMPLES_LEN        128                             //!< Complex numbers input data array size. Correspond to FFT calculation this number must be power of two starting from 2^5 (2^4 pairs) with maximum value 2^13 (2^12 pairs).
-//#define FFT_TEST_OUT_SAMPLES_LEN         (FFT_TEST_COMP_SAMPLES_LEN / 2) //!< Output array size.
-//#define SIGNALS_RESOLUTION               100.0f                          //!< Sine wave frequency and noise amplitude resolution. To count resolution as decimal places in number use this formula: resolution = 1/SIGNALS_RESOLUTION .
-//#define SINE_WAVE_FREQ_MAX               20000                           //!< Maximum frequency of generated sine wave.
-//#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
-static uint32_t  m_ifft_flag             = 0;                            //!< Flag that selects forward (0) or inverse (1) transform.
-static uint32_t  m_do_bit_reverse        = 1;                            //!< Flag that enables (1) or disables (0) bit reversal of output.
-#define FFT_TEST_COMP_SAMPLES_LEN        128    
-static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
-static float32_t m_fft_output_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
-static int32_t p_out_buffer[FFT_TEST_COMP_SAMPLES_LEN/2+1];
-void do_dft(void);
+static uint32_t update_remote_multi_byte_dft(uint32_t i);
 
 //Microphone, 16k is 1s of audio
 #define SAMPLE_BUFFER_CNT 16*1024
@@ -338,6 +327,26 @@ uint32_t load_buffer_offset = 0;
 volatile bool m_xfer_done = false;
 void configure_microphone(void);
 void audio_handler(nrf_drv_pdm_evt_t const * const evt);                //Just sets xfer_done
+//FFT defines
+#define FPU_EXCEPTION_MASK               0x0000009F                      //!< FPU exception mask used to clear exceptions in FPSCR register.
+#define FPU_FPSCR_REG_STACK_OFF          0x40                            //!< Offset of FPSCR register stacked during interrupt handling in FPU part stack.
+// We want to use 44100 Hz sampling rate to reach 22050Hz band. 128 (64 pairs) samples are used
+// in FFT calculation with result contains 64 bins (22050Hz/64bins -> ~344,5Hz per bin).
+#define FFT_TEST_SAMPLE_FREQ_HZ          44100.0f                        //!< Frequency of complex input samples.
+#define FFT_TEST_COMP_SAMPLES_LEN        128                             //!< Complex numbers input data array size. Correspond to FFT calculation this number must be power of two starting from 2^5 (2^4 pairs) with maximum value 2^13 (2^12 pairs).
+#define FFT_TEST_OUT_SAMPLES_LEN         (FFT_TEST_COMP_SAMPLES_LEN / 2) //!< Output array size.
+//#define SIGNALS_RESOLUTION               100.0f                          //!< Sine wave frequency and noise amplitude resolution. To count resolution as decimal places in number use this formula: resolution = 1/SIGNALS_RESOLUTION .
+//#define SINE_WAVE_FREQ_MAX               20000                           //!< Maximum frequency of generated sine wave.
+//#define NOISE_AMPLITUDE                  1                               //!< Amplitude of generated noise added to signal.
+uint8_t send_dft = 0;
+static uint32_t  m_ifft_flag             = 0;                            //!< Flag that selects forward (0) or inverse (1) transform.
+static uint32_t  m_do_bit_reverse        = 1;                            //!< Flag that enables (1) or disables (0) bit reversal of output.
+#define FFT_TEST_COMP_SAMPLES_LEN        128    
+static float32_t m_fft_input_f32[FFT_TEST_COMP_SAMPLES_LEN];             //!< FFT input array. Time domain.
+static float32_t m_fft_output_f32[FFT_TEST_OUT_SAMPLES_LEN];             //!< FFT output data. Frequency domain.
+static uint16_t p_out_buffer[FFT_TEST_OUT_SAMPLES_LEN];                  //transfer to pi or cellphone
+void do_dft(void);
+void TxUART_DFT(void);
 
 //Distance sensor
 #define TWI_INSTANCE_ID 0
@@ -349,16 +358,17 @@ void twi_init(void);
 volatile ret_code_t vl6180_err_code;
 
 //UART
-uint8_t sendbuffer[64];
-uint8_t recvbuffer[64];
+#define UART_LEN_LIMIT 64
+uint8_t buf_out[UART_LEN_LIMIT];
+uint8_t buf_in[UART_LEN_LIMIT];
 void uart_init(void);
-void sendbytes(uint8_t a);
 void TxUART(uint8_t* buf);
 static uint8_t teststr[2] = { 'A',0 };
 
 //Motors
-uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0, turn_flag = 0, motor_state;
+uint8_t timer1_enabled_for_motors = 0, step_loop_done = 0, turn_flag = 0, motor_state, motors_code;
 uint32_t timer1_counter, timer1_match_value, timer1_toggle_step, timer_turn_step_count, timer_turn_match;
+uint32_t motors_speed = 1000;
 uint16_t timer1_turn_count = 0;
 void motors_forward();
 void motors_backward(void);
@@ -396,7 +406,7 @@ void mb_test(void);
 void led_off(void);
 void led_on(void);
 void rover(uint32_t freq, uint8_t dirmode);        //does current step mode
-static uint8_t range, buf[64], distance, callonce;
+static uint8_t range, distance, callonce;
 struct notes_struct basic[4] = { 440.0, 100, 470.0, 100, 2600.0, 200, 1000.0, 500 };
 
 //Entry point of firmware
@@ -405,7 +415,7 @@ int main(void)
     uint8_t step_mode = n32_STEP, counter = 0, recording_flag=0, last_cmd=0;
     uint8_t photovore_mode=0, recording_flag_pi = 0;
     uint16_t lux_threshold;
-    uint32_t freq = 1000, steps = 200, i, ms_cnt;
+    uint32_t freq = motors_speed, steps = 200, i, ms_cnt;
     float32_t ambient_value;
     ret_code_t err_code;
     song.num_notes = 3;
@@ -453,9 +463,11 @@ int main(void)
     while(buzzer_loops_done == 0);
     pwm_buzzer_frequency(5000.0, 400);              
     while(buzzer_loops_done == 0);
+    data_value = getDistance();           //call once to calibrate
     pwm_buzzer_frequency(6000.0, 400);              
     while(buzzer_loops_done == 0);
     led_off();
+    ambient_value = getAmbientLight(GAIN_1);  //call once to calibrate
 
     recording_flag = 0;
     recording_flag_pi = 0;
@@ -483,6 +495,38 @@ int main(void)
             led_off();
             TxUART(teststr);
           }
+          if (send_dft == 1)
+          {
+              led_off();
+              send_dft = 0;
+ /*             data_value = 255;       //kind of a not good flag, say sending, 64 bytes, 3 packets 20, 1 padded packet of 4
+              update_remote_byte();
+              ms_cnt = 0;
+              i=0;
+              while(i<FFT_TEST_OUT_SAMPLES_LEN)    //this is tricky, uint16_t == 2 bytes * 10 = 20 bytes
+              {
+                  //This tough, assume 50Hz or every 20ms. It will take 5s to transfer 32k, if perfect
+                  err_code = update_remote_multi_byte_dft(i);
+                  if (err_code == NRF_ERROR_RESOURCES || err_code == NRF_ERROR_BUSY)
+                  {
+                    nrf_delay_ms(2);  //extra delay
+                    continue;
+                  }
+                  else
+                  {
+                    i+=MULTI_LEN/2;            //only increment is successful (assume)
+                  }
+                  nrf_delay_ms(19);   //cause slight overrun
+                  ++ms_cnt;
+                  if (!(ms_cnt % 20))
+                    led_off();
+                  if (!(ms_cnt % 40))
+                    led_on();
+               }
+               data_value = 127;       //kind of a not good flag
+               update_remote_byte(); 
+*/             TxUART_DFT();
+          }
           if (recording_flag == 1)
           {
             if (nrf_pdm_event_check(NRF_PDM_EVENT_END) == true)
@@ -490,7 +534,6 @@ int main(void)
               led_off();
               recording_flag = 0;
               nrf_drv_pdm_stop();
-              //do_dft();             //do fft, then check m_fft_output_f32 64 bytes
               data_value = 255;       //kind of a not good flag
               update_remote_byte();
               ms_cnt = 0;
@@ -527,7 +570,6 @@ int main(void)
               nrf_drv_pdm_stop();
               load_buffer_offset = 0;
               recording_flag_pi = 0;
-              //do_dft();           
               sound_flag.len = 1;                           //sound flag is a 1byte characteristic struct
               data_value = 255;                             //recording done flag, tell Pi to start reading
               sound_flag.p_value = &data_value;
@@ -658,6 +700,12 @@ int main(void)
                 motors_backward();
               }
               break;
+            case MOTORS_SPEED:
+              freq = motors_speed;
+              stop_stepping_gpio();
+              if (motor_state != MOTORS_STOP && motor_state != MOTORS_SLEEP)
+                start_stepping_gpio(freq);     
+              break;
             case STOP_TURNING:
               switch(motor_state)
               {
@@ -771,8 +819,8 @@ int main(void)
               data_val.offset = 0;
               sd_ble_gatts_value_set(m_conn_p_handle,data_handle.value_handle,&data_val);
               update_remote_byte();
-              sprintf(buf,"%u\r\n",data_value);
-              TxUART(buf);
+              sprintf(buf_out,"Distance %u\r\n",data_value);
+              TxUART(buf_out);
               break;
             case GET_AMBIENT:                               //I see Ambient LUX 34-65
               ambient_value = getAmbientLight(GAIN_1);      //if this returns 0, step through and get error code
@@ -782,8 +830,8 @@ int main(void)
               data_val.offset = 0;
               sd_ble_gatts_value_set(m_conn_p_handle,data_2byte_handle.value_handle,&data_val);
               update_remote_2byte();
-              sprintf(buf,"%u\r\n",data2_value);
-              TxUART(buf);
+              sprintf(buf_out,"Ambient %u\r\n",data2_value);
+              TxUART(buf_out);
               break;
             case RECORD_SOUND:
               data_value = 0;       //using data_value this way is not a good use for a flag
@@ -813,6 +861,10 @@ int main(void)
               led_on();
               nrf_drv_pdm_start();
               recording_flag_pi = 1;
+              break;
+            case DO_DFT:
+              do_dft();   
+              send_dft = 1;
               break;
             case INCREASE_GAIN:
               mic_gain += 5;
@@ -1330,7 +1382,7 @@ void pwm_buzzer_frequency(float32_t freq, uint32_t loops)
 //just toggles gpios for now
 void mb_test(void)
 {
-  static uint8_t range, buf[64];
+  static uint8_t range;
 
   nrf_gpio_cfg_output(MIC_CLK);
   nrf_gpio_cfg_output(MIC_DI);
@@ -1359,8 +1411,8 @@ void mb_test(void)
     nrf_gpio_pin_set(SLEEP);
     nrf_delay_ms(500);
     range = getDistance();
-    sprintf(buf,"Range is %d\r\n",range);
-    TxUART(buf);
+    sprintf(buf_out,"Range is %d\r\n",range);
+    TxUART(buf_out);
 
     nrf_delay_ms(500);
   }
@@ -1385,8 +1437,8 @@ void uart_init(void)
   nrf_uarte_baudrate_set(NRF_UARTE0,NRF_UARTE_BAUDRATE_115200); 
   nrf_uarte_txrx_pins_set(NRF_UARTE0,UART_TX_PIN,UART_RX_PIN);
   nrf_uarte_configure(NRF_UARTE0,NRF_UARTE_PARITY_EXCLUDED,NRF_UARTE_HWFC_DISABLED);  //no parity, no hw flow control
-  nrf_uarte_rx_buffer_set(NRF_UARTE0,recvbuffer,20);
-  nrf_uarte_tx_buffer_set(NRF_UARTE0,sendbuffer,20);
+  nrf_uarte_rx_buffer_set(NRF_UARTE0,buf_in,UART_LEN_LIMIT);
+  nrf_uarte_tx_buffer_set(NRF_UARTE0,buf_out,UART_LEN_LIMIT);
   nrf_uarte_enable(NRF_UARTE0);
 }
 
@@ -1453,18 +1505,17 @@ void my_configure(void)
 }
 
 //expects null terminated string, so use sprintf for buf
-void TxUART(uint8_t* buf)
+void TxUART(uint8_t* sendbuffer)
 {
     uint8_t j;
 
     j=0;
-    while(buf[j] != 0)
+    while(sendbuffer[j] != 0)
     {
-        sendbuffer[j] = buf[j];
         ++j;
-        if (j > 20)
+        if (j > UART_LEN_LIMIT)
         {
-          j = 20;
+          j = UART_LEN_LIMIT;
           break;
         }
     }
@@ -1475,72 +1526,75 @@ void TxUART(uint8_t* buf)
     nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
 }
 
-void sendbytes(uint8_t which)
+void TxUART_DFT(void)
 {
   uint8_t i;
-  static uint8_t buf[32];
-  float32_t max_value, scalar_factor;
-  uint32_t  max_val_index;
-  int16_t actual_value;
-
-  if (which == 0)
+ 
+  for(i=0;(i<FFT_TEST_OUT_SAMPLES_LEN);i++)
   {
-    // Search FFT max value in input array.
-    arm_max_f32(m_fft_output_f32, 64, &max_value, &max_val_index);
-
-    scalar_factor = max_value / 100.0f;
-
-      for(i=0;(i<64);i++)
-      {
-          sprintf(buf,"%d,",(uint8_t)(m_fft_output_f32[i]/scalar_factor));
-          TxUART(buf);
-      }
-   }
-   else
-   {
-
-    for(i=0;(i<64);i++)
-    {
-        actual_value = p_rx_buffer[i+500]; 
-        sprintf(buf,"%d,",actual_value);
-        TxUART(buf);
-     }
+      sprintf(buf_out,"%d,",p_out_buffer[i]);
+      TxUART(buf_out);
   }
-  sendbuffer[0] = 13;   //send carriage return and linefeed
-  sendbuffer[1] = 10;
-  nrf_uarte_tx_buffer_set(NRF_UARTE0,sendbuffer,2);
-  nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
-  nrf_uarte_task_trigger(NRF_UARTE0,NRF_UARTE_TASK_STARTTX);
-  while( nrf_uarte_event_check(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX) == 0);   //This blocks on transmit, maybe fix for parallelism
-  nrf_uarte_event_clear(NRF_UARTE0,NRF_UARTE_EVENT_ENDTX);
+  TxUART("\r\n");
+}
+/**
+ * @brief Function for processing generated sine wave samples.
+ * @param[in] p_input        Pointer to input data array with complex number samples in time domain.
+ * @param[in] p_input_struct Pointer to cfft instance structure describing input data.
+ * @param[out] p_output      Pointer to processed data (bins) array in frequency domain.
+ * @param[in] output_size    Processed data array size.
+ */
+static void fft_process(float32_t *                   p_input,
+                        const arm_cfft_instance_f32 * p_input_struct,
+                        float32_t *                   p_output,
+                        uint16_t                      output_size)
+{
+    // Use CFFT module to process the data.
+    arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
+    // Calculate the magnitude at each bin using Complex Magnitude Module function.
+    arm_cmplx_mag_f32(p_input, p_output, output_size);
 }
 
+//coming into fft, input sample with be 1 second of mono, or 16,000 int16_t values. The fft takes only 64
+//inputs from this. I will start in the middle, like at 800.
+//The input of the fft is 64 sound values, plus "fake" imaginary of 0 degrees, for 64 pairs, or 128 floats.
+//The output is 128, but these are duplicated symetrically, so only first 64 are useful.
 void do_dft(void)
 {
-    uint16_t fftLen = FFT_TEST_COMP_SAMPLES_LEN;  //currently 128
-    arm_status ret;
-    arm_rfft_fast_instance_f32 S;
     uint32_t i;
-    uint8_t ifftFlag  = 0;
+    uint32_t  max_val_index;
+    float32_t max_value, normal_value;
 
-
-    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i++)
+    //Make 64 complex numbers from center of sound file
+    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN);i+=2)
     {
-          m_fft_input_f32[i] = p_rx_buffer[i+50];      //magnitude part        
+          m_fft_input_f32[i] = p_rx_buffer[i+800];      //magnitude part 
+          m_fft_input_f32[i+1] = 0;                     //fake 0 degrees imaginary part             
     }
 
-    ret = arm_rfft_fast_init_f32(&S,fftLen);
-    
-    arm_rfft_fast_f32(&S,m_fft_input_f32,m_fft_output_f32,ifftFlag);
+    // Process generated data. 64 pairs of complex data (real, img). It is important to use
+    // proper arm_cfft_sR_f32 structure associated with input/output data length.
+    // For example:
+    //  - 128 numbers in input array (64 complex pairs of samples) -> 64 output bins power data -> &arm_cfft_sR_f32_len64.
+    //  - 256 numbers in input array (128 complex pairs of samples) -> 128 output bins power data -> &arm_cfft_sR_f32_len128.
+    fft_process(m_fft_input_f32,
+                &arm_cfft_sR_f32_len64,
+                m_fft_output_f32,
+                FFT_TEST_OUT_SAMPLES_LEN);
+ 
+    //zap dc component
+    m_fft_output_f32[0] = 0;
 
-    for(i=0;(i<FFT_TEST_COMP_SAMPLES_LEN/2);i++)
+    // Search FFT max value in input array.
+    arm_max_f32(m_fft_output_f32, FFT_TEST_OUT_SAMPLES_LEN, &max_value, &max_val_index);
+ 
+    normal_value = max_value / 0x7fff;
+
+    for(i=0;(i<FFT_TEST_OUT_SAMPLES_LEN);i++)
     {
-          p_out_buffer[i] = m_fft_output_f32[i];         
+          //normalize value and assign          
+          p_out_buffer[i] = (uint16_t)(m_fft_output_f32[i] / normal_value);         
     }
-    //arm_cfft_f32(p_input_struct, p_input, m_ifft_flag, m_do_bit_reverse);
-    // Calculate the magnitude at each bin using Complex Magnitude Module function.
-    //arm_cmplx_mag_f32(p_input, p_output, output_size);
-
 
 #ifndef FPU_INTERRUPT_MODE
         /* Clear FPSCR register and clear pending FPU interrupts. This code is base on
@@ -1648,8 +1702,7 @@ static void on_adv_report(const ble_evt_t * const p_ble_evt)
     data_t     adv_data;
     data_t     dev_name;
     bool       do_connect = false;
-    uint8_t    buf[32];
-
+  
     // For readibility.
     ble_gap_evt_t  const * p_gap_evt  = &p_ble_evt->evt.gap_evt;
     ble_gap_addr_t const * peer_addr  = &p_gap_evt->params.adv_report.peer_addr;
@@ -1669,8 +1722,7 @@ static void on_adv_report(const ble_evt_t * const p_ble_evt)
         if (err_code != NRF_SUCCESS)
         {
             // If we can't parse the data, then exit
-            TxUART("Cant parse\r\n");
-            return;
+           return;
         }
         else
         {
@@ -1697,7 +1749,7 @@ static void on_adv_report(const ble_evt_t * const p_ble_evt)
     if (do_connect)
     {
         (void) sd_ble_gap_scan_stop();
-        TxUART("Try to connect\r\n");
+        TxUART("Skoobot trying to connect as master\r\n");
         // Initiate connection.
         err_code = sd_ble_gap_connect(peer_addr,
                                       &m_scan_params,
@@ -2114,6 +2166,37 @@ static uint32_t update_remote_multi_byte(uint32_t index)
     return sd_ble_gatts_hvx(m_conn_p_handle, &params);
 }
 
+//Connection interval set to 50Hz, higher needs better signal strength
+//Each 20ms period, we send 128 bytes, it takes .02s*(32k/128)=5.12s
+static uint32_t update_remote_multi_byte_dft(uint32_t index)
+{
+    ble_gatts_hvx_params_t params;
+    uint16_t len = MULTI_LEN;
+    uint16_t i, j;
+
+    if (index == 3)
+    {
+      len = 4;
+      for(i=len;(i<MULTI_LEN);i++)
+        data_128byte_val[i] = 0;
+    }
+    i = j = 0;
+    while(i<len)
+    {
+      data_128byte_val[i+1] = (uint8_t)((p_out_buffer[index+j]>>8)&0x00ff);
+      data_128byte_val[i] = (uint8_t)(p_out_buffer[index+j]&0x00ff);
+      i+=2;
+      ++j;
+    }
+    memset(&params, 0, sizeof(params));
+    params.type   = BLE_GATT_HVX_NOTIFICATION;
+    params.handle = data_128byte_handle.value_handle;
+    params.p_data = data_128byte_val;
+    params.p_len  = &len;
+
+    return sd_ble_gatts_hvx(m_conn_p_handle, &params);
+}
+
 /**@brief Function for handling the Connection Parameters Module.
  *
  * @details This function will be called for all events in the Connection Parameters Module that
@@ -2209,7 +2292,6 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
     ret_code_t err_code;
     uint16_t i, j;
-    uint8_t buf[128];
 
     ble_gap_evt_t const * p_gap_evt = &p_ble_evt->evt.gap_evt;
     m_gap_role = p_gap_evt->params.connected.role;
@@ -2233,7 +2315,7 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
                 err_code = ble_db_discovery_start(&m_db_disc, p_gap_evt->conn_handle);
                 APP_ERROR_CHECK(err_code);
                 BLE_C_Connected = 1;
-                TxUART("Connect Central\n");
+                TxUART("Connect Central\r\n");
               }
             }
         }
@@ -2268,7 +2350,7 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // We have not specified a timeout for scanning, so only connection attemps can timeout.
             if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_CONN)
             {
-                TxUART("Connection request timed out.");
+                TxUART("Connection request timed out.\r\n");
             }
             break;
 
@@ -2411,23 +2493,48 @@ void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 void on_write(ble_evt_t const * p_ble_evt)
 {    
     ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
-
-    if ((p_evt_write->handle == cmd_handle.value_handle)
-        && (p_evt_write->len == 1))
+ 
+    if (p_evt_write->handle == cmd_handle.value_handle)
     {
-         cmd_value = p_evt_write->data[0];
-         new_cmd = 1;
+        if (p_evt_write->len == 1)
+        {
+          cmd_value = p_evt_write->data[0];
+          new_cmd = 1;
+          sprintf(buf_out,"cmd = %x\r\n",cmd_value);
+          TxUART(buf_out);
+        }
+        else
+        {
+          sprintf(buf_out,"cmd %x but wrong length = %d\r\n",cmd_value,p_evt_write->len);
+          TxUART(buf_out);
+        }
+    }else{
+        if (p_evt_write->handle == data_4byte_handle.value_handle)
+        {
+          if (p_evt_write->len == 4)
+          {
+           cmd_value = p_evt_write->data[0];
+           motors_speed = (((uint16_t)p_evt_write->data[1])<<8) | p_evt_write->data[2];
+           motors_code = p_evt_write->data[3]; //not sure what to do with this yet
+           new_cmd = 1;
+           sprintf(buf_out,"cmd = %x speed = %d code = %d\r\n",cmd_value,motors_speed,motors_code);
+           TxUART(buf_out);
+          }else{
+           sprintf(buf_out,"4 byte command wrong length = %d\r\n",p_evt_write->len);
+           TxUART(buf_out);
+          }
+        }else{
+          if (p_evt_write->handle == data_handle.value_handle)
+          {
+            new_cmd = 2;
+            sprintf(buf_out,"data, unexpected write, handle %d, len = %d\r\n",p_evt_write->handle,p_evt_write->len);
+            TxUART(buf_out);
+          }else{
+            sprintf(buf_out,"Unexpected write, handle %d len %d\r\n",p_evt_write->handle,p_evt_write->len);
+            TxUART(buf_out);
+          }
+        }
     }
-    else
-    {
-      if ((p_evt_write->handle == data_handle.value_handle)
-          && (p_evt_write->len == 1))
-      {
-           //data_value = p_evt_write->data[0];
-           new_cmd = 2;
-      }
-    }
-
 }
 
 void ble_skoobot_p_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
@@ -2437,6 +2544,20 @@ void ble_skoobot_p_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GATTS_EVT_WRITE:
             on_write(p_ble_evt);
+            break;
+
+        default:
+            // No implementation needed.
+            break;
+    }
+}
+
+void ble_skoobot_c_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
+{
+
+    switch (p_ble_evt->header.evt_id)
+    {
+        case BLE_GATTS_EVT_WRITE:
             break;
 
         default:
